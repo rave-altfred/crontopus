@@ -2,13 +2,15 @@
 
 ## Project Status
 
-**Current State**: Early scaffolding phase  
+**Current State**: Phase 1 (Foundation) - GitOps Architecture
 **Architecture**: Monorepo with 5 independent components  
-**Implementation**: File structure created, awaiting core implementation
+**Implementation**: Backend authentication complete, pivoting to GitOps for job definitions
 
 ---
 
 ## Development Philosophy
+
+**GitOps-First**: Job definitions live in Git (Forgejo), not in database. Database stores only runtime data (run history, metrics, alerts).
 
 **API-First Approach**: Build and test backend endpoints before implementing UI or CLI features.
 
@@ -38,29 +40,31 @@
 
 **Deliverable**: ✅ Users can register, authenticate, and access tenant-scoped resources
 
-### 1.3 Core Job Management API
-- [x] Design and implement job schema/model
-- [x] Build CRUD endpoints for jobs:
-  - `POST /api/jobs` - Create job
-  - `GET /api/jobs` - List jobs (tenant-scoped)
-  - `GET /api/jobs/{id}` - Get job details
-  - `PUT /api/jobs/{id}` - Update job
-  - `DELETE /api/jobs/{id}` - Delete job
-- [x] Add job validation logic
-- [x] Implement job scheduling metadata (cron expressions, etc.)
+### 1.3 GitOps Job Definition System
+- [x] ~~Design and implement job schema/model~~ (REMOVED - jobs live in Git)
+- [x] ~~Build CRUD endpoints for jobs~~ (REMOVED - jobs live in Git)
+- [x] Add job validation logic (cron expression validator - KEPT for agent use)
+- [ ] Design YAML job manifest schema for Git repository
+- [ ] Create example job manifests in Git
+- [ ] Document job manifest structure
 
-**Deliverable**: ✅ Jobs can be created, read, updated, and deleted via API
+**Deliverable**: 🔄 PIVOT - Job definitions will live in Git (Forgejo), not database
 
-### 1.4 Ping/Check-in System
-- [ ] Design check-in data model (job runs, status, output, timing)
+**Note**: Removed Job model, routes, and migrations. Database stores only runtime data (users, tenants, run history).
+
+### 1.4 Job Run History & Check-in System
+- [ ] Design JobRun data model (job_name, tenant_id, status, output, timing)
 - [ ] Build check-in endpoint:
-  - `POST /api/jobs/{id}/checkin` - Report job execution result
-- [ ] Implement anonymous check-in via secret tokens
+  - `POST /api/checkins` - Report job execution result (with job identifier from Git)
+- [ ] Implement anonymous check-in via secret tokens (job-specific secrets)
 - [ ] Store run history with timestamps and outcomes
 - [ ] Build endpoint to retrieve run history:
-  - `GET /api/jobs/{id}/runs`
+  - `GET /api/runs` - List all runs (tenant-scoped)
+  - `GET /api/runs/{job_name}` - Get runs for specific job
 
-**Deliverable**: External schedulers can report job results to Crontopus
+**Deliverable**: Jobs can report execution results; run history is tracked in database
+
+**Note**: Check-ins reference job by name/identifier (from Git manifest), not database ID
 
 ---
 
@@ -75,15 +79,17 @@
 
 **Deliverable**: CLI can authenticate and communicate with backend
 
-### 2.2 Job Management Commands
+### 2.2 Job & Run Management Commands
 - [ ] `crontopus auth login` - Authenticate user
-- [ ] `crontopus jobs list` - List all jobs
-- [ ] `crontopus jobs create` - Create new job (interactive or from YAML)
-- [ ] `crontopus jobs get <id>` - Show job details
-- [ ] `crontopus jobs delete <id>` - Delete job
-- [ ] `crontopus jobs runs <id>` - Show run history
+- [ ] `crontopus jobs list` - List all jobs (reads from Git via Forgejo API)
+- [ ] `crontopus jobs validate <file>` - Validate job manifest YAML
+- [ ] `crontopus runs list` - Show run history
+- [ ] `crontopus runs show <job_name>` - Show runs for specific job
+- [ ] `crontopus agents list` - List enrolled agents
 
-**Deliverable**: Developers can manage jobs via CLI
+**Deliverable**: Developers can view jobs (from Git) and run history via CLI
+
+**Note**: Job creation/editing happens via Git commits, not CLI commands
 
 ### 2.3 Testing Infrastructure
 - [ ] Set up pytest for backend
@@ -123,16 +129,21 @@
 
 **Deliverable**: Agent can manage native OS schedulers on Linux and Windows
 
-### 3.3 Job Reconciliation Loop
-- [ ] Implement sync logic (`pkg/sync/reconcile.go`)
-  - Fetch desired state from control plane
-  - Compare with current scheduler state
-  - Apply differences (create/update/delete)
-- [ ] Add reconciliation scheduling (periodic sync)
+### 3.3 Git-based Job Sync & Reconciliation
+- [ ] Implement Git clone/pull logic (`pkg/git/sync.go`)
+  - Clone job manifest repository (Forgejo)
+  - Periodic git pull for updates
+  - Parse YAML job manifests
+- [ ] Implement reconciliation logic (`pkg/sync/reconcile.go`)
+  - Compare Git manifests with current scheduler state
+  - Apply differences (create/update/delete cron entries)
+- [ ] Add reconciliation scheduling (periodic sync every 30s)
 - [ ] Implement drift detection and correction
 - [ ] Add logging and error handling
 
-**Deliverable**: Agent continuously reconciles scheduler state with backend
+**Deliverable**: Agent continuously syncs from Git and reconciles OS scheduler state
+
+**Note**: Agent pulls job definitions from Git, NOT from backend API
 
 ### 3.4 Agent Backend Integration
 - [ ] Build agent management API in backend:
@@ -140,12 +151,13 @@
   - `GET /api/agents` - List enrolled agents
   - `GET /api/agents/{id}` - Get agent details
   - `DELETE /api/agents/{id}` - Revoke agent
-- [ ] Implement agent-to-job assignment logic
-- [ ] Build endpoint for agents to fetch assigned jobs:
-  - `GET /api/agents/{id}/jobs`
-- [ ] Add agent heartbeat/status tracking
+- [ ] Add agent heartbeat/status tracking:
+  - `POST /api/agents/{id}/heartbeat` - Agent reports alive status
+- [ ] Agent Git repository configuration (which repo to sync from)
 
-**Deliverable**: Backend can manage agents and provide job manifests
+**Deliverable**: Backend can manage agents and track their health
+
+**Note**: Agents fetch jobs from Git, not from backend. Backend only manages agent lifecycle.
 
 ### 3.5 Agent CLI Commands
 - [ ] `crontopus agents enroll` - Generate enrollment token
@@ -200,14 +212,16 @@
 
 **Deliverable**: Basic web app with authentication
 
-### 5.2 Job Management UI
-- [ ] Jobs list page with filtering/sorting
-- [ ] Job detail page (configuration, run history)
-- [ ] Job creation form
-- [ ] Job editing interface
+### 5.2 Job & Run History UI
+- [ ] Jobs list page (reads from Forgejo via API, not database)
+- [ ] Job detail page (shows manifest content from Git + run history from DB)
 - [ ] Run history visualization (timeline, status indicators)
+- [ ] Link to edit job in Git (opens Forgejo)
+- [ ] Job manifest viewer (syntax highlighting)
 
-**Deliverable**: Users can manage jobs via web interface
+**Deliverable**: Users can view jobs (from Git) and run history via web interface
+
+**Note**: Job editing happens in Git, not in web UI. UI provides link to Forgejo for editing.
 
 ### 5.3 Agent & Alert Management UI
 - [ ] Agents list page
@@ -220,16 +234,23 @@
 
 ---
 
-## Phase 6: GitOps Integration
+## Phase 6: GitOps Integration (MOVED TO PHASE 1.3)
 
-### 6.1 Forgejo Integration
-- [ ] Implement Git repository sync worker
-- [ ] Design job manifest format (YAML)
+### 6.1 Job Manifest Format (Part of Phase 1.3)
+- [ ] Design job manifest YAML schema
+- [ ] Create example job manifests
+- [ ] Document manifest structure
 - [ ] Build manifest parser and validator
-- [ ] Create sync API endpoints (trigger manual sync)
-- [ ] Implement webhook handler for automatic sync on push
 
-**Deliverable**: Jobs can be defined in Git and synced to Crontopus
+**Note**: This is now part of Phase 1.3. Agent reads manifests directly from Git.
+
+### 6.2 Forgejo Repository Setup
+- [ ] Create example job repository structure
+- [ ] Set up Forgejo instance (or use existing)
+- [ ] Configure repository access for agents
+- [ ] Document Git workflow for job management
+
+**Deliverable**: Job manifest repository is ready for agents to clone
 
 ### 6.2 Manifest Validation & CI
 - [ ] Build manifest validation CLI tool

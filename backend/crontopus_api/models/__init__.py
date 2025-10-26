@@ -1,9 +1,11 @@
 """
 Database models for Crontopus API.
+
+Note: Job definitions live in Git (Forgejo), not in the database.
+Database stores only runtime data: users, tenants, run history, metrics.
 """
 from .base import TenantScopedBase
 from .tenant import Tenant
 from .user import User
-from .job import Job
 
-__all__ = ["TenantScopedBase", "Tenant", "User", "Job"]
+__all__ = ["TenantScopedBase", "Tenant", "User"]
