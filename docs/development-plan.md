@@ -21,22 +21,22 @@
 ## Phase 1: Foundation & Core Backend (MVP)
 
 ### 1.1 Backend Infrastructure Setup
-- [ ] Set up FastAPI project structure and dependencies (`requirements.txt` or `pyproject.toml`)
-- [ ] Configure database connection (PostgreSQL recommended for multi-tenancy)
-- [ ] Implement configuration management (`backend/crontopus_api/config.py`)
-- [ ] Set up Alembic for database migrations
-- [ ] Create base models for multi-tenancy support
+- [x] Set up FastAPI project structure and dependencies (`requirements.txt` or `pyproject.toml`)
+- [x] Configure database connection (PostgreSQL recommended for multi-tenancy)
+- [x] Implement configuration management (`backend/crontopus_api/config.py`)
+- [x] Set up Alembic for database migrations
+- [x] Create base models for multi-tenancy support
 
-**Deliverable**: Backend can start, connect to database, and serve health check endpoint
+**Deliverable**: ✅ Backend can start, connect to database, and serve health check endpoint
 
 ### 1.2 Authentication & Multi-Tenancy
-- [ ] Implement tenant model and isolation strategy
-- [ ] Build authentication system (`backend/crontopus_api/security/`)
-- [ ] Create user management endpoints
-- [ ] Implement JWT token generation and validation
-- [ ] Add tenant context middleware for all requests
+- [x] Implement tenant model and isolation strategy
+- [x] Build authentication system (`backend/crontopus_api/security/`)
+- [x] Create user management endpoints
+- [x] Implement JWT token generation and validation
+- [ ] Add tenant context middleware for all requests (deferred to Phase 1.3)
 
-**Deliverable**: Users can register, authenticate, and access tenant-scoped resources
+**Deliverable**: ✅ Users can register, authenticate, and access tenant-scoped resources
 
 ### 1.3 Core Job Management API
 - [ ] Design and implement job schema/model
