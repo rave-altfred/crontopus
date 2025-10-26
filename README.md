@@ -7,14 +7,20 @@ It combines the simplicity of “ping-based” cron monitoring with the control 
 
 ## 🚀 Architecture Overview
 
-Crontopus is built around a **clean API-first approach**:
+Crontopus is built around **GitOps principles** with a clean separation of concerns:
 
-- **Backend (FastAPI)** — Core orchestration API exposing REST endpoints for jobs, agents, pings (check-ins), alerts, and tenants.  
-- **CLI** — Thin Python wrapper around the public API; provides developer tools such as `crontopus run` and `crontopus agents enroll`.  
-- **Frontend (React)** — Web console for managing jobs, agents, runs, and alerts.  
-- **Agent (Go)** — Lightweight **signed** service for Linux/Windows that **creates, updates, removes, and verifies native scheduler entries (cron / Task Scheduler)** based on Git-backed manifests and control-plane policy. **Schedulers execute jobs; the agent does not.** Job outcomes are reported by the scheduler via **check-ins to the control plane**.  
-- **Internal Admin** — Private dashboard for operators (tenants, plans, system health).  
-- **Infra** — Dockerfiles and DigitalOcean App Platform specs for prod/dev deployments.
+### Job Definitions (Git)
+- **Job Manifests** — YAML files in Git (Forgejo) define what jobs to run, when, and how
+- **Version Control** — All changes tracked via Git commits, PRs, and reviews
+- **Single Source of Truth** — Git is the authoritative source for job configurations
+
+### Runtime Components
+- **Backend (FastAPI)** — REST API for authentication, run history, metrics, and agent management (NOT for job CRUD)
+- **Agent (Go)** — Pulls job manifests from Git, reconciles with native OS scheduler (cron/Task Scheduler). **Never executes jobs directly.**
+- **CLI** — Wrapper for API calls (auth, viewing run history, agent management) and Git operations (viewing jobs)
+- **Frontend (React)** — Web console displaying jobs from Git and run history from database
+- **Internal Admin** — Private dashboard for operators (tenants, plans, system health)
+- **Infra** — Dockerfiles and DigitalOcean App Platform specs for prod/dev deployments
 
 ---
 

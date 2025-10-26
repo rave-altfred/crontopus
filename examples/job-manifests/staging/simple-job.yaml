@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Job
+metadata:
+  name: simple-hello
+  tenant: demo-tenant
+spec:
+  schedule: "*/5 * * * *"  # Every 5 minutes
+  command: echo "Hello from Crontopus!"

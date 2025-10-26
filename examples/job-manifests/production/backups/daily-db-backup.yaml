@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Job
+metadata:
+  name: daily-db-backup
+  tenant: acme-corp
+  labels:
+    env: production
+    team: platform
+    criticality: high
+    backup-type: database
+  annotations:
+    owner: ops-team@acme.com
+    oncall: https://pagerduty.com/schedules/database-on-call
+    docs: https://wiki.acme.com/database-backups
+    runbook: https://wiki.acme.com/runbooks/backup-recovery
+spec:
+  # Run daily at 2 AM Eastern Time
+  schedule: "0 2 * * *"
+  timezone: America/New_York
+  
+  # Backup script
+  command: /opt/scripts/backup-database.sh
+  args:
+    - --database=production
+    - --retention=30
+    - --compress
+  workingDir: /var/backups
+  
+  # Environment variables
+  env:
+    BACKUP_TARGET: s3://acme-backups-prod/databases
+    PGHOST: db-prod-01.internal
+    PGUSER: backup_user
+    NOTIFY_EMAIL: ops@acme.com
+    SLACK_WEBHOOK: ${DB_BACKUP_SLACK_WEBHOOK}
+  
+  # Check-in configuration
+  checkin:
+    enabled: true
+    secret: ${DB_BACKUP_CHECKIN_SECRET}
+    timeout: 7200  # 2 hours max
+  
+  # Retry on failure
+  retry:
+    enabled: true
+    attempts: 2
+    backoff: fixed
+  
+  # Run on specific backup server
+  agent:
+    selector:
+      hostname: backup-server-01
+      role: database-backup
+  
+  enabled: true
+  paused: false

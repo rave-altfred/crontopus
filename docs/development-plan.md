@@ -44,13 +44,13 @@
 - [x] ~~Design and implement job schema/model~~ (REMOVED - jobs live in Git)
 - [x] ~~Build CRUD endpoints for jobs~~ (REMOVED - jobs live in Git)
 - [x] Add job validation logic (cron expression validator - KEPT for agent use)
-- [ ] Design YAML job manifest schema for Git repository
-- [ ] Create example job manifests in Git
-- [ ] Document job manifest structure
+- [x] Design YAML job manifest schema for Git repository
+- [x] Create example job manifests in Git
+- [x] Document job manifest structure
 
-**Deliverable**: 🔄 PIVOT - Job definitions will live in Git (Forgejo), not database
+**Deliverable**: ✅ Job manifest specification complete with examples
 
-**Note**: Removed Job model, routes, and migrations. Database stores only runtime data (users, tenants, run history).
+**Note**: Job definitions are YAML files in Git. See `docs/job-manifest-spec.md` and `examples/job-manifests/`
 
 ### 1.4 Job Run History & Check-in System
 - [ ] Design JobRun data model (job_name, tenant_id, status, output, timing)

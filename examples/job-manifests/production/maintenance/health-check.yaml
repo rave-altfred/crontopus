@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Job
+metadata:
+  name: service-health-check
+  tenant: acme-corp
+  labels:
+    env: production
+    team: sre
+    criticality: medium
+    monitoring: true
+  annotations:
+    owner: sre-team@acme.com
+    description: "Performs health checks on critical services"
+spec:
+  # Run every 15 minutes
+  schedule: "*/15 * * * *"
+  timezone: UTC
+  
+  # Health check script
+  command: /opt/monitoring/check-services.sh
+  
+  env:
+    SERVICES: "api,database,cache,queue"
+    ALERT_ON_FAILURE: "true"
+  
+  checkin:
+    enabled: true
+    secret: ${HEALTHCHECK_SECRET}
+    timeout: 300  # 5 minutes
+  
+  # Agent runs on any monitoring host
+  agent:
+    selector:
+      role: monitoring
+  
+  enabled: true

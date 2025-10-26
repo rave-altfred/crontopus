@@ -29,31 +29,39 @@ Crontopus is a **monorepo** for an API-first job scheduling and monitoring platf
 
 ## Key Design Principles
 
-1. **API-First**: All functionality exposed via REST API before UI/CLI implementation
-2. **Agent as Reconciler**: Agent manages scheduler state, does NOT execute jobs
+1. **GitOps-First**: Job definitions live in Git (Forgejo) as YAML manifests, NOT in database
+2. **Agent as Reconciler**: Agent pulls from Git and manages scheduler state, does NOT execute jobs
 3. **Ping-Based Check-ins**: Jobs report results via HTTP POST to control plane
 4. **Multi-Tenant**: Isolated tenant data and policies
-5. **GitOps Integration**: Job manifests synced from Forgejo
+5. **Database for Runtime Only**: Database stores users, tenants, run history, metrics - NOT job definitions
 
 ## Component Relationships
 
 ```
-┌─────────────┐     ┌──────────────┐
-│   CLI       │────▶│   Backend    │◀────┐
-└─────────────┘     │   (FastAPI)  │     │
-                    └──────────────┘     │
-                            ▲            │
-                            │            │
-┌─────────────┐            │      ┌─────────────┐
-│  Frontend   │────────────┘      │   Agent     │
-│  (React)    │                   │   (Go)      │
-└─────────────┘                   └─────────────┘
-                                        │
-                                        ▼
-                                  ┌──────────────┐
-                                  │ OS Scheduler │
-                                  │ (cron/Task)  │
-                                  └──────────────┘
+   ┌────────────────────────────┐
+   │   Git (Forgejo)            │
+   │   Job Manifests (YAML)     │
+   │   - production/            │
+   │   - staging/               │
+   └──────────────┤──────────────┘
+                        │ git pull
+                        ▼
+ ┌─────────────┐   ┌──────────────┐   ┌─────────────┐
+ │   CLI       │──▶│   Backend    │◀──│   Agent     │
+ │   (Py)      │   │   (FastAPI)  │   │   (Go)      │
+ └─────────────┘   └──────────────┘   └───────┤──────┘
+       │                  ▲                        │
+       │                  │                        │
+       ▼                  │                        ▼
+ ┌─────────────┐        │            ┌──────────────┐
+ │  Frontend   │────────┘            │ OS Scheduler │
+ │  (React)    │                         │ (cron/Task)  │
+ └─────────────┘                         └──────────────┘
+
+Key:
+- Agent pulls job manifests from Git (NOT from Backend API)
+- Backend stores run history, metrics, auth (NOT job definitions)
+- CLI/Frontend read jobs from Git via Forgejo API
 ```
 
 ## Development Commands
