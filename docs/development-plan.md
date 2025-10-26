@@ -39,17 +39,17 @@
 **Deliverable**: ✅ Users can register, authenticate, and access tenant-scoped resources
 
 ### 1.3 Core Job Management API
-- [ ] Design and implement job schema/model
-- [ ] Build CRUD endpoints for jobs:
+- [x] Design and implement job schema/model
+- [x] Build CRUD endpoints for jobs:
   - `POST /api/jobs` - Create job
   - `GET /api/jobs` - List jobs (tenant-scoped)
   - `GET /api/jobs/{id}` - Get job details
   - `PUT /api/jobs/{id}` - Update job
   - `DELETE /api/jobs/{id}` - Delete job
-- [ ] Add job validation logic
-- [ ] Implement job scheduling metadata (cron expressions, etc.)
+- [x] Add job validation logic
+- [x] Implement job scheduling metadata (cron expressions, etc.)
 
-**Deliverable**: Jobs can be created, read, updated, and deleted via API
+**Deliverable**: ✅ Jobs can be created, read, updated, and deleted via API
 
 ### 1.4 Ping/Check-in System
 - [ ] Design check-in data model (job runs, status, output, timing)

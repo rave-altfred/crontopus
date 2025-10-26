@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 
 from crontopus_api.config import settings
-from crontopus_api.routes import auth
+from crontopus_api.routes import auth, jobs
 
 # Create FastAPI app
 app = FastAPI(
@@ -27,6 +27,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix=settings.api_prefix)
+app.include_router(jobs.router, prefix=settings.api_prefix)
 
 
 @app.get("/health")
