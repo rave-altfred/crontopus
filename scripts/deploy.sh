@@ -255,16 +255,18 @@ if [ -n "$CUSTOM_DOMAINS" ] && [ -n "$APP_HOSTNAME" ]; then
                 RECORD_ID=$(doctl compute domain records list "$BASE_DOMAIN" --format ID,Type,Name,Data --no-header 2>/dev/null | grep "CNAME.*$SUBDOMAIN" | awk '{print $1}' | head -n 1)
                 
                 if [ -n "$RECORD_ID" ]; then
-                    doctl compute domain records update "$BASE_DOMAIN" \
+                    UPDATE_OUTPUT=$(doctl compute domain records update "$BASE_DOMAIN" \
                         --record-id "$RECORD_ID" \
                         --record-type CNAME \
                         --record-name "$SUBDOMAIN" \
-                        --record-data "$APP_HOSTNAME" > /dev/null 2>&1
+                        --record-data "$APP_HOSTNAME" 2>&1)
+                    UPDATE_EXIT_CODE=$?
                     
-                    if [ $? -eq 0 ]; then
+                    if [ $UPDATE_EXIT_CODE -eq 0 ]; then
                         echo -e "${GREEN}✓ DNS record updated for ${domain}${NC}"
                     else
                         echo -e "${RED}✗ Failed to update DNS for ${domain}${NC}"
+                        echo -e "${RED}  Error: $UPDATE_OUTPUT${NC}"
                     fi
                 else
                     echo -e "${YELLOW}⚠ Could not find CNAME record for ${domain}${NC}"
