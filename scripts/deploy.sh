@@ -87,19 +87,41 @@ if [ "$FRONTEND_BUILT" = true ]; then
   echo -e "${GREEN}✓ Frontend images pushed${NC}"
 fi
 
-# Trigger App Platform deployment
+# Create or update App Platform app
 echo ""
 if [ -z "$APP_ID" ]; then
-    echo -e "${YELLOW}⚠ DIGITALOCEAN_APP_ID not set${NC}"
-    echo -e "${YELLOW}To trigger deployment automatically, set:${NC}"
-    echo -e "${YELLOW}  export DIGITALOCEAN_APP_ID=<your-app-id>${NC}"
-    echo ""
-    echo -e "${BLUE}To deploy manually:${NC}"
-    echo -e "  doctl apps create-deployment <app-id>"
+    echo -e "${BLUE}Checking if App Platform app exists...${NC}"
+    
+    # Try to find existing app by name
+    EXISTING_APP_ID=$(doctl apps list --format ID,Spec.Name --no-header 2>/dev/null | grep "crontopus" | awk '{print $1}' | head -n 1)
+    
+    if [ -n "$EXISTING_APP_ID" ]; then
+        echo -e "${GREEN}✓ Found existing app: ${EXISTING_APP_ID}${NC}"
+        APP_ID=$EXISTING_APP_ID
+        
+        echo -e "${BLUE}Updating app spec...${NC}"
+        doctl apps update $APP_ID --spec .do/app.yaml
+        echo -e "${GREEN}✓ App spec updated${NC}"
+        
+        echo -e "${BLUE}Triggering deployment...${NC}"
+        doctl apps create-deployment $APP_ID --wait
+        echo -e "${GREEN}✓ Deployment complete${NC}"
+    else
+        echo -e "${BLUE}Creating new App Platform app...${NC}"
+        APP_RESPONSE=$(doctl apps create --spec .do/app.yaml --format ID --no-header)
+        APP_ID=$APP_RESPONSE
+        echo -e "${GREEN}✓ App created: ${APP_ID}${NC}"
+        echo -e "${YELLOW}Save this for future deployments:${NC}"
+        echo -e "${YELLOW}  export DIGITALOCEAN_APP_ID=${APP_ID}${NC}"
+    fi
 else
-    echo -e "${BLUE}Triggering App Platform deployment...${NC}"
-    doctl apps create-deployment $APP_ID
-    echo -e "${GREEN}✓ Deployment triggered${NC}"
+    echo -e "${BLUE}Updating app spec...${NC}"
+    doctl apps update $APP_ID --spec .do/app.yaml
+    echo -e "${GREEN}✓ App spec updated${NC}"
+    
+    echo -e "${BLUE}Triggering deployment...${NC}"
+    doctl apps create-deployment $APP_ID --wait
+    echo -e "${GREEN}✓ Deployment complete${NC}"
 fi
 
 echo ""
