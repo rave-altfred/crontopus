@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     api_title: str = "Crontopus API"
     api_version: str = "0.1.0"
     api_prefix: str = "/api"
+    environment: str = "development"
     
     # Security
     secret_key: str = "dev-secret-key-change-in-production"
