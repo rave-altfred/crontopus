@@ -223,6 +223,59 @@ else
     echo -e "${YELLOW}⚠ Could not retrieve app URL${NC}"
 fi
 
+# Check and update custom domain DNS records
+echo ""
+echo -e "${BLUE}Checking custom domain DNS records...${NC}"
+
+CUSTOM_DOMAINS=$(doctl apps get $APP_ID -o json 2>/dev/null | jq -r '.[0].spec.domains // [] | .[] | .domain' 2>/dev/null)
+
+if [ -n "$CUSTOM_DOMAINS" ] && [ -n "$APP_HOSTNAME" ]; then
+    while IFS= read -r domain; do
+        if [ -n "$domain" ] && [ "$domain" != "null" ] && [ "$domain" != "@" ]; then
+            # Extract base domain and subdomain
+            if [[ "$domain" == *.*.* ]]; then
+                # Has subdomain (e.g. www.crontopus.com)
+                SUBDOMAIN=$(echo "$domain" | cut -d. -f1)
+                BASE_DOMAIN=$(echo "$domain" | cut -d. -f2-)
+            else
+                # No subdomain (e.g. crontopus.com)
+                SUBDOMAIN="@"
+                BASE_DOMAIN="$domain"
+            fi
+            
+            # Get current CNAME record
+            CURRENT_CNAME=$(dig +short "$domain" CNAME | sed 's/\.$//')
+            
+            if [ -n "$CURRENT_CNAME" ] && [ "$CURRENT_CNAME" != "$APP_HOSTNAME" ]; then
+                echo -e "${YELLOW}⚠ Updating DNS for ${domain}${NC}"
+                echo -e "${YELLOW}  Old: ${CURRENT_CNAME}${NC}"
+                echo -e "${YELLOW}  New: ${APP_HOSTNAME}${NC}"
+                
+                # Get record ID
+                RECORD_ID=$(doctl compute domain records list "$BASE_DOMAIN" --format ID,Type,Name,Data --no-header 2>/dev/null | grep "CNAME.*$SUBDOMAIN" | awk '{print $1}' | head -n 1)
+                
+                if [ -n "$RECORD_ID" ]; then
+                    doctl compute domain records update "$BASE_DOMAIN" \
+                        --record-id "$RECORD_ID" \
+                        --record-type CNAME \
+                        --record-name "$SUBDOMAIN" \
+                        --record-data "$APP_HOSTNAME" > /dev/null 2>&1
+                    
+                    if [ $? -eq 0 ]; then
+                        echo -e "${GREEN}✓ DNS record updated for ${domain}${NC}"
+                    else
+                        echo -e "${RED}✗ Failed to update DNS for ${domain}${NC}"
+                    fi
+                else
+                    echo -e "${YELLOW}⚠ Could not find CNAME record for ${domain}${NC}"
+                fi
+            elif [ -n "$CURRENT_CNAME" ]; then
+                echo -e "${GREEN}✓ DNS for ${domain} is correct${NC}"
+            fi
+        fi
+    done <<< "$CUSTOM_DOMAINS"
+fi
+
 echo ""
 echo -e "${BLUE}For detailed logs, run:${NC}"
 echo -e "  doctl apps logs $APP_ID backend --type run --follow"
