@@ -55,16 +55,23 @@ docker build \
 
 echo -e "${GREEN}✓ Backend image built${NC}"
 
-# Build frontend image
-echo ""
-echo -e "${BLUE}Building frontend image...${NC}"
-docker build \
-  -t ${REGISTRY}/frontend:${VERSION} \
-  -t ${REGISTRY}/frontend:latest \
-  --platform linux/amd64 \
-  ./frontend
+# Build frontend image (if Dockerfile exists)
+if [ -f "./frontend/Dockerfile" ]; then
+  echo ""
+  echo -e "${BLUE}Building frontend image...${NC}"
+  docker build \
+    -t ${REGISTRY}/frontend:${VERSION} \
+    -t ${REGISTRY}/frontend:latest \
+    --platform linux/amd64 \
+    ./frontend
 
-echo -e "${GREEN}✓ Frontend image built${NC}"
+  echo -e "${GREEN}✓ Frontend image built${NC}"
+  FRONTEND_BUILT=true
+else
+  echo ""
+  echo -e "${YELLOW}⚠ Frontend Dockerfile not found, skipping frontend build${NC}"
+  FRONTEND_BUILT=false
+fi
 
 # Push images
 echo ""
@@ -74,9 +81,11 @@ docker push ${REGISTRY}/backend:${VERSION}
 docker push ${REGISTRY}/backend:latest
 echo -e "${GREEN}✓ Backend images pushed${NC}"
 
-docker push ${REGISTRY}/frontend:${VERSION}
-docker push ${REGISTRY}/frontend:latest
-echo -e "${GREEN}✓ Frontend images pushed${NC}"
+if [ "$FRONTEND_BUILT" = true ]; then
+  docker push ${REGISTRY}/frontend:${VERSION}
+  docker push ${REGISTRY}/frontend:latest
+  echo -e "${GREEN}✓ Frontend images pushed${NC}"
+fi
 
 # Trigger App Platform deployment
 echo ""
@@ -97,5 +106,7 @@ echo ""
 echo -e "${GREEN}================================================${NC}"
 echo -e "${GREEN}  Deployment Complete!${NC}"
 echo -e "${GREEN}  Backend: ${REGISTRY}/backend:${VERSION}${NC}"
-echo -e "${GREEN}  Frontend: ${REGISTRY}/frontend:${VERSION}${NC}"
+if [ "$FRONTEND_BUILT" = true ]; then
+  echo -e "${GREEN}  Frontend: ${REGISTRY}/frontend:${VERSION}${NC}"
+fi
 echo -e "${GREEN}================================================${NC}"

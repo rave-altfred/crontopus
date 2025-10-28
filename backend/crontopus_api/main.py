@@ -44,6 +44,7 @@ async def health_check():
         "status": "healthy",
         "service": "crontopus-api",
         "version": settings.api_version,
+        "environment": settings.environment,
         "timestamp": datetime.utcnow().isoformat()
     }
 
