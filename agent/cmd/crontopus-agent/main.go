@@ -11,6 +11,7 @@ import (
 	"github.com/crontopus/agent/pkg/auth"
 	"github.com/crontopus/agent/pkg/client"
 	"github.com/crontopus/agent/pkg/config"
+	"github.com/crontopus/agent/pkg/scheduler"
 )
 
 func main() {
@@ -72,6 +73,21 @@ func main() {
 
 	// Set token for API client
 	apiClient.SetToken(tokenData.Token)
+
+	// Initialize scheduler
+	sch, err := scheduler.NewScheduler()
+	if err != nil {
+		log.Fatalf("Failed to initialize scheduler: %v", err)
+	}
+	log.Printf("Scheduler initialized for platform: %s", cfg.Agent.Platform)
+
+	// List existing jobs managed by Crontopus
+	jobs, err := sch.List()
+	if err != nil {
+		log.Printf("Warning: Failed to list existing jobs: %v", err)
+	} else {
+		log.Printf("Found %d existing Crontopus-managed jobs", len(jobs))
+	}
 
 	// Start heartbeat goroutine
 	stopChan := make(chan struct{})
