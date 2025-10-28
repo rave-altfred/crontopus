@@ -59,6 +59,10 @@ echo -e "${GREEN}✓ Backend image built${NC}"
 if [ -f "./frontend/Dockerfile" ]; then
   echo ""
   echo -e "${BLUE}Building frontend image...${NC}"
+  
+# Create .env for build with API URL
+  echo "VITE_API_URL=https://crontopus.com/api" > ./frontend/.env.production
+  
   docker build \
     -t ${REGISTRY}/frontend:${VERSION} \
     -t ${REGISTRY}/frontend:latest \
