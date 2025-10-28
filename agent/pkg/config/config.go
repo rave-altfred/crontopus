@@ -56,6 +56,14 @@ func LoadConfig(path string) (*Config, error) {
 		homeDir, _ := os.UserHomeDir()
 		config.Agent.TokenPath = homeDir + "/.crontopus/agent-token"
 	}
+	if config.Agent.Hostname == "" {
+		// Auto-detect hostname
+		if hostname, err := os.Hostname(); err == nil {
+			config.Agent.Hostname = hostname
+		} else {
+			config.Agent.Hostname = "unknown"
+		}
+	}
 	if config.Agent.Platform == "" {
 		config.Agent.Platform = "darwin" // or detect dynamically
 	}

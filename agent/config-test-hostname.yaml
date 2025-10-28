@@ -8,7 +8,7 @@ agent:
 backend:
   api_url: http://localhost:8000
   # Get enrollment token from: crontopus auth login
-  enrollment_token: ""
+  enrollment_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwidXNlcl9pZCI6MSwidGVuYW50X2lkIjoidGVzdC10ZW5hbnQiLCJ1c2VybmFtZSI6InJhdmV1c2VyIiwiZXhwIjoxNzYyMjQwODA1fQ.8JvqRp7WG3VzG6xxbXwUxAodPYpqRVQ82x3kZDZ5ZH4"
 
 git:
   repo_url: https://github.com/rave-altfred/crontopus-test-jobs.git

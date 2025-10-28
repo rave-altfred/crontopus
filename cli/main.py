@@ -8,6 +8,7 @@ import click
 
 from commands.auth import auth
 from commands.runs import runs
+from commands.agents import agents
 
 
 @click.group()
@@ -24,6 +25,7 @@ def cli():
 # Register command groups
 cli.add_command(auth)
 cli.add_command(runs)
+cli.add_command(agents)
 
 
 if __name__ == "__main__":
