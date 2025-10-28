@@ -147,18 +147,26 @@
 **Deliverable**: ✅ Agent can manage native OS schedulers on Linux, macOS, and Windows
 
 ### 3.3 Git-based Job Sync & Reconciliation
-- [ ] Implement Git clone/pull logic (`pkg/git/sync.go`)
-  - Clone job manifest repository (Forgejo)
-  - Periodic git pull for updates
-  - Parse YAML job manifests
-- [ ] Implement reconciliation logic (`pkg/sync/reconcile.go`)
-  - Compare Git manifests with current scheduler state
-  - Apply differences (create/update/delete cron entries)
-- [ ] Add reconciliation scheduling (periodic sync every 30s)
-- [ ] Implement drift detection and correction
-- [ ] Add logging and error handling
+- [x] Implement Git clone/pull logic (`pkg/git/sync.go`)
+  - Clone job manifest repository (Forgejo/Git)
+  - Periodic git pull for updates with hard reset
+  - Support custom branch (default: main)
+  - Track current commit hash
+- [x] Implement YAML manifest parser (`pkg/manifest/parser.go`)
+  - Parse job manifests matching job-manifest-spec.md schema
+  - Validate required fields (apiVersion, kind, metadata, spec)
+  - Support enabled/paused flags
+  - Recursively parse all .yaml/.yml files
+- [x] Implement reconciliation logic (`pkg/sync/reconcile.go`)
+  - Compare Git manifests (desired state) with scheduler state (current)
+  - Apply differences (add/update/remove scheduler entries)
+  - Return change count for monitoring
+- [x] Add reconciliation scheduling (periodic sync, configurable interval, default 30s)
+- [x] Implement drift detection to avoid unnecessary reconciliation
+- [x] Add comprehensive logging for all sync/reconciliation operations
+- [x] Integrate into agent main loop with graceful shutdown
 
-**Deliverable**: Agent continuously syncs from Git and reconciles OS scheduler state
+**Deliverable**: ✅ Agent continuously syncs from Git and reconciles OS scheduler state
 
 **Note**: Agent pulls job definitions from Git, NOT from backend API
 
