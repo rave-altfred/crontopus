@@ -104,7 +104,25 @@ if [ -z "$APP_ID" ]; then
         echo -e "${GREEN}✓ App spec updated${NC}"
         
         echo -e "${BLUE}Triggering deployment...${NC}"
-        doctl apps create-deployment $APP_ID --wait
+        DEPLOYMENT_OUTPUT=$(doctl apps create-deployment $APP_ID --wait 2>&1)
+        DEPLOYMENT_EXIT_CODE=$?
+        
+        if [ $DEPLOYMENT_EXIT_CODE -ne 0 ]; then
+            echo -e "${RED}✗ Deployment failed${NC}"
+            echo "$DEPLOYMENT_OUTPUT"
+            
+            # Extract deployment ID from output
+            DEPLOYMENT_ID=$(echo "$DEPLOYMENT_OUTPUT" | grep -oE '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}' | head -n 1)
+            
+            if [ -n "$DEPLOYMENT_ID" ]; then
+                echo ""
+                echo -e "${BLUE}Fetching deployment logs...${NC}"
+                doctl apps logs $APP_ID backend --type deploy --deployment $DEPLOYMENT_ID 2>&1 | tail -30
+            fi
+            
+            exit 1
+        fi
+        
         echo -e "${GREEN}✓ Deployment complete${NC}"
     else
         echo -e "${BLUE}Creating new App Platform app...${NC}"
@@ -120,7 +138,25 @@ else
     echo -e "${GREEN}✓ App spec updated${NC}"
     
     echo -e "${BLUE}Triggering deployment...${NC}"
-    doctl apps create-deployment $APP_ID --wait
+    DEPLOYMENT_OUTPUT=$(doctl apps create-deployment $APP_ID --wait 2>&1)
+    DEPLOYMENT_EXIT_CODE=$?
+    
+    if [ $DEPLOYMENT_EXIT_CODE -ne 0 ]; then
+        echo -e "${RED}✗ Deployment failed${NC}"
+        echo "$DEPLOYMENT_OUTPUT"
+        
+        # Extract deployment ID from output
+        DEPLOYMENT_ID=$(echo "$DEPLOYMENT_OUTPUT" | grep -oE '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}' | head -n 1)
+        
+        if [ -n "$DEPLOYMENT_ID" ]; then
+            echo ""
+            echo -e "${BLUE}Fetching deployment logs...${NC}"
+            doctl apps logs $APP_ID backend --type deploy --deployment $DEPLOYMENT_ID 2>&1 | tail -30
+        fi
+        
+        exit 1
+    fi
+    
     echo -e "${GREEN}✓ Deployment complete${NC}"
 fi
 
