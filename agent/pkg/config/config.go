@@ -11,6 +11,7 @@ import (
 type Config struct {
 	Agent   AgentConfig   `yaml:"agent"`
 	Backend BackendConfig `yaml:"backend"`
+	Git     GitConfig     `yaml:"git"`
 }
 
 // AgentConfig contains agent-specific configuration
@@ -21,6 +22,14 @@ type AgentConfig struct {
 	Version  string `yaml:"version"`
 	// Path to store agent token
 	TokenPath string `yaml:"token_path"`
+}
+
+// GitConfig contains Git repository configuration
+type GitConfig struct {
+	RepoURL   string `yaml:"repo_url"`
+	Branch    string `yaml:"branch"`
+	LocalPath string `yaml:"local_path"`
+	SyncInterval int `yaml:"sync_interval"` // seconds
 }
 
 // BackendConfig contains backend API configuration
@@ -52,6 +61,18 @@ func LoadConfig(path string) (*Config, error) {
 	}
 	if config.Agent.Version == "" {
 		config.Agent.Version = "0.1.0"
+	}
+
+	// Git defaults
+	if config.Git.Branch == "" {
+		config.Git.Branch = "main"
+	}
+	if config.Git.LocalPath == "" {
+		homeDir, _ := os.UserHomeDir()
+		config.Git.LocalPath = homeDir + "/.crontopus/job-manifests"
+	}
+	if config.Git.SyncInterval == 0 {
+		config.Git.SyncInterval = 30 // 30 seconds default
 	}
 
 	return &config, nil

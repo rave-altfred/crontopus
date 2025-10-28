@@ -11,7 +11,10 @@ import (
 	"github.com/crontopus/agent/pkg/auth"
 	"github.com/crontopus/agent/pkg/client"
 	"github.com/crontopus/agent/pkg/config"
+	"github.com/crontopus/agent/pkg/git"
+	"github.com/crontopus/agent/pkg/manifest"
 	"github.com/crontopus/agent/pkg/scheduler"
+	"github.com/crontopus/agent/pkg/sync"
 )
 
 func main() {
@@ -89,6 +92,42 @@ func main() {
 		log.Printf("Found %d existing Crontopus-managed jobs", len(jobs))
 	}
 
+	// Initialize Git syncer
+	if cfg.Git.RepoURL == "" {
+		log.Println("Warning: No Git repository configured. Agent will only manage existing jobs.")
+	} else {
+		gitSyncer, err := git.NewSyncer(cfg.Git.RepoURL, cfg.Git.LocalPath, cfg.Git.Branch)
+		if err != nil {
+			log.Fatalf("Failed to create Git syncer: %v", err)
+		}
+		log.Printf("Git syncer initialized: %s (branch: %s)", cfg.Git.RepoURL, cfg.Git.Branch)
+
+		// Perform initial sync
+		log.Println("Performing initial Git sync...")
+		if err := gitSyncer.Sync(); err != nil {
+			log.Fatalf("Failed to sync Git repository: %v", err)
+		}
+		log.Printf("Git repository synced to: %s", cfg.Git.LocalPath)
+
+		// Initialize manifest parser and reconciler
+		parser := manifest.NewParser(cfg.Git.LocalPath)
+		reconciler := sync.NewReconciler(sch, parser)
+
+		// Perform initial reconciliation
+		log.Println("Performing initial reconciliation...")
+		changes, err := reconciler.Reconcile()
+		if err != nil {
+			log.Printf("Warning: Initial reconciliation failed: %v", err)
+		} else {
+			log.Printf("Initial reconciliation complete: %d changes applied", changes)
+		}
+
+		// Start reconciliation loop
+		stopReconChan := make(chan struct{})
+		go reconciliationLoop(gitSyncer, reconciler, cfg, stopReconChan)
+		defer close(stopReconChan)
+	}
+
 	// Start heartbeat goroutine
 	stopChan := make(chan struct{})
 	go heartbeatLoop(apiClient, tokenData.AgentID, cfg, stopChan)
@@ -134,5 +173,48 @@ func sendHeartbeat(apiClient *client.Client, agentID int, cfg *config.Config) {
 		log.Printf("Failed to send heartbeat: %v", err)
 	} else {
 		log.Printf("Heartbeat sent (Agent ID: %d)", agentID)
+	}
+}
+
+func reconciliationLoop(gitSyncer *git.Syncer, reconciler *sync.Reconciler, cfg *config.Config, stopChan chan struct{}) {
+	interval := time.Duration(cfg.Git.SyncInterval) * time.Second
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	log.Printf("Reconciliation loop started (interval: %s)", interval)
+
+	for {
+		select {
+		case <-ticker.C:
+			// Sync Git repository
+			log.Println("Syncing Git repository...")
+			if err := gitSyncer.Sync(); err != nil {
+				log.Printf("Error syncing Git repository: %v", err)
+				continue
+			}
+
+			// Check for drift
+			drift, err := reconciler.DetectDrift()
+			if err != nil {
+				log.Printf("Error detecting drift: %v", err)
+				continue
+			}
+
+			if drift {
+				log.Println("Drift detected, reconciling...")
+				changes, err := reconciler.Reconcile()
+				if err != nil {
+					log.Printf("Error during reconciliation: %v", err)
+				} else {
+					log.Printf("Reconciliation complete: %d changes applied", changes)
+				}
+			} else {
+				log.Println("No drift detected, scheduler state matches Git")
+			}
+
+		case <-stopChan:
+			log.Println("Reconciliation loop stopping...")
+			return
+		}
 	}
 }
