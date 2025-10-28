@@ -168,3 +168,61 @@ if [ "$FRONTEND_BUILT" = true ]; then
   echo -e "${GREEN}  Frontend: ${REGISTRY}/frontend:${VERSION}${NC}"
 fi
 echo -e "${GREEN}================================================${NC}"
+
+# DNS and connectivity validation
+echo ""
+echo -e "${BLUE}Validating deployment...${NC}"
+
+# Get app URL
+APP_URL=$(doctl apps get $APP_ID --format DefaultIngress --no-header 2>/dev/null)
+
+if [ -n "$APP_URL" ]; then
+    echo -e "${BLUE}App URL: ${APP_URL}${NC}"
+    
+    # Extract hostname from URL
+    APP_HOSTNAME=$(echo "$APP_URL" | sed 's|https\?://||' | sed 's|/.*||')
+    
+    # Resolve DNS
+    echo -e "${BLUE}Resolving DNS for ${APP_HOSTNAME}...${NC}"
+    APP_IP=$(dig +short "$APP_HOSTNAME" | head -n 1)
+    
+    if [ -n "$APP_IP" ]; then
+        echo -e "${GREEN}✓ DNS resolves to: ${APP_IP}${NC}"
+    else
+        echo -e "${YELLOW}⚠ DNS resolution failed or still propagating${NC}"
+    fi
+    
+    # Test health endpoint
+    echo -e "${BLUE}Testing health endpoint...${NC}"
+    HEALTH_RESPONSE=$(curl -s --connect-timeout 10 --max-time 15 "${APP_URL}/health" 2>&1)
+    HEALTH_EXIT_CODE=$?
+    
+    if [ $HEALTH_EXIT_CODE -eq 0 ]; then
+        echo -e "${GREEN}✓ Health check passed${NC}"
+        
+        # Parse database status if jq is available
+        if command -v jq &> /dev/null; then
+            DB_STATUS=$(echo "$HEALTH_RESPONSE" | jq -r '.database // "unknown"' 2>/dev/null)
+            if [ "$DB_STATUS" = "connected" ]; then
+                echo -e "${GREEN}✓ Database: connected${NC}"
+            elif [ "$DB_STATUS" = "error" ]; then
+                echo -e "${RED}✗ Database: error${NC}"
+                DB_ERROR=$(echo "$HEALTH_RESPONSE" | jq -r '.database_error // ""' 2>/dev/null)
+                if [ -n "$DB_ERROR" ]; then
+                    echo -e "${RED}  Error: ${DB_ERROR}${NC}"
+                fi
+            else
+                echo -e "${YELLOW}⚠ Database: ${DB_STATUS}${NC}"
+            fi
+        fi
+    else
+        echo -e "${RED}✗ Health check failed${NC}"
+        echo -e "${RED}  Error: ${HEALTH_RESPONSE}${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠ Could not retrieve app URL${NC}"
+fi
+
+echo ""
+echo -e "${BLUE}For detailed logs, run:${NC}"
+echo -e "  doctl apps logs $APP_ID backend --type run --follow"
