@@ -180,7 +180,7 @@ if [ -n "$APP_URL" ]; then
     echo -e "${BLUE}App URL: ${APP_URL}${NC}"
     
     # Extract hostname from URL (remove protocol and path)
-    APP_HOSTNAME=$(echo "$APP_URL" | sed 's|https\?://||' | sed 's|/.*||' | tr -d '\n' | xargs)
+    APP_HOSTNAME=$(echo "$APP_URL" | sed -E 's|https?://||' | sed 's|/.*||' | tr -d '\n' | xargs)
     
     # Resolve DNS
     echo -e "${BLUE}Resolving DNS for ${APP_HOSTNAME}...${NC}"
