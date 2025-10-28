@@ -355,9 +355,10 @@
   - Volume mounts for development
   - Health checks
 - [x] Create DigitalOcean App Platform deployment specs
-  - `.do/app.yaml` with managed database
+  - `.do/app.yaml` with managed database, VPC configuration, custom domains
   - Auto-scaling configuration
   - Environment variable management
+  - Health checks with 10s timeout
 - [x] Set up CI/CD pipelines
   - GitHub Actions workflow
   - Backend tests with coverage (pytest)
@@ -365,15 +366,31 @@
   - Docker build verification
   - Linting (ruff, black, gofmt, go vet)
   - Runs on push/PR to main/develop
+- [x] Create deployment automation
+  - `scripts/deploy.sh` - Automated deployment script
+  - Docker layer caching for fast rebuilds (~1-2s)
+  - Automatic app creation/update
+  - Automatic log fetching on deployment failures
+  - DNS and connectivity validation
+  - Database connectivity verification
+- [x] Configure production infrastructure
+  - Container registry: `registry.digitalocean.com/crontopus-registry`
+  - VPC networking with private database access
+  - Database firewall rules configured
+  - Custom domains: `crontopus.com` (primary), `www.crontopus.com` (alias)
+- [x] Deploy to production
+  - Backend deployed at https://crontopus.com
+  - Health checks passing with database connectivity
+  - App Platform app ID: `934e7b77-38da-49bb-bfcf-0ab6d7b8fa2f`
 - [x] Create deployment documentation
   - `docs/deployment.md` with quick start guides
   - Docker Compose instructions
   - DigitalOcean deployment steps
   - Agent deployment procedures
 
-**Deliverable**: ✅ Production deployment ready
+**Deliverable**: ✅ Production deployment ready and live
 
-**Note**: Backup procedures covered in deployment docs. Full runbooks to be expanded as needed.
+**Note**: Backend is fully deployed and operational at https://crontopus.com with database connectivity. Deployment script provides one-command deployments with validation.
 
 ### 8.4 Documentation
 - [ ] Complete `docs/architecture.md`
