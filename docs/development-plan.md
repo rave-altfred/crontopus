@@ -188,11 +188,25 @@
 **Note**: Agents fetch jobs from Git, not from backend. Backend only manages agent lifecycle.
 
 ### 3.5 Agent CLI Commands
-- [ ] `crontopus agents enroll` - Generate enrollment token
-- [ ] `crontopus agents list` - List all agents
-- [ ] `crontopus agents revoke <id>` - Revoke agent credentials
+- [x] `crontopus agents list` - List all enrolled agents
+  - Pagination support (--page, --page-size)
+  - Status filtering (--status active/inactive/offline)
+  - JSON output option (--json)
+  - Rich table display with hostname, platform, status, heartbeat time
+- [x] `crontopus agents show <id>` - Show detailed agent information
+  - Display agent metadata (name, hostname, platform, version)
+  - Show Git configuration (repo URL, branch)
+  - Display timing (enrolled, last heartbeat)
+  - JSON output option
+- [x] `crontopus agents revoke <id>` - Revoke agent credentials
+  - Confirmation prompt (skip with --yes)
+  - Soft delete (marks as revoked, not hard delete)
+- [x] Auto-detect hostname in agent config if not specified
+- [x] Add CLI requirements.txt (click, requests, rich)
 
-**Deliverable**: Operators can manage agents via CLI
+**Deliverable**: ✅ Operators can manage agents via CLI
+
+**Note**: Enrollment token comes from user login (`crontopus auth login`), not a separate enroll command.
 
 ---
 
