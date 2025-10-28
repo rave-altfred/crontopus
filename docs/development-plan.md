@@ -72,13 +72,15 @@
 ## Phase 2: Basic CLI & Testing
 
 ### 2.1 CLI Foundation
-- [ ] Set up Python CLI project (`cli/pyproject.toml`)
-- [ ] Implement `core/api_client.py` - HTTP client wrapper
-- [ ] Implement `core/auth.py` - Token storage and management
-- [ ] Implement `core/config.py` - CLI configuration
-- [ ] Implement `core/formatter.py` - Output formatting (tables, JSON)
+- [x] Set up Python CLI project (`cli/pyproject.toml`)
+- [x] Implement `core/api_client.py` - HTTP client wrapper
+- [x] Implement `core/auth.py` - Token storage and management
+- [x] Implement `core/config.py` - CLI configuration
+- [x] Implement `core/formatter.py` - Output formatting (tables, JSON)
+- [x] Implement authentication commands (`login`, `logout`, `whoami`)
+- [x] Test CLI authentication flow
 
-**Deliverable**: CLI can authenticate and communicate with backend
+**Deliverable**: ✅ CLI can authenticate and communicate with backend
 
 ### 2.2 Job & Run Management Commands
 - [ ] `crontopus auth login` - Authenticate user
