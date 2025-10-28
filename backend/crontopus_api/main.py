@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 
 from crontopus_api.config import settings
-from crontopus_api.routes import auth, checkins
+from crontopus_api.routes import auth, checkins, agents
 
 # Create FastAPI app
 app = FastAPI(
@@ -28,6 +28,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(checkins.router, prefix=settings.api_prefix)
+app.include_router(agents.router, prefix=settings.api_prefix)
 # Note: Job definitions live in Git, not in API routes
 
 

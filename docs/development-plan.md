@@ -155,16 +155,19 @@
 **Note**: Agent pulls job definitions from Git, NOT from backend API
 
 ### 3.4 Agent Backend Integration
-- [ ] Build agent management API in backend:
+- [x] Build agent management API in backend:
   - `POST /api/agents/enroll` - Enroll new agent
   - `GET /api/agents` - List enrolled agents
   - `GET /api/agents/{id}` - Get agent details
   - `DELETE /api/agents/{id}` - Revoke agent
-- [ ] Add agent heartbeat/status tracking:
+- [x] Add agent heartbeat/status tracking:
   - `POST /api/agents/{id}/heartbeat` - Agent reports alive status
-- [ ] Agent Git repository configuration (which repo to sync from)
+- [x] Agent Git repository configuration (stored in agent model)
+- [x] Create Agent database model with status tracking
+- [x] Generate and apply Alembic migration
+- [x] Test all agent endpoints
 
-**Deliverable**: Backend can manage agents and track their health
+**Deliverable**: ✅ Backend can manage agents and track their health
 
 **Note**: Agents fetch jobs from Git, not from backend. Backend only manages agent lifecycle.
 

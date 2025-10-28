@@ -8,5 +8,6 @@ from .base import TenantScopedBase
 from .tenant import Tenant
 from .user import User
 from .job_run import JobRun, JobStatus
+from .agent import Agent, AgentStatus
 
-__all__ = ["TenantScopedBase", "Tenant", "User", "JobRun", "JobStatus"]
+__all__ = ["TenantScopedBase", "Tenant", "User", "JobRun", "JobStatus", "Agent", "AgentStatus"]
