@@ -1,0 +1,17 @@
+agent:
+  name: test-agent-macos
+  hostname: localhost
+  platform: darwin
+  version: 0.1.0
+  token_path: .crontopus/agent-token
+
+backend:
+  api_url: http://localhost:8000
+  # Get enrollment token from: crontopus auth login
+  enrollment_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwidXNlcl9pZCI6MSwidGVuYW50X2lkIjoidGVzdC10ZW5hbnQiLCJ1c2VybmFtZSI6InJhdmV1c2VyIiwiZXhwIjoxNzYyMjQwODA1fQ.8JvqRp7WG3VzG6xxbXwUxAodPYpqRVQ82x3kZDZ5ZH4"
+
+git:
+  repo_url: https://github.com/rave-altfred/crontopus-test-jobs.git
+  branch: main
+  local_path: .crontopus/job-manifests
+  sync_interval: 10  # 10 seconds for testing (30 in production)
