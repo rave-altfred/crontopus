@@ -255,11 +255,15 @@ if [ -n "$CUSTOM_DOMAINS" ] && [ -n "$APP_HOSTNAME" ]; then
                 RECORD_ID=$(doctl compute domain records list "$BASE_DOMAIN" --format ID,Type,Name,Data --no-header 2>/dev/null | grep "CNAME.*$SUBDOMAIN" | awk '{print $1}' | head -n 1)
                 
                 if [ -n "$RECORD_ID" ]; then
+                    # Add trailing dot if not present (required for CNAME records)
+                    APP_HOSTNAME_FQDN="$APP_HOSTNAME"
+                    [[ "$APP_HOSTNAME_FQDN" != *.  ]] && APP_HOSTNAME_FQDN="${APP_HOSTNAME_FQDN}."
+                    
                     UPDATE_OUTPUT=$(doctl compute domain records update "$BASE_DOMAIN" \
                         --record-id "$RECORD_ID" \
                         --record-type CNAME \
                         --record-name "$SUBDOMAIN" \
-                        --record-data "$APP_HOSTNAME" 2>&1)
+                        --record-data "$APP_HOSTNAME_FQDN" 2>&1)
                     UPDATE_EXIT_CODE=$?
                     
                     if [ $UPDATE_EXIT_CODE -eq 0 ]; then
