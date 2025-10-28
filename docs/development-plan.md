@@ -114,15 +114,19 @@
 ## Phase 3: Agent Development
 
 ### 3.1 Agent Foundation
-- [ ] Set up Go project structure with `go.mod`
-- [ ] Implement configuration loading (YAML/JSON)
-- [ ] Build HTTP client for control plane communication
-- [ ] Implement agent enrollment flow:
-  - Generate enrollment token from backend
-  - Agent registers with token and receives credentials
-- [ ] Create agent authentication/token refresh mechanism
+- [x] Set up Go project structure with `go.mod`
+- [x] Implement configuration loading (YAML/JSON)
+- [x] Build HTTP client for control plane communication
+- [x] Implement agent enrollment flow:
+  - User provides enrollment token (from CLI login)
+  - Agent registers with backend and receives agent token
+  - Token stored securely to disk for persistence
+- [x] Create agent authentication/token storage mechanism
+- [x] Implement heartbeat goroutine (30s interval)
+- [x] Graceful shutdown handling
+- [x] Build and test agent successfully
 
-**Deliverable**: Agent can enroll with backend and maintain authenticated session
+**Deliverable**: ✅ Agent can enroll with backend and maintain authenticated session
 
 ### 3.2 Scheduler Abstraction Layer
 - [ ] Design scheduler interface (`pkg/scheduler/interface.go`)
