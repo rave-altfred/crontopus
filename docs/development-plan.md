@@ -95,13 +95,19 @@
 **Note**: Job creation/editing happens via Git commits, not CLI commands. Job/agent commands deferred until Phase 3 when those components exist.
 
 ### 2.3 Testing Infrastructure
-- [ ] Set up pytest for backend
-- [ ] Write unit tests for job CRUD operations
-- [ ] Write unit tests for authentication flow
-- [ ] Write integration tests for check-in endpoint
-- [ ] Add test coverage reporting
+- [x] Set up pytest for backend with conftest.py
+- [x] Create shared test fixtures (db, client, test_user, test_tenant, auth_headers)
+- [x] Write comprehensive authentication tests (14 tests)
+  - Registration (successful, duplicate username/email, password validation)
+  - Login (successful, wrong password, inactive user)
+  - Token validation and protected endpoints
+- [x] Write check-in and run history tests (13 tests)
+  - Check-in validation and recording
+  - Run history listing, pagination, filtering
+  - Tenant isolation
+- [x] Add pytest-cov for test coverage reporting (82% coverage)
 
-**Deliverable**: Core API functionality has automated test coverage
+**Deliverable**: ✅ Core API functionality has automated test coverage (27 tests, 82% coverage)
 
 ---
 
