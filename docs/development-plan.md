@@ -53,18 +53,19 @@
 **Note**: Job definitions are YAML files in Git. See `docs/job-manifest-spec.md` and `examples/job-manifests/`
 
 ### 1.4 Job Run History & Check-in System
-- [ ] Design JobRun data model (job_name, tenant_id, status, output, timing)
-- [ ] Build check-in endpoint:
+- [x] Design JobRun data model (job_name, tenant_id, status, output, timing)
+- [x] Build check-in endpoint:
   - `POST /api/checkins` - Report job execution result (with job identifier from Git)
-- [ ] Implement anonymous check-in via secret tokens (job-specific secrets)
-- [ ] Store run history with timestamps and outcomes
-- [ ] Build endpoint to retrieve run history:
+- [ ] Implement anonymous check-in via secret tokens (job-specific secrets - deferred to Phase 3)
+- [x] Store run history with timestamps and outcomes
+- [x] Build endpoint to retrieve run history:
   - `GET /api/runs` - List all runs (tenant-scoped)
   - `GET /api/runs/{job_name}` - Get runs for specific job
+- [x] Create comprehensive tests for check-in and run history
 
-**Deliverable**: Jobs can report execution results; run history is tracked in database
+**Deliverable**: ✅ Jobs can report execution results; run history is tracked in database
 
-**Note**: Check-ins reference job by name/identifier (from Git manifest), not database ID
+**Note**: Check-ins reference job by name/identifier (from Git manifest), not database ID. Secret token authentication will be added when agent is implemented.
 
 ---
 
