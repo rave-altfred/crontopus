@@ -245,34 +245,70 @@
 ## Phase 5: Frontend Web Console
 
 ### 5.1 Frontend Foundation
-- [ ] Set up React project with TypeScript and Tailwind CSS
-- [ ] Configure build tooling (Vite or Create React App)
-- [ ] Implement routing (React Router)
-- [ ] Create authentication flow (login/logout)
-- [ ] Build API client layer (`src/api/`)
-- [ ] Set up state management (Context API or Zustand)
+- [x] Set up React project with TypeScript and Tailwind CSS
+  - Vite + React 18 + TypeScript
+  - Tailwind CSS with PostCSS
+  - Project structure with pages, components, layouts, contexts, api
+- [x] Configure build tooling (Vite)
+  - Fast dev server with HMR
+  - Production builds optimized
+  - Environment variables support
+- [x] Implement routing (React Router)
+  - BrowserRouter with protected routes
+  - Route nesting for layout
+  - Navigation guards for authentication
+- [x] Create authentication flow (login/logout)
+  - Login page with form validation
+  - JWT token storage in localStorage
+  - Auth Context with React hooks
+  - Protected route component
+  - Automatic token refresh on 401
+- [x] Build API client layer (`src/api/`)
+  - Axios-based HTTP client
+  - Request/response interceptors
+  - API services: auth, agents, runs
+  - TypeScript interfaces for all data types
+- [x] Set up state management (Context API)
+  - AuthContext for user state
+  - useAuth hook for components
 
-**Deliverable**: Basic web app with authentication
+**Deliverable**: ✅ Basic web app with authentication
 
 ### 5.2 Job & Run History UI
-- [ ] Jobs list page (reads from Forgejo via API, not database)
-- [ ] Job detail page (shows manifest content from Git + run history from DB)
-- [ ] Run history visualization (timeline, status indicators)
-- [ ] Link to edit job in Git (opens Forgejo)
-- [ ] Job manifest viewer (syntax highlighting)
+- [x] Main layout with header and sidebar navigation
+  - Responsive design with Tailwind CSS
+  - User info display and logout button
+  - Navigation menu for Dashboard, Runs, Agents
+- [x] Dashboard page
+  - Stats cards: Active Agents, Successful Runs, Failed Runs
+  - Recent job runs table with status indicators
+  - Links to detailed views
+- [x] Run history page
+  - Full job runs list with pagination support
+  - Status badges (success/failure/timeout)
+  - Sortable columns: Job Name, Status, Started At, Duration
+  - Empty state handling
+- [ ] Jobs list page (reads from Forgejo via API, not database) - **Deferred to Phase 6**
+- [ ] Job detail page (shows manifest content from Git + run history from DB) - **Deferred to Phase 6**
+- [ ] Link to edit job in Git (opens Forgejo) - **Deferred to Phase 6**
+- [ ] Job manifest viewer (syntax highlighting) - **Deferred to Phase 6**
 
-**Deliverable**: Users can view jobs (from Git) and run history via web interface
+**Deliverable**: ✅ Users can view dashboard, run history, and agents via web interface
 
-**Note**: Job editing happens in Git, not in web UI. UI provides link to Forgejo for editing.
+**Note**: Jobs pages require Forgejo integration (Phase 6). Job editing happens in Git, not in web UI.
 
 ### 5.3 Agent & Alert Management UI
-- [ ] Agents list page
-- [ ] Agent detail page (status, assigned jobs, heartbeat)
-- [ ] Alert rules configuration page
-- [ ] Alert history/incidents page
-- [ ] Notification channel setup
+- [x] Agents list page
+  - Table view with Name, Hostname, Platform, Status, Last Heartbeat
+  - Status badges (active/inactive/offline)
+  - Empty state for no agents
+  - Real-time data from API
+- [ ] Agent detail page (status, assigned jobs, heartbeat) - **Future enhancement**
+- [ ] Alert rules configuration page - **Phase 4 dependency**
+- [ ] Alert history/incidents page - **Phase 4 dependency**
+- [ ] Notification channel setup - **Phase 4 dependency**
 
-**Deliverable**: Complete web console for all core features
+**Deliverable**: ✅ Web console with core features: auth, dashboard, runs, agents
 
 ---
 
