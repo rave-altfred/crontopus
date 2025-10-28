@@ -95,13 +95,25 @@ go build -o build/crontopus-agent ./cmd/crontopus-agent
 ```bash
 cd cli
 
-# Install CLI (check for pyproject.toml configuration)
-# Likely: pip install -e .
+# Create virtual environment
+python3 -m venv venv
 
-# Use CLI
-python main.py --help
-python main.py jobs list
-python main.py agents enroll
+# Install CLI in development mode
+./venv/bin/pip install -e .
+
+# Run CLI
+./venv/bin/python main.py --help
+./venv/bin/python main.py auth login
+./venv/bin/python main.py auth whoami
+
+# Available commands (as of Phase 2.1):
+# - auth login    : Authenticate and save token
+# - auth logout   : Clear saved token
+# - auth whoami   : Show current user
+
+# Coming in Phase 2.2:
+# - runs list     : Show job run history
+# - runs show     : Show specific run details
 ```
 
 ### Frontend (React)

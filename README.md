@@ -60,6 +60,46 @@ This ensures:
 
 ---
 
+## 🚀 Quick Start
+
+### Backend Setup
+
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -e .
+alembic upgrade head
+uvicorn crontopus_api.main:app --reload
+```
+
+Backend will run at `http://localhost:8000`
+
+### CLI Setup
+
+```bash
+cd cli
+python3 -m venv venv
+./venv/bin/pip install -e .
+```
+
+**Usage:**
+
+```bash
+# Authenticate
+./venv/bin/python main.py auth login
+
+# Check current user
+./venv/bin/python main.py auth whoami
+
+# Logout
+./venv/bin/python main.py auth logout
+```
+
+Token is saved to `~/.crontopus/token`
+
+---
+
 ## 🪪 License
 
 All rights reserved.  
