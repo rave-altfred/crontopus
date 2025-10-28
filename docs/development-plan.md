@@ -83,16 +83,16 @@
 **Deliverable**: ✅ CLI can authenticate and communicate with backend
 
 ### 2.2 Job & Run Management Commands
-- [ ] `crontopus auth login` - Authenticate user
-- [ ] `crontopus jobs list` - List all jobs (reads from Git via Forgejo API)
-- [ ] `crontopus jobs validate <file>` - Validate job manifest YAML
-- [ ] `crontopus runs list` - Show run history
-- [ ] `crontopus runs show <job_name>` - Show runs for specific job
-- [ ] `crontopus agents list` - List enrolled agents
+- [x] `crontopus auth login` - Authenticate user
+- [ ] `crontopus jobs list` - List all jobs (reads from Git via Forgejo API - deferred to Phase 3)
+- [ ] `crontopus jobs validate <file>` - Validate job manifest YAML (deferred to Phase 3)
+- [x] `crontopus runs list` - Show run history with pagination and filtering
+- [x] `crontopus runs show <run_id>` - Show detailed run information
+- [ ] `crontopus agents list` - List enrolled agents (deferred to Phase 3)
 
-**Deliverable**: Developers can view jobs (from Git) and run history via CLI
+**Deliverable**: ✅ Developers can view job run history via CLI
 
-**Note**: Job creation/editing happens via Git commits, not CLI commands
+**Note**: Job creation/editing happens via Git commits, not CLI commands. Job/agent commands deferred until Phase 3 when those components exist.
 
 ### 2.3 Testing Infrastructure
 - [ ] Set up pytest for backend

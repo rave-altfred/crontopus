@@ -7,6 +7,7 @@ Main entry point for the CLI application.
 import click
 
 from commands.auth import auth
+from commands.runs import runs
 
 
 @click.group()
@@ -22,6 +23,7 @@ def cli():
 
 # Register command groups
 cli.add_command(auth)
+cli.add_command(runs)
 
 
 if __name__ == "__main__":
