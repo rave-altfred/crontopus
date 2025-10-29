@@ -9,6 +9,7 @@ from crontopus_api.config import get_db
 from crontopus_api.models import User, Tenant
 from crontopus_api.schemas.auth import UserRegister, UserLogin, Token, UserResponse
 from crontopus_api.security import verify_password, get_password_hash, create_access_token
+from crontopus_api.security.dependencies import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -102,3 +103,13 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     )
     
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(current_user: User = Depends(get_current_user)):
+    """
+    Get current authenticated user information.
+    
+    Returns the profile of the currently authenticated user.
+    """
+    return current_user
