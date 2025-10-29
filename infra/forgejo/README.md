@@ -53,15 +53,17 @@ Create an A record in your DNS provider:
 ### 4. Deploy
 
 ```bash
-chmod +x deploy.sh
 ./deploy.sh <droplet_ip>
 ```
 
 The script will:
-- Upload configuration files
-- Install Docker
-- Obtain SSL certificate
-- Start all services
+- Upload configuration files and secrets
+- Install Docker and Docker Compose
+- Install certbot and obtain SSL certificate
+- Set up automatic certificate renewal hooks
+- Start all services (PostgreSQL, Forgejo, Nginx)
+
+**Note**: The script is idempotent - you can run it multiple times safely. It will skip steps that are already complete (e.g., certificate already exists).
 
 ### 5. Complete Forgejo Setup
 

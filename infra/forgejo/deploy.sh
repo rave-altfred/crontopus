@@ -47,36 +47,46 @@ ssh "$DEPLOY_USER@$DROPLET_IP" << 'ENDSSH'
     fi
 ENDSSH
 
-# Initial SSL certificate with certbot
+# Start all services
+# Install certbot and get SSL certificate
 echo "🔒 Setting up SSL certificate..."
 ssh "$DEPLOY_USER@$DROPLET_IP" << 'ENDSSH'
-    cd /opt/forgejo
+    # Install certbot if not present
+    if ! command -v certbot &> /dev/null; then
+        snap install --classic certbot
+        ln -sf /snap/bin/certbot /usr/bin/certbot
+    fi
     
-    # Check if certificate already exists
-    CERT_PATH="/var/lib/docker/volumes/forgejo_certbot_conf/_data/live/git.crontopus.com"
-    if [ ! -d "$CERT_PATH" ]; then
+    # Check if certificate exists
+    if [ ! -d "/etc/letsencrypt/live/git.crontopus.com" ]; then
         echo "Obtaining SSL certificate..."
+        cd /opt/forgejo
         
-        # Use HTTP-only nginx config for certificate acquisition
-        cp nginx-init.conf nginx.conf.active
-        
-        # Start services with HTTP-only nginx
-        docker compose up -d db
-        sleep 5
-        docker compose up -d nginx
+        # Start services without nginx first
+        docker compose up -d db forgejo
         sleep 10
         
-        # Get certificate
-        docker compose run --rm certbot certonly --webroot \
-            --webroot-path /var/www/certbot \
-            --email admin@crontopus.com \
+        # Get certificate using standalone mode
+        certbot certonly --standalone \
+            -d git.crontopus.com \
+            --non-interactive \
             --agree-tos \
-            --no-eff-email \
-            -d git.crontopus.com
+            --email admin@crontopus.com
         
-        # Switch to SSL nginx config
-        cp nginx.conf nginx.conf.active
-        docker compose restart nginx
+        # Create renewal hooks
+        mkdir -p /etc/letsencrypt/renewal-hooks/pre /etc/letsencrypt/renewal-hooks/post
+        
+        cat > /etc/letsencrypt/renewal-hooks/pre/stop-nginx.sh << 'HOOK'
+#!/bin/bash
+cd /opt/forgejo && docker compose stop nginx
+HOOK
+        chmod +x /etc/letsencrypt/renewal-hooks/pre/stop-nginx.sh
+        
+        cat > /etc/letsencrypt/renewal-hooks/post/start-nginx.sh << 'HOOK'
+#!/bin/bash
+cd /opt/forgejo && docker compose start nginx
+HOOK
+        chmod +x /etc/letsencrypt/renewal-hooks/post/start-nginx.sh
     else
         echo "SSL certificate already exists"
     fi
