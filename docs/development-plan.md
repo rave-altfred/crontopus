@@ -310,6 +310,14 @@
 
 **Deliverable**: ✅ Web console with core features: auth, dashboard, runs, agents
 
+**Deployment Status**: ✅ Frontend and backend fully deployed to production at https://crontopus.com
+- Frontend served via Nginx with SPA routing
+- API routing configured: `/api/*` → backend, `/` → frontend  
+- Tailwind CSS v4 with @tailwindcss/postcss
+- Docker multi-stage builds for optimized images
+- Health checks and monitoring active
+- Custom domains with automatic DNS updates
+
 ---
 
 ## Phase 6: GitOps Integration (MOVED TO PHASE 1.3)
@@ -415,9 +423,13 @@
   - Database firewall rules configured
   - Custom domains: `crontopus.com` (primary), `www.crontopus.com` (alias)
 - [x] Deploy to production
-  - Backend deployed at https://crontopus.com
+  - Backend deployed at https://crontopus.com/api
+  - Frontend deployed at https://crontopus.com
+  - Ingress routing: `/api/*` to backend, `/` to frontend
   - Health checks passing with database connectivity
   - App Platform app ID: `934e7b77-38da-49bb-bfcf-0ab6d7b8fa2f`
+  - Frontend Dockerfile: Multi-stage build (Node 20 + Nginx Alpine)
+  - Nginx configuration: SPA routing, gzip, caching, security headers
 - [x] Create deployment documentation
   - `docs/deployment.md` with quick start guides
   - Docker Compose instructions
