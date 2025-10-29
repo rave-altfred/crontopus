@@ -1,0 +1,5 @@
+# Environment file
+.env
+
+# Docker secrets directory
+secrets/
