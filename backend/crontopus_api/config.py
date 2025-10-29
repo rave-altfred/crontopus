@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     # CORS - comma-separated string in .env
     cors_origins: str = "http://localhost:3000,http://localhost:5173"
     
+    # Forgejo Integration
+    forgejo_url: str = "https://git.crontopus.com"
+    forgejo_username: Optional[str] = None
+    forgejo_token: Optional[str] = None
+    
     @property
     def cors_origins_list(self) -> list[str]:
         """Parse CORS origins string into list."""

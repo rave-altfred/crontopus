@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from crontopus_api.config import settings, get_db
-from crontopus_api.routes import auth, checkins, agents
+from crontopus_api.routes import auth, checkins, agents, jobs
 
 # Create FastAPI app
 app = FastAPI(
@@ -31,7 +31,8 @@ app.add_middleware(
 app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(checkins.router, prefix=settings.api_prefix)
 app.include_router(agents.router, prefix=settings.api_prefix)
-# Note: Job definitions live in Git, not in API routes
+app.include_router(jobs.router, prefix=settings.api_prefix)
+# Note: Job definitions live in Git - jobs router fetches from Forgejo
 
 
 @app.get("/health")
