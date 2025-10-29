@@ -9,3 +9,16 @@ backend:
   api_url: "http://localhost:8000"
   # Get this token from: cat ~/.crontopus/token | python3 -c "import json,sys; print(json.load(sys.stdin)['access_token'])"
   enrollment_token: "YOUR_USER_TOKEN_HERE"
+
+git:
+  url: "https://git.crontopus.com/crontopus/job-manifests.git"
+  branch: "main"
+  sync_interval: 30  # seconds
+  auth:
+    type: "basic"  # basic, ssh, or token
+    username: "your-username"
+    password: "your-password-or-token"
+    # For SSH authentication:
+    # type: "ssh"
+    # key_path: "~/.ssh/id_ed25519"
+  local_path: "~/.crontopus/job-manifests"
