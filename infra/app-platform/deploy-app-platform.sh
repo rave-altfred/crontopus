@@ -104,7 +104,7 @@ if [ -z "$APP_ID" ]; then
         APP_ID=$EXISTING_APP_ID
         
         echo -e "${BLUE}Updating app spec...${NC}"
-        doctl apps update $APP_ID --spec .do/app.yaml
+        doctl apps update $APP_ID --spec infra/app-platform/app.yaml
         echo -e "${GREEN}✓ App spec updated${NC}"
         
         echo -e "${BLUE}Triggering deployment...${NC}"
@@ -130,7 +130,7 @@ if [ -z "$APP_ID" ]; then
         echo -e "${GREEN}✓ Deployment complete${NC}"
     else
         echo -e "${BLUE}Creating new App Platform app...${NC}"
-        APP_RESPONSE=$(doctl apps create --spec .do/app.yaml --format ID --no-header)
+        APP_RESPONSE=$(doctl apps create --spec infra/app-platform/app.yaml --format ID --no-header)
         APP_ID=$APP_RESPONSE
         echo -e "${GREEN}✓ App created: ${APP_ID}${NC}"
         echo -e "${YELLOW}Save this for future deployments:${NC}"
@@ -138,7 +138,7 @@ if [ -z "$APP_ID" ]; then
     fi
 else
     echo -e "${BLUE}Updating app spec...${NC}"
-    doctl apps update $APP_ID --spec .do/app.yaml
+    doctl apps update $APP_ID --spec infra/app-platform/app.yaml
     echo -e "${GREEN}✓ App spec updated${NC}"
     
     echo -e "${BLUE}Triggering deployment...${NC}"
