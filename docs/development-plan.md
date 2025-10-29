@@ -252,27 +252,31 @@
 - [x] Configure build tooling (Vite)
   - Fast dev server with HMR
   - Production builds optimized
-  - Environment variables support
+  - Environment variables support (VITE_API_URL)
 - [x] Implement routing (React Router)
   - BrowserRouter with protected routes
   - Route nesting for layout
   - Navigation guards for authentication
-- [x] Create authentication flow (login/logout)
+  - Register and Login routes
+- [x] Create authentication flow (login/logout/register)
   - Login page with form validation
+  - Registration page with password confirmation and validation
   - JWT token storage in localStorage
   - Auth Context with React hooks
   - Protected route component
   - Automatic token refresh on 401
+  - Auto-login after registration
 - [x] Build API client layer (`src/api/`)
   - Axios-based HTTP client
   - Request/response interceptors
   - API services: auth, agents, runs
   - TypeScript interfaces for all data types
+  - OAuth2 form data for login
 - [x] Set up state management (Context API)
   - AuthContext for user state
   - useAuth hook for components
 
-**Deliverable**: ✅ Basic web app with authentication
+**Deliverable**: ✅ Full authentication system with registration, login, and protected routes
 
 ### 5.2 Job & Run History UI
 - [x] Main layout with header and sidebar navigation
@@ -312,11 +316,14 @@
 
 **Deployment Status**: ✅ Frontend and backend fully deployed to production at https://crontopus.com
 - Frontend served via Nginx with SPA routing
-- API routing configured: `/api/*` → backend, `/` → frontend  
+- API routing configured using service-level `routes`: `/api/*` and `/health` → backend, `/` → frontend  
 - Tailwind CSS v4 with @tailwindcss/postcss
 - Docker multi-stage builds for optimized images
 - Health checks and monitoring active
 - Custom domains with automatic DNS updates
+- Database migrations run automatically on backend startup via `start.sh`
+- CORS configured for production domains (crontopus.com, www.crontopus.com)
+- OAuth2 password flow for secure authentication
 
 ---
 
@@ -409,7 +416,8 @@
 
 ### 8.3 Deployment & Infrastructure
 - [x] Create production Dockerfiles
-  - `backend/Dockerfile` - FastAPI with health checks, non-root user
+  - `backend/Dockerfile` - FastAPI with health checks, non-root user, automatic migrations via start.sh
+  - `frontend/Dockerfile` - Multi-stage build (Node 20 + Nginx Alpine) with VITE_API_URL build arg
   - `agent/Dockerfile` - Multi-stage Go build, minimal alpine image
 - [x] Write docker-compose.yml for local development
   - PostgreSQL 15

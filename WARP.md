@@ -70,14 +70,20 @@ Key:
 
 ### Backend (FastAPI)
 ```bash
-# Install dependencies (command TBD - check for requirements.txt or pyproject.toml)
 cd backend
 
-# Run development server (typical FastAPI command)
-uvicorn crontopus_api.main:app --reload
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -e .
 
 # Run migrations
-# Command TBD - check backend/migrations/ and backend/scripts/
+alembic upgrade head
+
+# Run development server
+uvicorn crontopus_api.main:app --reload
 ```
 
 ### Agent (Go)
@@ -198,11 +204,20 @@ See `docs/` directory for detailed specifications:
 **Deployment Commands:**
 
 ```bash
-# Deploy backend + frontend
+# Deploy backend + frontend (with automatic migrations)
 cd infra/app-platform
 ./deploy-app-platform.sh
+
+# Update app spec only (without rebuilding images)
+doctl apps update 934e7b77-38da-49bb-bfcf-0ab6d7b8fa2f --spec app.yaml
+doctl apps create-deployment 934e7b77-38da-49bb-bfcf-0ab6d7b8fa2f --wait
 
 # Deploy/update Forgejo
 cd infra/forgejo
 ./deploy.sh 207.154.244.141
 ```
+
+**Important Notes:**
+- Database migrations run automatically on backend startup via `start.sh`
+- CORS is configured at App Platform level using service-level `routes` (not `ingress`)
+- Frontend API URL is set at build time via `VITE_API_URL` build arg in Dockerfile
