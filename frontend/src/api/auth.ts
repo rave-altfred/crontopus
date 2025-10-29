@@ -24,7 +24,7 @@ export const authApi = {
     formData.append('username', credentials.username);
     formData.append('password', credentials.password);
 
-    const response = await apiClient.post('/api/auth/login', formData, {
+    const response = await apiClient.post('/auth/login', formData, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -33,7 +33,7 @@ export const authApi = {
   },
 
   getCurrentUser: async (): Promise<User> => {
-    const response = await apiClient.get('/api/auth/me');
+    const response = await apiClient.get('/auth/me');
     return response.data;
   },
 };
