@@ -13,7 +13,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
-  const { login: setAuthToken } = useAuth();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -46,8 +46,7 @@ export default function Register() {
       });
       
       // Auto-login after registration
-      const loginData = await authApi.login({ username, password });
-      await setAuthToken(loginData.access_token);
+      await login({ username, password });
       
       // Redirect to dashboard
       navigate('/');
