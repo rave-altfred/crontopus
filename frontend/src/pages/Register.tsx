@@ -50,7 +50,8 @@ export default function Register() {
       // Redirect to dashboard
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+      const errorMessage = err.response?.data?.detail || 'Registration failed. Please try again.';
+      setError(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
     } finally {
       setLoading(false);
     }
