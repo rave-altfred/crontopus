@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 days
     
     # CORS - comma-separated string in .env
-    cors_origins: str = "http://localhost:3000,http://localhost:5173"
+    cors_origins: str = "http://localhost:3000,http://localhost:5173,https://www.crontopus.com,https://crontopus.com"
     
     # Forgejo Integration
     forgejo_url: str = "https://git.crontopus.com"
