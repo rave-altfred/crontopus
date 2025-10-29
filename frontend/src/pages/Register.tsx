@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { authApi } from '../api/auth';
 import { apiClient } from '../api/client';
 
 export default function Register() {
