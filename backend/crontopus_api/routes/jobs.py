@@ -5,8 +5,8 @@ Note: Job definitions live in Git, not in database.
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 
-from ..security.auth import get_current_user
-from ..schemas.user import User
+from ..security.dependencies import get_current_user
+from ..models.user import User
 from ..services.forgejo import ForgejoClient
 from ..config import settings
 
