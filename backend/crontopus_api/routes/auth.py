@@ -2,6 +2,7 @@
 Authentication routes for user registration and login.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from crontopus_api.config import get_db
@@ -58,14 +59,15 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-async def login(credentials: UserLogin, db: Session = Depends(get_db)):
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
     Authenticate user and return JWT token.
     
     Validates username/password and returns an access token.
+    Uses OAuth2 password flow with form data to prevent credential exposure in logs.
     """
     # Find user by username
-    user = db.query(User).filter(User.username == credentials.username).first()
+    user = db.query(User).filter(User.username == form_data.username).first()
     
     if not user:
         raise HTTPException(
@@ -75,7 +77,7 @@ async def login(credentials: UserLogin, db: Session = Depends(get_db)):
         )
     
     # Verify password
-    if not verify_password(credentials.password, user.hashed_password):
+    if not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
