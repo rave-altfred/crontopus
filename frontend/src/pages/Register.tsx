@@ -38,7 +38,7 @@ export default function Register() {
 
     try {
       // Register
-      await apiClient.post('/api/auth/register', {
+      await apiClient.post('/auth/register', {
         username,
         email,
         password
