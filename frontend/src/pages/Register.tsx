@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { authService } from '../api/auth';
+import { authApi } from '../api/auth';
+import { apiClient } from '../api/client';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -38,10 +39,14 @@ export default function Register() {
 
     try {
       // Register
-      await authService.register(username, email, password);
+      await apiClient.post('/api/auth/register', {
+        username,
+        email,
+        password
+      });
       
       // Auto-login after registration
-      const loginData = await authService.login(username, password);
+      const loginData = await authApi.login({ username, password });
       setAuthToken(loginData.access_token);
       
       // Redirect to dashboard
