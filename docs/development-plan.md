@@ -320,31 +320,49 @@
 
 ---
 
-## Phase 6: GitOps Integration (MOVED TO PHASE 1.3)
+## Phase 6: GitOps Integration
 
-### 6.1 Job Manifest Format (Part of Phase 1.3)
-- [ ] Design job manifest YAML schema
-- [ ] Create example job manifests
-- [ ] Document manifest structure
-- [ ] Build manifest parser and validator
+### 6.1 Job Manifest Format (Completed in Phase 1.3)
+- [x] Design job manifest YAML schema
+- [x] Create example job manifests
+- [x] Document manifest structure
+- [x] Build manifest parser and validator
 
-**Note**: This is now part of Phase 1.3. Agent reads manifests directly from Git.
+**Deliverable**: ✅ Job manifest specification complete with examples
 
 ### 6.2 Forgejo Repository Setup
-- [ ] Create example job repository structure
-- [ ] Set up Forgejo instance (or use existing)
-- [ ] Configure repository access for agents
-- [ ] Document Git workflow for job management
+- [x] Create example job repository structure
+- [x] Set up Forgejo instance on DigitalOcean droplet
+- [x] Deploy at https://git.crontopus.com with SSL
+- [x] Configure repository access for agents (SSH, token, basic auth)
+- [x] Document Git workflow for job management
+- [x] Create organization `crontopus` and repository `job-manifests`
+- [x] Initialize with production/staging directory structure
+- [x] Add example jobs: backup-database, cleanup-logs, api-health-check
 
-**Deliverable**: Job manifest repository is ready for agents to clone
+**Deliverable**: ✅ Job manifest repository ready at https://git.crontopus.com/crontopus/job-manifests
 
-### 6.2 Manifest Validation & CI
+**Infrastructure**:
+- Droplet: forgejo-crontopus (207.154.244.141) in fra1
+- Stack: Forgejo 1.21 + PostgreSQL 15 + Nginx + Certbot
+- SSL: Let's Encrypt with auto-renewal
+- Deployment: Fully automated via `infra/forgejo/deploy.sh`
+
+### 6.3 Agent Git Integration
+- [x] Update agent configuration with Git settings
+- [x] Document authentication methods (basic, token, SSH)
+- [x] Add security best practices guide
+- [x] Test Git sync functionality with Forgejo
+
+**Deliverable**: ✅ Agents configured to sync from Forgejo
+
+### 6.4 Manifest Validation & CI (Optional - Future)
 - [ ] Build manifest validation CLI tool
 - [ ] Create pre-commit hooks
 - [ ] Add CI pipeline example for manifest validation
 - [ ] Implement diff preview before sync
 
-**Deliverable**: Teams can use GitOps workflows for job management
+**Deliverable**: Teams can use GitOps workflows with validation (deferred to future phase)
 
 ---
 
@@ -505,11 +523,12 @@
 - ✅ Users can create jobs and receive check-ins from external schedulers
 - ✅ Basic test coverage
 
-### Beta Release - End of Phase 5
+### Beta Release - End of Phase 6
 - ✅ Agent-based scheduler management
-- ✅ Web console for all features
-- ✅ Alerting and notifications
+- ✅ Web console with dashboard, runs, agents
+- ✅ GitOps integration with Forgejo
 - ✅ Multi-tenant support
+- ⏸️ Alerting and notifications (Phase 4 - deferred)
 
 ### Production Release - End of Phase 8
 - ✅ GitOps integration

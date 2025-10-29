@@ -13,14 +13,19 @@ Crontopus is built around **GitOps principles** with a clean separation of conce
 - **Job Manifests** — YAML files in Git (Forgejo) define what jobs to run, when, and how
 - **Version Control** — All changes tracked via Git commits, PRs, and reviews
 - **Single Source of Truth** — Git is the authoritative source for job configurations
+- **Repository**: https://git.crontopus.com/crontopus/job-manifests (private)
 
 ### Runtime Components
 - **Backend (FastAPI)** — REST API for authentication, run history, metrics, and agent management (NOT for job CRUD)
+  - Production: https://crontopus.com/api
 - **Agent (Go)** — Pulls job manifests from Git, reconciles with native OS scheduler (cron/Task Scheduler). **Never executes jobs directly.**
 - **CLI** — Wrapper for API calls (auth, viewing run history, agent management) and Git operations (viewing jobs)
 - **Frontend (React)** — Web console displaying jobs from Git and run history from database
-- **Internal Admin** — Private dashboard for operators (tenants, plans, system health)
-- **Infra** — Dockerfiles and DigitalOcean App Platform specs for prod/dev deployments
+  - Production: https://crontopus.com
+- **Forgejo (Git)** — Self-hosted Git server for job manifests
+  - Production: https://git.crontopus.com
+- **Internal Admin** — Private dashboard for operators (tenants, plans, system health) [Planned]
+- **Infra** — Deployment scripts and configurations for all services
 
 ---
 
@@ -32,8 +37,12 @@ crontopus/
 ├── frontend/         # React/Tailwind web console
 ├── cli/              # Python CLI (API wrapper)
 ├── agent/            # Go agent (manages native schedulers)
-├── internal_admin/   # Internal admin dashboard
-├── infra/            # Dockerfiles & App Platform YAMLs
+├── internal_admin/   # Internal admin dashboard [Planned]
+├── infra/            # Deployment configurations
+│   ├── app-platform/ # Backend + Frontend deployment
+│   ├── forgejo/      # Git server deployment
+│   └── docker/       # Local development
+├── examples/         # Example job manifests
 └── docs/             # Architecture, API, and deployment guides
 ```
 
@@ -62,7 +71,16 @@ This ensures:
 
 ## 🚀 Quick Start
 
-### Backend Setup
+### Production Services
+
+- **Web Console**: https://crontopus.com
+- **API**: https://crontopus.com/api
+- **Git Server**: https://git.crontopus.com
+- **Job Manifests**: https://git.crontopus.com/crontopus/job-manifests
+
+### Local Development
+
+**Backend Setup:**
 
 ```bash
 cd backend
@@ -75,28 +93,50 @@ uvicorn crontopus_api.main:app --reload
 
 Backend will run at `http://localhost:8000`
 
-### CLI Setup
+**CLI Setup:**
 
 ```bash
 cd cli
 python3 -m venv venv
 ./venv/bin/pip install -e .
-```
 
-**Usage:**
-
-```bash
 # Authenticate
 ./venv/bin/python main.py auth login
 
-# Check current user
-./venv/bin/python main.py auth whoami
+# View runs
+./venv/bin/python main.py runs list
 
-# Logout
-./venv/bin/python main.py auth logout
+# Manage agents
+./venv/bin/python main.py agents list
 ```
 
-Token is saved to `~/.crontopus/token`
+**Agent Setup:**
+
+```bash
+cd agent
+go build -o build/crontopus-agent ./cmd/crontopus-agent
+
+# Configure agent
+cp config.example.yaml config.yaml
+# Edit config.yaml with your settings
+
+# Run agent
+./build/crontopus-agent --config config.yaml
+```
+
+**Frontend Setup:**
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend will run at `http://localhost:5173`
+
+### Deployment
+
+See [infra/README.md](infra/README.md) for deployment instructions.
 
 ---
 

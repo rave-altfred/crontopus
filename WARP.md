@@ -176,6 +176,33 @@ See `docs/` directory for detailed specifications:
 
 ## Configuration & Infrastructure
 
-- `infra/` — Contains Dockerfiles and DigitalOcean App Platform deployment specs
-- Root-level `docker-compose.yml` — Multi-service orchestration (currently empty)
-- Root-level `Makefile` — Project-wide build automation (currently empty)
+- `infra/` — Deployment configurations for all services
+  - `infra/app-platform/` — Backend + Frontend (App Platform)
+    - `deploy-app-platform.sh` — Automated deployment script
+    - `app.yaml` — App Platform specification (gitignored)
+  - `infra/forgejo/` — Git server (Droplet)
+    - `create-droplet.sh` — Create droplet
+    - `deploy.sh` — Deploy Forgejo with SSL
+    - `docker-compose.yml` — Forgejo + PostgreSQL + Nginx
+  - `infra/docker/` — Local development Docker configs
+- `examples/job-manifests/` — Example job manifest repository
+- Root-level `docker-compose.yml` — Local dev orchestration
+
+## Production Deployment
+
+**Services:**
+- Backend + Frontend: https://crontopus.com (App Platform)
+- Git Server: https://git.crontopus.com (Droplet)
+- Job Manifests: https://git.crontopus.com/crontopus/job-manifests
+
+**Deployment Commands:**
+
+```bash
+# Deploy backend + frontend
+cd infra/app-platform
+./deploy-app-platform.sh
+
+# Deploy/update Forgejo
+cd infra/forgejo
+./deploy.sh 207.154.244.141
+```
