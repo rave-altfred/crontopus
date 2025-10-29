@@ -1,6 +1,10 @@
 # Build stage
 FROM node:20-alpine AS build
 
+# Build argument for API URL
+ARG VITE_API_URL=https://crontopus.com/api
+ENV VITE_API_URL=$VITE_API_URL
+
 WORKDIR /app
 
 # Copy package files
