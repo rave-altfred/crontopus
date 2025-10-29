@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Job
+metadata:
+  name: test-backup
+  namespace: staging
+  labels:
+    team: platform
+    criticality: low
+    service: testing
+spec:
+  schedule: "0 4 * * *"  # Daily at 4 AM
+  command: "/usr/local/bin/test-backup.sh"
+  timeout: 300
+  retryPolicy: "OnFailure"
+  maxRetries: 1
+  environment:
+    - name: TEST_ENV
+      value: "staging"
+    - name: BACKUP_DESTINATION
+      value: "s3://staging-backups/test"
+  checkIn:
+    url: "https://crontopus.com/api/checkins"
+    secret: "${CHECKIN_SECRET_TEST_BACKUP}"

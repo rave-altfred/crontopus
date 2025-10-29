@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Job
+metadata:
+  name: backup-database
+  namespace: production
+  labels:
+    team: platform
+    criticality: high
+    service: database
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  command: "/usr/local/bin/backup-db.sh"
+  timeout: 600
+  retryPolicy: "OnFailure"
+  maxRetries: 2
+  environment:
+    - name: BACKUP_RETENTION_DAYS
+      value: "30"
+    - name: BACKUP_DESTINATION
+      value: "s3://backups/database"
+  checkIn:
+    url: "https://crontopus.com/api/checkins"
+    secret: "${CHECKIN_SECRET_BACKUP_DB}"

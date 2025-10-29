@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Job
+metadata:
+  name: cleanup-logs
+  namespace: production
+  labels:
+    team: platform
+    criticality: medium
+    service: system
+spec:
+  schedule: "0 3 * * 0"  # Weekly on Sunday at 3 AM
+  command: "/usr/local/bin/cleanup-logs.sh"
+  timeout: 300
+  retryPolicy: "OnFailure"
+  maxRetries: 1
+  environment:
+    - name: LOG_RETENTION_DAYS
+      value: "7"
+    - name: LOG_DIRECTORY
+      value: "/var/log/app"
+  checkIn:
+    url: "https://crontopus.com/api/checkins"
+    secret: "${CHECKIN_SECRET_CLEANUP_LOGS}"

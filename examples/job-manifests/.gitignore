@@ -1,0 +1,13 @@
+# Local testing
+*.local.yaml
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

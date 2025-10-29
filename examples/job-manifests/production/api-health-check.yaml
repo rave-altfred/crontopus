@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Job
+metadata:
+  name: api-health-check
+  namespace: production
+  labels:
+    team: backend
+    criticality: high
+    service: api
+spec:
+  schedule: "*/5 * * * *"  # Every 5 minutes
+  command: "/usr/local/bin/health-check.sh"
+  timeout: 30
+  retryPolicy: "Never"
+  maxRetries: 0
+  environment:
+    - name: API_ENDPOINT
+      value: "https://crontopus.com/api/health"
+    - name: EXPECTED_STATUS
+      value: "200"
+  checkIn:
+    url: "https://crontopus.com/api/checkins"
+    secret: "${CHECKIN_SECRET_HEALTH_CHECK}"
