@@ -1,7 +1,7 @@
-import { useState, FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import authService from '../api/services/auth';
+import { authService } from '../api/auth';
 
 export default function Register() {
   const [username, setUsername] = useState('');
