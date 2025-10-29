@@ -47,7 +47,7 @@ export default function Register() {
       
       // Auto-login after registration
       const loginData = await authApi.login({ username, password });
-      setAuthToken(loginData.access_token);
+      await setAuthToken(loginData.access_token);
       
       // Redirect to dashboard
       navigate('/');
