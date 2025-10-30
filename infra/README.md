@@ -45,19 +45,29 @@ See [app-platform/README.md](app-platform/README.md) for details.
 
 ### Forgejo Git Server
 
-Deploy Forgejo for job manifest storage:
+Deploy Forgejo for job manifest storage with persistent volume:
 
 ```bash
 cd infra/forgejo
-./create-droplet.sh          # Create droplet
-./deploy.sh <droplet_ip>     # Deploy Forgejo
+
+# One-time: Create persistent volume (10GB)
+./create-volume.sh
+
+# Create droplet (auto-attaches volume)
+./create-droplet.sh
+
+# Deploy Forgejo (auto-detects volume)
+./deploy.sh <droplet_ip>
 ```
 
 This deploys:
 - **Forgejo**: https://git.crontopus.com
-- **PostgreSQL**: Database backend
+- **PostgreSQL**: Database backend (local container)
 - **Nginx**: Reverse proxy with SSL
 - **Certbot**: Automatic SSL renewal
+- **Persistent Volume**: 10GB block storage for data durability
+
+**Droplet Recreation**: You can safely destroy and recreate droplets - volume persists independently.
 
 See [forgejo/README.md](forgejo/README.md) for details.
 

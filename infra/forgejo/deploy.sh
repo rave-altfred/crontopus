@@ -28,7 +28,17 @@ fi
 # Upload deployment files
 echo "📤 Uploading deployment files..."
 ssh "$DEPLOY_USER@$DROPLET_IP" "mkdir -p /opt/forgejo/secrets"
-scp docker-compose.yml nginx.conf nginx-init.conf .env "$DEPLOY_USER@$DROPLET_IP:/opt/forgejo/"
+
+# Use volume-based docker-compose if volume is mounted, otherwise use regular
+if ssh "$DEPLOY_USER@$DROPLET_IP" "mountpoint -q /mnt/forgejo-data" 2>/dev/null; then
+    echo "✅ Volume detected, using volume-based configuration"
+    scp docker-compose-volume.yml "$DEPLOY_USER@$DROPLET_IP:/opt/forgejo/docker-compose.yml"
+else
+    echo "⚠️  No volume detected, using Docker volumes"
+    scp docker-compose.yml "$DEPLOY_USER@$DROPLET_IP:/opt/forgejo/docker-compose.yml"
+fi
+
+scp nginx.conf nginx-init.conf .env "$DEPLOY_USER@$DROPLET_IP:/opt/forgejo/"
 scp secrets/postgres_password.txt "$DEPLOY_USER@$DROPLET_IP:/opt/forgejo/secrets/"
 ssh "$DEPLOY_USER@$DROPLET_IP" "chmod 600 /opt/forgejo/secrets/postgres_password.txt"
 
@@ -106,6 +116,16 @@ ENDSSH
 
 echo ""
 echo "✅ Forgejo deployed successfully!"
+echo ""
+
+# Check if volume is in use
+if ssh "$DEPLOY_USER@$DROPLET_IP" "mountpoint -q /mnt/forgejo-data" 2>/dev/null; then
+    echo "💾 Storage: Using DigitalOcean Volume at /mnt/forgejo-data"
+    ssh "$DEPLOY_USER@$DROPLET_IP" "df -h /mnt/forgejo-data"
+else
+    echo "💾 Storage: Using Docker volumes"
+fi
+
 echo ""
 echo "Next steps:"
 echo "1. Point DNS A record for git.crontopus.com to $DROPLET_IP"

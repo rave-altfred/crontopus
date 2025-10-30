@@ -363,7 +363,24 @@
 
 **Deliverable**: ✅ Agents configured to sync from Forgejo
 
-### 6.4 Manifest Validation & CI (Optional - Future)
+### 6.4 Forgejo Persistent Storage
+- [x] Create DigitalOcean Volume for Forgejo data (10GB block storage)
+- [x] Attach volume to Forgejo droplet
+- [x] Mount volume at `/mnt/forgejo-data`
+- [x] Update docker-compose.yml to use volume mount paths
+- [x] Update deployment scripts to handle volume setup
+- [x] Document backup and restore procedures
+- [x] Add droplet lifecycle management (destroy/recreate with volume preservation)
+
+**Deliverable**: Forgejo data persisted on DigitalOcean Volume with backup strategy
+
+**Benefits**:
+- Data survives droplet replacement
+- Easy snapshots for backups
+- Can resize volume independently
+- Better disaster recovery
+
+### 6.5 Manifest Validation & CI (Optional - Future)
 - [ ] Build manifest validation CLI tool
 - [ ] Create pre-commit hooks
 - [ ] Add CI pipeline example for manifest validation

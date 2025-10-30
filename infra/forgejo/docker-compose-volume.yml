@@ -1,0 +1,91 @@
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:1.21
+    container_name: forgejo
+    restart: unless-stopped
+    networks:
+      - forgejo
+    volumes:
+      - /mnt/forgejo-data/forgejo:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "2222:22"
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - FORGEJO__database__DB_TYPE=postgres
+      - FORGEJO__database__HOST=db:5432
+      - FORGEJO__database__NAME=forgejo
+      - FORGEJO__database__USER=forgejo
+      - FORGEJO__server__DOMAIN=${DOMAIN:-git.crontopus.com}
+      - FORGEJO__server__ROOT_URL=https://${DOMAIN:-git.crontopus.com}/
+      - FORGEJO__server__SSH_DOMAIN=${DOMAIN:-git.crontopus.com}
+      - FORGEJO__server__SSH_PORT=2222
+      - FORGEJO__security__INSTALL_LOCK=true
+      - FORGEJO__service__DISABLE_REGISTRATION=false
+      - FORGEJO__service__REQUIRE_SIGNIN_VIEW=false
+    secrets:
+      - postgres_password
+    command: sh -c 'export FORGEJO__database__PASSWD=$$(cat /run/secrets/postgres_password) && /usr/bin/entrypoint'
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: postgres:15-alpine
+    container_name: forgejo_db
+    restart: unless-stopped
+    networks:
+      - forgejo
+    volumes:
+      - /mnt/forgejo-data/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=forgejo
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+      - POSTGRES_DB=forgejo
+    secrets:
+      - postgres_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forgejo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    container_name: forgejo_nginx
+    restart: unless-stopped
+    networks:
+      - forgejo
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /mnt/forgejo-data/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - forgejo
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  certbot:
+    image: certbot/certbot
+    container_name: forgejo_certbot
+    restart: unless-stopped
+    volumes:
+      - /mnt/forgejo-data/letsencrypt:/etc/letsencrypt
+      - /mnt/forgejo-data/certbot-www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  forgejo:
+    driver: bridge
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password.txt
