@@ -100,6 +100,14 @@ HOOK
     else
         echo "SSL certificate already exists"
     fi
+    
+    # If using volume, sync certificates to volume
+    if mountpoint -q /mnt/forgejo-data 2>/dev/null; then
+        echo "📋 Syncing SSL certificates to volume..."
+        mkdir -p /mnt/forgejo-data/letsencrypt
+        cp -av /etc/letsencrypt/* /mnt/forgejo-data/letsencrypt/
+        echo "✅ Certificates synced to volume"
+    fi
 ENDSSH
 
 # Start all services
