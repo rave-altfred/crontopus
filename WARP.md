@@ -186,10 +186,13 @@ See `docs/` directory for detailed specifications:
   - `infra/app-platform/` — Backend + Frontend (App Platform)
     - `deploy-app-platform.sh` — Automated deployment script
     - `app.yaml` — App Platform specification (gitignored)
-  - `infra/forgejo/` — Git server (Droplet)
-    - `create-droplet.sh` — Create droplet
-    - `deploy.sh` — Deploy Forgejo with SSL
-    - `docker-compose.yml` — Forgejo + PostgreSQL + Nginx
+  - `infra/forgejo/` — Git server (Droplet with persistent volume)
+    - `create-volume.sh` — Create persistent DigitalOcean Volume (one-time)
+    - `create-droplet.sh` — Create droplet with auto-mount
+    - `destroy-droplet.sh` — Safely destroy droplet (preserves volume)
+    - `deploy.sh` — Deploy Forgejo with SSL (volume-aware)
+    - `docker-compose.yml` — Forgejo + PostgreSQL + Nginx (Docker volumes)
+    - `docker-compose-volume.yml` — Volume-based configuration
   - `infra/docker/` — Local development Docker configs
 - `examples/job-manifests/` — Example job manifest repository
 - Root-level `docker-compose.yml` — Local dev orchestration
@@ -198,7 +201,7 @@ See `docs/` directory for detailed specifications:
 
 **Services:**
 - Backend + Frontend: https://crontopus.com (App Platform)
-- Git Server: https://git.crontopus.com (Droplet)
+- Git Server: https://git.crontopus.com (Droplet + Volume)
 - Job Manifests: https://git.crontopus.com/crontopus/job-manifests
 
 **Deployment Commands:**
@@ -212,12 +215,16 @@ cd infra/app-platform
 doctl apps update 934e7b77-38da-49bb-bfcf-0ab6d7b8fa2f --spec app.yaml
 doctl apps create-deployment 934e7b77-38da-49bb-bfcf-0ab6d7b8fa2f --wait
 
-# Deploy/update Forgejo
+# Deploy/recreate Forgejo with persistent volume
 cd infra/forgejo
-./deploy.sh 207.154.244.141
+./create-volume.sh         # One-time: create persistent volume
+./destroy-droplet.sh       # Destroy old droplet (preserves volume)
+./create-droplet.sh        # Create new droplet with volume
+./deploy.sh <droplet_ip>   # Deploy Forgejo
 ```
 
 **Important Notes:**
 - Database migrations run automatically on backend startup via `start.sh`
 - CORS is configured at App Platform level using service-level `routes` (not `ingress`)
 - Frontend API URL is set at build time via `VITE_API_URL` build arg in Dockerfile
+- Forgejo data persists on DigitalOcean Volume, survives droplet recreation

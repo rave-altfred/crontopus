@@ -350,10 +350,12 @@
 **Deliverable**: ✅ Job manifest repository ready at https://git.crontopus.com/crontopus/job-manifests
 
 **Infrastructure**:
-- Droplet: forgejo-crontopus (207.154.244.141) in fra1
-- Stack: Forgejo 1.21 + PostgreSQL 15 + Nginx + Certbot
+- Droplet: forgejo-crontopus (139.59.214.80) in fra1
+- Volume: forgejo-data-volume (10GB block storage)
+- Stack: Forgejo 1.21 + PostgreSQL 15 (containerized) + Nginx + Certbot
 - SSL: Let's Encrypt with auto-renewal
-- Deployment: Fully automated via `infra/forgejo/deploy.sh`
+- Storage: Persistent volume at `/mnt/forgejo-data`
+- Deployment: Fully automated via `infra/forgejo/deploy.sh` (volume-aware)
 
 ### 6.3 Agent Git Integration
 - [x] Update agent configuration with Git settings
@@ -372,13 +374,20 @@
 - [x] Document backup and restore procedures
 - [x] Add droplet lifecycle management (destroy/recreate with volume preservation)
 
-**Deliverable**: Forgejo data persisted on DigitalOcean Volume with backup strategy
+**Deliverable**: ✅ Forgejo data persisted on DigitalOcean Volume with backup strategy
 
 **Benefits**:
 - Data survives droplet replacement
 - Easy snapshots for backups
 - Can resize volume independently
 - Better disaster recovery
+
+**Implementation**:
+- Volume: `forgejo-data-volume` (10GB, fra1)
+- New droplet: 139.59.214.80
+- Auto-mount on boot via user-data script
+- SSL certificates synced to volume
+- Scripts: create-volume.sh, destroy-droplet.sh, updated deploy.sh
 
 ### 6.5 Manifest Validation & CI (Optional - Future)
 - [ ] Build manifest validation CLI tool
