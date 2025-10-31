@@ -77,6 +77,24 @@ services:
       - key: LOG_LEVEL
         scope: RUN_TIME
         value: "info"
+      
+      - key: ENVIRONMENT
+        scope: RUN_TIME
+        value: "production"
+      
+      # Forgejo Integration (for fetching job manifests)
+      - key: FORGEJO_URL
+        scope: RUN_TIME
+        value: "https://git.crontopus.com"
+      
+      - key: FORGEJO_USERNAME
+        scope: RUN_TIME
+        value: "YOUR_FORGEJO_USERNAME"
+      
+      - key: FORGEJO_TOKEN
+        scope: RUN_TIME
+        type: SECRET
+        value: "YOUR_FORGEJO_ACCESS_TOKEN"
     
     # Routes
     routes:
