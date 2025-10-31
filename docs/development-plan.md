@@ -389,7 +389,27 @@
 - SSL certificates synced to volume
 - Scripts: create-volume.sh, destroy-droplet.sh, updated deploy.sh
 
-### 6.5 Manifest Validation & CI (Optional - Future)
+### 6.5 Frontend Jobs Integration
+- [x] Create jobs API client (TypeScript interfaces)
+- [x] Build Jobs list page with environment filters
+- [x] Create Job detail page with YAML viewer
+- [x] Add ManifestViewer component with syntax highlighting (react-syntax-highlighter)
+- [x] Add Jobs navigation link to sidebar
+- [x] Integrate with run history (show recent runs per job)
+- [x] Add "Edit in Git" button linking to Forgejo
+- [x] Display job metadata (schedule, labels, status, environment)
+
+**Deliverable**: ✅ Users can view and manage jobs through web UI
+
+**Features**:
+- View all job manifests from Git
+- Filter by environment (production/staging)
+- View YAML with syntax highlighting and copy button
+- See recent runs for each job
+- Navigate to Forgejo for editing
+- Responsive design matching existing pages
+
+### 6.6 Manifest Validation & CI (Optional - Future)
 - [ ] Build manifest validation CLI tool
 - [ ] Create pre-commit hooks
 - [ ] Add CI pipeline example for manifest validation
