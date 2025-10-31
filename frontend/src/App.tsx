@@ -7,6 +7,8 @@ import Register from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { Agents } from './pages/Agents';
 import { Runs } from './pages/Runs';
+import { Jobs } from './pages/Jobs';
+import { JobDetail } from './pages/JobDetail';
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="agents" element={<Agents />} />
             <Route path="runs" element={<Runs />} />
+            <Route path="jobs" element={<Jobs />} />
+            <Route path="jobs/*" element={<JobDetail />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

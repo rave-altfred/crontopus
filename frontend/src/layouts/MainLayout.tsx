@@ -44,6 +44,14 @@ export const MainLayout = () => {
                 </li>
                 <li>
                   <Link
+                    to="/jobs"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"
+                  >
+                    Jobs
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/runs"
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"
                   >
