@@ -9,6 +9,7 @@ import { Agents } from './pages/Agents';
 import { Runs } from './pages/Runs';
 import { Jobs } from './pages/Jobs';
 import { JobDetail } from './pages/JobDetail';
+import { JobNew } from './pages/JobNew';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             <Route path="agents" element={<Agents />} />
             <Route path="runs" element={<Runs />} />
             <Route path="jobs" element={<Jobs />} />
+            <Route path="jobs/new" element={<JobNew />} />
             <Route path="jobs/*" element={<JobDetail />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

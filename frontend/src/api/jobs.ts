@@ -52,6 +52,19 @@ export interface JobDetailResponse {
   name?: string;
 }
 
+export interface JobCreatePayload {
+  name: string;
+  namespace: string;
+  schedule: string;
+  command: string;
+  args?: string[];
+  env?: Record<string, string>;
+  enabled?: boolean;
+  paused?: boolean;
+  timezone?: string;
+  labels?: Record<string, string>;
+}
+
 export const jobsApi = {
   list: async (namespace?: string): Promise<JobsListResponse> => {
     const params = namespace ? { namespace } : {};
@@ -66,6 +79,11 @@ export const jobsApi = {
 
   getByName: async (namespace: string, jobName: string): Promise<JobDetailResponse> => {
     const response = await apiClient.get(`/jobs/${namespace}/${jobName}`);
+    return response.data;
+  },
+
+  create: async (job: JobCreatePayload): Promise<any> => {
+    const response = await apiClient.post('/jobs', job);
     return response.data;
   },
 };
