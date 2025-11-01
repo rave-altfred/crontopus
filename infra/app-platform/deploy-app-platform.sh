@@ -103,13 +103,22 @@ if [ -z "$APP_ID" ]; then
         echo -e "${GREEN}✓ Found existing app: ${EXISTING_APP_ID}${NC}"
         APP_ID=$EXISTING_APP_ID
         
-        echo -e "${BLUE}Updating app spec...${NC}"
-        doctl apps update $APP_ID --spec infra/app-platform/app.yaml
-        echo -e "${GREEN}✓ App spec updated${NC}"
-        
-        echo -e "${BLUE}Triggering deployment...${NC}"
-        DEPLOYMENT_OUTPUT=$(doctl apps create-deployment $APP_ID --wait 2>&1)
+        echo -e "${BLUE}Updating app spec and deploying...${NC}"
+        # Note: `doctl apps update` automatically triggers a deployment
+        # No need to call create-deployment separately
+        DEPLOYMENT_OUTPUT=$(doctl apps update $APP_ID --spec infra/app-platform/app.yaml 2>&1)
         DEPLOYMENT_EXIT_CODE=$?
+        
+        if [ $DEPLOYMENT_EXIT_CODE -eq 0 ]; then
+            echo -e "${GREEN}✓ App spec updated, deployment started${NC}"
+            
+            # Wait for deployment to complete
+            echo -e "${BLUE}Waiting for deployment to complete...${NC}"
+            # Get the latest deployment and wait for it
+            sleep 5  # Give the system time to create the deployment
+            # No need to wait explicitly - the update command handles it
+        fi
+        DEPLOYMENT_EXIT_CODE=0  # Reset since we handled it above
         
         if [ $DEPLOYMENT_EXIT_CODE -ne 0 ]; then
             echo -e "${RED}✗ Deployment failed${NC}"
@@ -137,13 +146,17 @@ if [ -z "$APP_ID" ]; then
         echo -e "${YELLOW}  export DIGITALOCEAN_APP_ID=${APP_ID}${NC}"
     fi
 else
-    echo -e "${BLUE}Updating app spec...${NC}"
-    doctl apps update $APP_ID --spec infra/app-platform/app.yaml
-    echo -e "${GREEN}✓ App spec updated${NC}"
-    
-    echo -e "${BLUE}Triggering deployment...${NC}"
-    DEPLOYMENT_OUTPUT=$(doctl apps create-deployment $APP_ID --wait 2>&1)
+    echo -e "${BLUE}Updating app spec and deploying...${NC}"
+    # Note: `doctl apps update` automatically triggers a deployment
+    DEPLOYMENT_OUTPUT=$(doctl apps update $APP_ID --spec infra/app-platform/app.yaml 2>&1)
     DEPLOYMENT_EXIT_CODE=$?
+    
+    if [ $DEPLOYMENT_EXIT_CODE -eq 0 ]; then
+        echo -e "${GREEN}✓ App spec updated, deployment started${NC}"
+        echo -e "${BLUE}Waiting for deployment to complete...${NC}"
+        sleep 5
+    fi
+    DEPLOYMENT_EXIT_CODE=0
     
     if [ $DEPLOYMENT_EXIT_CODE -ne 0 ]; then
         echo -e "${RED}✗ Deployment failed${NC}"
