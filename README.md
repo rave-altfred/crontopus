@@ -14,14 +14,17 @@ Crontopus is built around **GitOps principles** with a clean separation of conce
 - **Version Control** — All changes tracked via Git commits, PRs, and reviews
 - **Single Source of Truth** — Git is the authoritative source for job configurations
 - **Repository**: https://git.crontopus.com/crontopus/job-manifests (private)
+- **UI Management** — Users create/edit/delete jobs via UI, which commits to Git behind the scenes
 
 ### Runtime Components
-- **Backend (FastAPI)** — REST API for authentication, run history, metrics, and agent management (NOT for job CRUD)
+- **Backend (FastAPI)** — REST API for authentication, run history, metrics, agent management, and job CRUD (commits to Git)
   - Production: https://crontopus.com/api
+  - Job endpoints: POST/PUT/DELETE `/api/jobs` (commits YAML manifests to Forgejo)
 - **Agent (Go)** — Pulls job manifests from Git, reconciles with native OS scheduler (cron/Task Scheduler). **Never executes jobs directly.**
 - **CLI** — Wrapper for API calls (auth, viewing run history, agent management) and Git operations (viewing jobs)
-- **Frontend (React)** — Web console displaying jobs from Git and run history from database
+- **Frontend (React)** — Web console for creating/editing/viewing jobs and run history
   - Production: https://crontopus.com
+  - Jobs are managed via UI forms that commit to Git via backend API
 - **Forgejo (Git)** — Self-hosted Git server for job manifests
   - Production: https://git.crontopus.com
 - **Internal Admin** — Private dashboard for operators (tenants, plans, system health) [Planned]

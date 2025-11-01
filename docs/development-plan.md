@@ -409,7 +409,43 @@
 - Navigate to Forgejo for editing
 - Responsive design matching existing pages
 
-### 6.6 Manifest Validation & CI (Optional - Future)
+### 6.6 Job Management UI (GitOps + UI)
+- [x] Extend ForgejoClient with Git write operations
+  - `create_or_update_file()` - Commit new/updated files to Git
+  - `delete_file()` - Remove files from Git repository
+  - Base64 encoding and author attribution
+- [x] Add job CRUD endpoints to backend
+  - `POST /api/jobs` - Create new job (commits YAML to Git)
+  - `PUT /api/jobs/{namespace}/{job_name}` - Update existing job
+  - `DELETE /api/jobs/{namespace}/{job_name}` - Delete job from Git
+  - Pydantic models: JobCreateRequest, JobUpdateRequest
+- [ ] Create JobForm component in frontend
+  - Form fields: name, namespace, schedule, command, args, env, labels
+  - Cron expression validation/helper
+  - Error handling and validation feedback
+- [ ] Add job creation page (`/jobs/new`)
+  - Use JobForm component
+  - POST to backend on submit
+  - Success message and redirect to job detail
+- [ ] Add edit functionality to job detail page
+  - Edit button with form pre-filled from current manifest
+  - PUT updated data to backend
+  - Show commit information on success
+- [ ] Add delete functionality
+  - Delete button with confirmation modal
+  - DELETE request to backend
+  - Redirect to jobs list after successful deletion
+- [ ] Test end-to-end workflow
+  - Create job via UI → Verify commit in Forgejo
+  - Edit job → Verify Git history
+  - Delete job → Verify removal from Git
+  - Agent sync → Verify scheduler entries updated
+
+**Deliverable**: Users can create, edit, and delete jobs through UI while maintaining GitOps architecture
+
+**Implementation Status**: Backend complete (ForgejoClient + API endpoints), frontend in progress
+
+### 6.7 Manifest Validation & CI (Optional - Future)
 - [ ] Build manifest validation CLI tool
 - [ ] Create pre-commit hooks
 - [ ] Add CI pipeline example for manifest validation

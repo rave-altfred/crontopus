@@ -30,6 +30,8 @@ Crontopus is a **monorepo** for an API-first job scheduling and monitoring platf
 ## Key Design Principles
 
 1. **GitOps-First**: Job definitions live in Git (Forgejo) as YAML manifests, NOT in database
+   - Users create/edit/delete jobs via UI, which commits to Git via backend API
+   - Git remains single source of truth
 2. **Agent as Reconciler**: Agent pulls from Git and manages scheduler state, does NOT execute jobs
 3. **Ping-Based Check-ins**: Jobs report results via HTTP POST to control plane
 4. **Multi-Tenant**: Isolated tenant data and policies
@@ -44,8 +46,8 @@ Crontopus is a **monorepo** for an API-first job scheduling and monitoring platf
    │   - production/            │
    │   - staging/               │
    └──────────────┤──────────────┘
-                        │ git pull
-                        ▼
+                        │ git pull      ▲ git commit
+                        ▼                       │
  ┌─────────────┐   ┌──────────────┐   ┌─────────────┐
  │   CLI       │──▶│   Backend    │◀──│   Agent     │
  │   (Py)      │   │   (FastAPI)  │   │   (Go)      │
@@ -60,8 +62,10 @@ Crontopus is a **monorepo** for an API-first job scheduling and monitoring platf
 
 Key:
 - Agent pulls job manifests from Git (NOT from Backend API)
+- Backend commits job changes to Git when users create/edit/delete via UI
 - Backend stores run history, metrics, auth (NOT job definitions)
 - CLI/Frontend read jobs from Git via Forgejo API
+- CLI/Frontend write jobs via Backend API → Git
 ```
 
 ## Development Commands
@@ -155,9 +159,17 @@ cd internal_admin
 When adding new endpoints to backend:
 - Routes go in `backend/crontopus_api/routes/`
 - Models (DB tables) go in `backend/crontopus_api/models/`
-- Pydantic schemas go in `backend/crontopus_api/schemas/`
+- Pydantic schemas go in `backend/crontopus_api/schemas/` or inline in routes for simple cases
 - Business logic goes in `backend/crontopus_api/services/`
 - Background tasks go in `backend/crontopus_api/workers/`
+
+### Job Management
+- Job CRUD operations go through backend API endpoints:
+  - `POST /api/jobs` - Create new job (commits YAML to Git)
+  - `PUT /api/jobs/{namespace}/{job_name}` - Update existing job
+  - `DELETE /api/jobs/{namespace}/{job_name}` - Delete job from Git
+- Backend uses `ForgejoClient` service to commit changes to Git
+- All operations maintain GitOps architecture (Git as source of truth)
 
 ### CLI Development
 - CLI is a thin wrapper around API endpoints
