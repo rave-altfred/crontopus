@@ -2,8 +2,10 @@
 Job manifest routes - for viewing jobs from Forgejo.
 Note: Job definitions live in Git, not in database.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, Body
+from typing import Optional, Dict, Any
+from pydantic import BaseModel, Field
+import yaml
 
 from ..security.dependencies import get_current_user
 from ..models.user import User
@@ -12,6 +14,32 @@ from ..config import settings
 
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
+
+
+class JobCreateRequest(BaseModel):
+    """Request body for creating a job."""
+    name: str = Field(..., description="Job name (will be used as filename)")
+    namespace: str = Field(..., description="Namespace (production or staging)")
+    schedule: str = Field(..., description="Cron expression")
+    command: str = Field(..., description="Command to execute")
+    args: Optional[list[str]] = Field(None, description="Command arguments")
+    env: Optional[Dict[str, str]] = Field(None, description="Environment variables")
+    enabled: bool = Field(True, description="Whether job is enabled")
+    paused: bool = Field(False, description="Whether job is paused")
+    timezone: Optional[str] = Field(None, description="Timezone for schedule")
+    labels: Optional[Dict[str, str]] = Field(None, description="Job labels")
+    
+
+class JobUpdateRequest(BaseModel):
+    """Request body for updating a job."""
+    schedule: Optional[str] = None
+    command: Optional[str] = None
+    args: Optional[list[str]] = None
+    env: Optional[Dict[str, str]] = None
+    enabled: Optional[bool] = None
+    paused: Optional[bool] = None
+    timezone: Optional[str] = None
+    labels: Optional[Dict[str, str]] = None
 
 
 def get_forgejo_client() -> ForgejoClient:
@@ -85,7 +113,169 @@ async def get_job(
             "path": job_path
         }
     except Exception as e:
-        raise HTTPException(status_code=404, detail=f"Job not found: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("", status_code=201)
+async def create_job(
+    job: JobCreateRequest,
+    forgejo: ForgejoClient = Depends(get_forgejo_client),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Create a new job by committing a manifest to Git.
+    
+    The job will be created in the specified namespace directory.
+    """
+    try:
+        # Build the manifest
+        manifest = {
+            "apiVersion": "crontopus.io/v1",
+            "kind": "Job",
+            "metadata": {
+                "name": job.name,
+                "namespace": job.namespace,
+            },
+            "spec": {
+                "schedule": job.schedule,
+                "command": job.command,
+                "enabled": job.enabled,
+                "paused": job.paused,
+            },
+        }
+        
+        # Add optional fields
+        if job.args:
+            manifest["spec"]["args"] = job.args
+        if job.env:
+            manifest["spec"]["env"] = job.env
+        if job.timezone:
+            manifest["spec"]["timezone"] = job.timezone
+        if job.labels:
+            manifest["metadata"]["labels"] = job.labels
+            
+        # Convert to YAML
+        yaml_content = yaml.dump(manifest, sort_keys=False, default_flow_style=False)
+        
+        # Construct file path
+        file_path = f"{job.namespace}/{job.name}.yaml"
+        
+        # Commit to Git
+        result = await forgejo.create_or_update_file(
+            file_path=file_path,
+            content=yaml_content,
+            message=f"Create job {job.name} in {job.namespace}",
+            author_name=current_user.get("username", "unknown"),
+            author_email=current_user.get("email", "unknown@crontopus.io"),
+        )
+        
+        return {
+            "message": "Job created successfully",
+            "path": file_path,
+            "commit": result.get("commit"),
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/{namespace}/{job_name}")
+async def update_job(
+    namespace: str,
+    job_name: str,
+    updates: JobUpdateRequest,
+    forgejo: ForgejoClient = Depends(get_forgejo_client),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Update an existing job by modifying its manifest in Git.
+    
+    Only the fields provided in the request will be updated.
+    """
+    try:
+        # Construct file path
+        file_path = f"{namespace}/{job_name}.yaml"
+        
+        # Fetch current manifest
+        manifest_data = await forgejo.get_job_manifest(file_path)
+        if not manifest_data:
+            raise HTTPException(status_code=404, detail="Job not found")
+            
+        # Parse YAML
+        manifest = yaml.safe_load(manifest_data["content"])
+        
+        # Update fields (only if provided)
+        if updates.schedule is not None:
+            manifest["spec"]["schedule"] = updates.schedule
+        if updates.command is not None:
+            manifest["spec"]["command"] = updates.command
+        if updates.args is not None:
+            manifest["spec"]["args"] = updates.args
+        if updates.env is not None:
+            manifest["spec"]["env"] = updates.env
+        if updates.enabled is not None:
+            manifest["spec"]["enabled"] = updates.enabled
+        if updates.paused is not None:
+            manifest["spec"]["paused"] = updates.paused
+        if updates.timezone is not None:
+            manifest["spec"]["timezone"] = updates.timezone
+        if updates.labels is not None:
+            manifest["metadata"]["labels"] = updates.labels
+            
+        # Convert to YAML
+        yaml_content = yaml.dump(manifest, sort_keys=False, default_flow_style=False)
+        
+        # Commit to Git
+        result = await forgejo.create_or_update_file(
+            file_path=file_path,
+            content=yaml_content,
+            message=f"Update job {job_name} in {namespace}",
+            author_name=current_user.get("username", "unknown"),
+            author_email=current_user.get("email", "unknown@crontopus.io"),
+        )
+        
+        return {
+            "message": "Job updated successfully",
+            "path": file_path,
+            "commit": result.get("commit"),
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/{namespace}/{job_name}")
+async def delete_job(
+    namespace: str,
+    job_name: str,
+    forgejo: ForgejoClient = Depends(get_forgejo_client),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Delete a job by removing its manifest from Git.
+    """
+    try:
+        # Construct file path
+        file_path = f"{namespace}/{job_name}.yaml"
+        
+        # Delete from Git
+        result = await forgejo.delete_file(
+            file_path=file_path,
+            message=f"Delete job {job_name} from {namespace}",
+            author_name=current_user.get("username", "unknown"),
+            author_email=current_user.get("email", "unknown@crontopus.io"),
+        )
+        
+        return {
+            "message": "Job deleted successfully",
+            "path": file_path,
+            "commit": result.get("commit"),
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{namespace}/{job_name}")

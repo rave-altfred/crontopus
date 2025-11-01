@@ -184,3 +184,126 @@ class ForgejoClient:
             return False, "Missing spec.command"
         
         return True, None
+    
+    async def create_or_update_file(
+        self,
+        owner: str,
+        repo: str,
+        file_path: str,
+        content: str,
+        message: str,
+        branch: str = 'main',
+        author_name: str = 'Crontopus',
+        author_email: str = 'bot@crontopus.com'
+    ) -> Dict[str, Any]:
+        """
+        Create or update a file in the repository.
+        
+        Args:
+            owner: Repository owner
+            repo: Repository name
+            file_path: Path to file in repository
+            content: File content (will be base64 encoded)
+            message: Commit message
+            branch: Branch name
+            author_name: Commit author name
+            author_email: Commit author email
+            
+        Returns:
+            Response from Forgejo API
+        """
+        import base64
+        
+        url = f'{self.base_url}/api/v1/repos/{owner}/{repo}/contents/{file_path}'
+        
+        # Check if file exists to get SHA (required for updates)
+        sha = None
+        try:
+            existing = await self.get_repository_tree(owner, repo, branch, file_path)
+            if existing and len(existing) > 0:
+                sha = existing[0].get('sha')
+        except:
+            pass  # File doesn't exist, that's ok for create
+        
+        # Encode content to base64
+        content_encoded = base64.b64encode(content.encode('utf-8')).decode('utf-8')
+        
+        payload = {
+            'content': content_encoded,
+            'message': message,
+            'branch': branch,
+            'author': {
+                'name': author_name,
+                'email': author_email
+            }
+        }
+        
+        # Include SHA for updates
+        if sha:
+            payload['sha'] = sha
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                url if not sha else url,
+                headers=self.headers,
+                json=payload,
+                timeout=30.0
+            )
+            response.raise_for_status()
+            return response.json()
+    
+    async def delete_file(
+        self,
+        owner: str,
+        repo: str,
+        file_path: str,
+        message: str,
+        branch: str = 'main',
+        author_name: str = 'Crontopus',
+        author_email: str = 'bot@crontopus.com'
+    ) -> Dict[str, Any]:
+        """
+        Delete a file from the repository.
+        
+        Args:
+            owner: Repository owner
+            repo: Repository name
+            file_path: Path to file to delete
+            message: Commit message
+            branch: Branch name
+            author_name: Commit author name
+            author_email: Commit author email
+            
+        Returns:
+            Response from Forgejo API
+        """
+        # Get current file SHA (required for delete)
+        files = await self.get_repository_tree(owner, repo, branch, file_path)
+        if not files or len(files) == 0:
+            raise ValueError(f"File not found: {file_path}")
+        
+        sha = files[0].get('sha')
+        if not sha:
+            raise ValueError(f"Could not get SHA for file: {file_path}")
+        
+        url = f'{self.base_url}/api/v1/repos/{owner}/{repo}/contents/{file_path}'
+        
+        payload = {
+            'message': message,
+            'branch': branch,
+            'sha': sha,
+            'author': {
+                'name': author_name,
+                'email': author_email
+            }
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(
+                url,
+                headers=self.headers,
+                json=payload,
+                timeout=30.0
+            )
+            response.raise_for_status()
+            return response.json()
