@@ -29,16 +29,24 @@ export const Jobs = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">Job Manifests</h2>
-        {repository && (
-          <a
-            href={repository}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-600 hover:text-blue-800"
+        <div className="flex items-center space-x-4">
+          <Link
+            to="/jobs/new"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
           >
-            View in Git →
-          </a>
-        )}
+            + New Job
+          </Link>
+          {repository && (
+            <a
+              href={repository}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              View in Git →
+            </a>
+          )}
+        </div>
       </div>
 
       <div className="flex space-x-2">
