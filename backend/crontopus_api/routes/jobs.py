@@ -82,38 +82,7 @@ async def list_jobs(
         raise HTTPException(status_code=500, detail=f"Failed to fetch jobs from Git: {str(e)}")
 
 
-@router.get("/{job_path:path}")
-async def get_job(
-    job_path: str,
-    current_user: User = Depends(get_current_user),
-    forgejo: ForgejoClient = Depends(get_forgejo_client)
-):
-    """
-    Get a specific job manifest by path.
-    
-    Example paths:
-    - production/backup-database.yaml
-    - staging/test-job.yaml
-    """
-    try:
-        manifest = await forgejo.get_job_manifest(
-            owner="crontopus",
-            repo="job-manifests",
-            file_path=job_path
-        )
-        
-        # Validate manifest
-        is_valid, error = await forgejo.validate_manifest(manifest)
-        
-        return {
-            "manifest": manifest,
-            "valid": is_valid,
-            "error": error,
-            "source": "git",
-            "path": job_path
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# Removed catch-all route - use /jobs/{namespace}/{job_name} instead
 
 
 @router.post("", status_code=201)
