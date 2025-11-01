@@ -55,17 +55,17 @@ export interface JobDetailResponse {
 export const jobsApi = {
   list: async (namespace?: string): Promise<JobsListResponse> => {
     const params = namespace ? { namespace } : {};
-    const response = await apiClient.get('/api/jobs', { params });
+    const response = await apiClient.get('/jobs', { params });
     return response.data;
   },
 
   get: async (jobPath: string): Promise<JobDetailResponse> => {
-    const response = await apiClient.get(`/api/jobs/${jobPath}`);
+    const response = await apiClient.get(`/jobs/${jobPath}`);
     return response.data;
   },
 
   getByName: async (namespace: string, jobName: string): Promise<JobDetailResponse> => {
-    const response = await apiClient.get(`/api/jobs/${namespace}/${jobName}`);
+    const response = await apiClient.get(`/jobs/${namespace}/${jobName}`);
     return response.data;
   },
 };
