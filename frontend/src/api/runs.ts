@@ -14,17 +14,17 @@ export interface JobRun {
 
 export const runsApi = {
   list: async (params?: { job_name?: string; page?: number; page_size?: number }): Promise<JobRun[]> => {
-    const response = await apiClient.get('/api/runs', { params });
+    const response = await apiClient.get('/runs', { params });
     return response.data;
   },
 
   get: async (id: string): Promise<JobRun> => {
-    const response = await apiClient.get(`/api/runs/${id}`);
+    const response = await apiClient.get(`/runs/${id}`);
     return response.data;
   },
 
   listByJob: async (jobName: string): Promise<JobRun[]> => {
-    const response = await apiClient.get(`/api/runs/job/${jobName}`);
+    const response = await apiClient.get(`/runs/job/${jobName}`);
     return response.data;
   },
 };
