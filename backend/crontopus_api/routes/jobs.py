@@ -120,7 +120,7 @@ async def get_job(
 async def create_job(
     job: JobCreateRequest,
     forgejo: ForgejoClient = Depends(get_forgejo_client),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Create a new job by committing a manifest to Git.
@@ -165,8 +165,8 @@ async def create_job(
             file_path=file_path,
             content=yaml_content,
             message=f"Create job {job.name} in {job.namespace}",
-            author_name=current_user.get("username", "unknown"),
-            author_email=current_user.get("email", "unknown@crontopus.io"),
+            author_name=current_user.username,
+            author_email=current_user.email or f"{current_user.username}@crontopus.io",
         )
         
         return {
@@ -185,7 +185,7 @@ async def update_job(
     job_name: str,
     updates: JobUpdateRequest,
     forgejo: ForgejoClient = Depends(get_forgejo_client),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Update an existing job by modifying its manifest in Git.
@@ -230,8 +230,8 @@ async def update_job(
             file_path=file_path,
             content=yaml_content,
             message=f"Update job {job_name} in {namespace}",
-            author_name=current_user.get("username", "unknown"),
-            author_email=current_user.get("email", "unknown@crontopus.io"),
+            author_name=current_user.username,
+            author_email=current_user.email or f"{current_user.username}@crontopus.io",
         )
         
         return {
@@ -251,7 +251,7 @@ async def delete_job(
     namespace: str,
     job_name: str,
     forgejo: ForgejoClient = Depends(get_forgejo_client),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Delete a job by removing its manifest from Git.
@@ -264,8 +264,8 @@ async def delete_job(
         result = await forgejo.delete_file(
             file_path=file_path,
             message=f"Delete job {job_name} from {namespace}",
-            author_name=current_user.get("username", "unknown"),
-            author_email=current_user.get("email", "unknown@crontopus.io"),
+            author_name=current_user.username,
+            author_email=current_user.email or f"{current_user.username}@crontopus.io",
         )
         
         return {
