@@ -451,6 +451,33 @@
 
 **Deliverable**: Production-grade security posture
 
+### 8.1a Authentication Enhancements
+- [ ] SMTP integration for outgoing emails
+  - Configure SMTP server (SendGrid, AWS SES, or Postmark)
+  - Email templates for system notifications
+  - Email verification for new accounts
+  - Welcome emails and onboarding
+- [ ] Forgot password flow
+  - Password reset request endpoint
+  - Secure token generation and expiration
+  - Password reset email with magic link
+  - Password reset form in frontend
+  - Password strength validation
+- [ ] SSO integration (OAuth2/OIDC)
+  - Google OAuth2 integration
+  - Facebook OAuth2 integration (optional)
+  - GitHub OAuth2 integration (optional)
+  - SSO account linking with existing accounts
+  - SSO-only mode configuration (optional)
+
+**Deliverable**: Enhanced authentication with email workflows and SSO options
+
+**Benefits**:
+- Reduced friction for user onboarding
+- Self-service password recovery
+- Enterprise-ready SSO support
+- Improved security with email verification
+
 ### 8.2 Performance & Scalability
 - [ ] Add database indexing strategy
 - [ ] Implement query optimization
