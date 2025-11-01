@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     
     # API
     api_title: str = "Crontopus API"
-    api_version: str = "0.1.0"
+    api_version: str = "0.2.0"  # Added job CRUD endpoints
     api_prefix: str = "/api"
     environment: str = "development"
     
