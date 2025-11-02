@@ -5,24 +5,43 @@ import { jobsApi, type JobListItem } from '../api/jobs';
 export const Jobs = () => {
   const [jobs, setJobs] = useState<JobListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'production' | 'staging'>('all');
   const [repository, setRepository] = useState<string>('');
 
   useEffect(() => {
     const namespace = filter === 'all' ? undefined : filter;
+    setLoading(true);
+    setError(null);
     
     jobsApi
       .list(namespace)
       .then((response) => {
-        setJobs(response.jobs);
-        setRepository(response.repository);
+        // Ensure jobs is always an array
+        setJobs(Array.isArray(response.jobs) ? response.jobs : []);
+        setRepository(response.repository || '');
       })
-      .catch((err) => console.error('Failed to load jobs:', err))
+      .catch((err) => {
+        console.error('Failed to load jobs:', err);
+        setError(err.response?.data?.detail || err.message || 'Failed to load jobs');
+        setJobs([]);
+      })
       .finally(() => setLoading(false));
   }, [filter]);
 
   if (loading) {
     return <div className="text-gray-600">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-gray-900">Job Manifests</h2>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      </div>
+    );
   }
 
   return (
