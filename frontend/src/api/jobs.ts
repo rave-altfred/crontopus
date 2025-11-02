@@ -68,7 +68,7 @@ export interface JobCreatePayload {
 export const jobsApi = {
   list: async (namespace?: string): Promise<JobsListResponse> => {
     const params = namespace ? { namespace } : {};
-    const response = await apiClient.get('/jobs', { params });
+    const response = await apiClient.get('/jobs/', { params });
     return response.data;
   },
 
