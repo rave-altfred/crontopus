@@ -112,6 +112,18 @@ if [ "$FRONTEND_BUILT" = true ]; then
   echo -e "${GREEN}✓ Frontend images pushed${NC}"
 fi
 
+# Update app.yaml with versioned tags
+echo ""
+echo -e "${BLUE}Updating app.yaml with version tags...${NC}"
+TEMP_SPEC="/tmp/crontopus-app-${VERSION}.yaml"
+cp infra/app-platform/app.yaml "$TEMP_SPEC"
+
+# Replace 'tag: latest' with versioned tags for both backend and frontend
+sed -i.bak "s|tag: latest|tag: ${VERSION}|g" "$TEMP_SPEC"
+rm "${TEMP_SPEC}.bak" 2>/dev/null || true
+
+echo -e "${GREEN}✓ App spec updated with version ${VERSION}${NC}"
+
 # Create or update App Platform app
 echo ""
 if [ -z "$APP_ID" ]; then
@@ -127,7 +139,7 @@ if [ -z "$APP_ID" ]; then
         echo -e "${BLUE}Updating app spec and deploying...${NC}"
         # Note: `doctl apps update` automatically triggers a deployment
         # No need to call create-deployment separately
-        DEPLOYMENT_OUTPUT=$(doctl apps update $APP_ID --spec infra/app-platform/app.yaml 2>&1)
+        DEPLOYMENT_OUTPUT=$(doctl apps update $APP_ID --spec "$TEMP_SPEC" 2>&1)
         DEPLOYMENT_EXIT_CODE=$?
         
         if [ $DEPLOYMENT_EXIT_CODE -eq 0 ]; then
@@ -160,7 +172,7 @@ if [ -z "$APP_ID" ]; then
         echo -e "${GREEN}✓ Deployment complete${NC}"
     else
         echo -e "${BLUE}Creating new App Platform app...${NC}"
-        APP_RESPONSE=$(doctl apps create --spec infra/app-platform/app.yaml --format ID --no-header)
+        APP_RESPONSE=$(doctl apps create --spec "$TEMP_SPEC" --format ID --no-header)
         APP_ID=$APP_RESPONSE
         echo -e "${GREEN}✓ App created: ${APP_ID}${NC}"
         echo -e "${YELLOW}Save this for future deployments:${NC}"
@@ -169,7 +181,7 @@ if [ -z "$APP_ID" ]; then
 else
     echo -e "${BLUE}Updating app spec and deploying...${NC}"
     # Note: `doctl apps update` automatically triggers a deployment
-    DEPLOYMENT_OUTPUT=$(doctl apps update $APP_ID --spec infra/app-platform/app.yaml 2>&1)
+    DEPLOYMENT_OUTPUT=$(doctl apps update $APP_ID --spec "$TEMP_SPEC" 2>&1)
     DEPLOYMENT_EXIT_CODE=$?
     
     if [ $DEPLOYMENT_EXIT_CODE -eq 0 ]; then
@@ -197,6 +209,9 @@ else
     
     echo -e "${GREEN}✓ Deployment complete${NC}"
 fi
+
+# Cleanup temp spec
+rm -f "$TEMP_SPEC"
 
 echo ""
 echo -e "${GREEN}================================================${NC}"
