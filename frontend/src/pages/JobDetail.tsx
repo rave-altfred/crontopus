@@ -17,13 +17,17 @@ export const JobDetail = () => {
   useEffect(() => {
     if (!jobPath) return;
 
-    Promise.all([
-      jobsApi.get(jobPath),
-      runsApi.listByJob(jobPath.replace(/\.(yaml|yml)$/, '').split('/').pop() || ''),
-    ])
-      .then(([jobData, runsData]) => {
+    // Fetch job details
+    jobsApi.get(jobPath)
+      .then((jobData) => {
         setJob(jobData);
-        setRuns(runsData);
+        
+        // Try to fetch runs, but don't fail if endpoint doesn't exist
+        const jobName = jobPath.replace(/\.(yaml|yml)$/, '').split('/').pop() || '';
+        return runsApi.listByJob(jobName).catch(() => []);
+      })
+      .then((runsData) => {
+        setRuns(runsData || []);
       })
       .catch((err) => {
         console.error('Failed to load job:', err);
