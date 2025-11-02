@@ -137,6 +137,19 @@ npm run dev
 
 Frontend will run at `http://localhost:5173`
 
+### API Routing
+
+**Important**: FastAPI adds trailing slashes to root routes!
+
+- Backend routes are registered with prefix `/api`
+- Jobs endpoints are special:
+  - `GET /api/jobs/` - List jobs (note trailing slash)
+  - `POST /api/jobs` - Create job (no trailing slash)
+  - `PUT /api/jobs/{namespace}/{job_name}` - Update job
+  - `DELETE /api/jobs/{namespace}/{job_name}` - Delete job
+
+When calling APIs from frontend/CLI, match the exact path including trailing slashes.
+
 ### Deployment
 
 See [infra/README.md](infra/README.md) for deployment instructions.

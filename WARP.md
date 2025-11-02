@@ -163,6 +163,30 @@ When adding new endpoints to backend:
 - Business logic goes in `backend/crontopus_api/services/`
 - Background tasks go in `backend/crontopus_api/workers/`
 
+### API Routing (FastAPI)
+
+**Router Prefix Composition:**
+- All routers are included in `main.py` with `prefix=settings.api_prefix` (which is `/api`)
+- Each router defines its own routes relative to that prefix
+- Jobs router is special: included with `prefix="/api/jobs"` because its routes start with `/`
+
+**Trailing Slash Behavior:**
+- FastAPI automatically adds trailing slash to routes defined as `@router.get("/")`
+- Example: `@router.get("/")` in jobs router becomes `GET /api/jobs/` (with trailing slash)
+- Example: `@router.post("")` in jobs router becomes `POST /api/jobs` (no trailing slash)
+- Frontend API clients must match these exact paths including trailing slashes
+
+**Registered Routes:**
+```
+GET  /api/auth/me
+POST /api/auth/login
+GET  /api/runs
+GET  /api/agents
+GET  /api/jobs/        ← Note trailing slash!
+POST /api/jobs         ← No trailing slash
+GET  /api/jobs/{namespace}/{job_name}
+```
+
 ### Job Management
 - Job CRUD operations go through backend API endpoints:
   - `POST /api/jobs` - Create new job (commits YAML to Git)

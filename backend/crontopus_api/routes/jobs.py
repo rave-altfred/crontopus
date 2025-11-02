@@ -1,6 +1,17 @@
 """
-Job manifest routes - for viewing jobs from Forgejo.
-Note: Job definitions live in Git, not in database.
+Job manifest routes - for viewing and managing jobs in Forgejo.
+
+Routing:
+- This router has NO prefix defined
+- Routes are included in main.py with prefix="/api/jobs"
+- @router.get("/") becomes GET /api/jobs/ (note trailing slash added by FastAPI)
+- @router.post("") becomes POST /api/jobs (no trailing slash)
+- Frontend must call GET /api/jobs/ (with slash) to match FastAPI routing
+
+Job Storage:
+- Job definitions live in Git (Forgejo), NOT in database
+- All CRUD operations commit changes to Git
+- Database only stores run history and metadata
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from typing import Optional, Dict, Any

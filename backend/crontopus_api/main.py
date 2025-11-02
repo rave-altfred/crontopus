@@ -28,11 +28,16 @@ app.add_middleware(
 )
 
 # Include routers
+# Note: Router prefix composition:
+#   - settings.api_prefix = "/api"
+#   - Each router's routes are appended to this prefix
+#   - Jobs router gets additional "/jobs" suffix because its internal routes start with "/"
+#   - Example: jobs router with @router.get("/") becomes GET /api/jobs/
+#   - FastAPI adds trailing slash to root routes like @router.get("/")
 app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(checkins.router, prefix=settings.api_prefix)
 app.include_router(agents.router, prefix=settings.api_prefix)
 app.include_router(jobs.router, prefix=f"{settings.api_prefix}/jobs")
-# Note: Job definitions live in Git - jobs router fetches from Forgejo
 
 # Log all registered routes on startup
 import logging
