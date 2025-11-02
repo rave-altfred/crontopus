@@ -141,7 +141,10 @@ async def create_job(
         file_path = f"{job.namespace}/{job.name}.yaml"
         
         # Commit to Git
+        # TODO: Make owner/repo configurable per tenant
         result = await forgejo.create_or_update_file(
+            owner="crontopus",
+            repo="job-manifests",
             file_path=file_path,
             content=yaml_content,
             message=f"Create job {job.name} in {job.namespace}",
@@ -177,12 +180,17 @@ async def update_job(
         file_path = f"{namespace}/{job_name}.yaml"
         
         # Fetch current manifest
-        manifest_data = await forgejo.get_job_manifest(file_path)
+        # TODO: Make owner/repo configurable per tenant
+        manifest_data = await forgejo.get_job_manifest(
+            owner="crontopus",
+            repo="job-manifests",
+            file_path=file_path
+        )
         if not manifest_data:
             raise HTTPException(status_code=404, detail="Job not found")
             
         # Parse YAML
-        manifest = yaml.safe_load(manifest_data["content"])
+        manifest = manifest_data  # get_job_manifest already returns parsed manifest
         
         # Update fields (only if provided)
         if updates.schedule is not None:
@@ -206,7 +214,10 @@ async def update_job(
         yaml_content = yaml.dump(manifest, sort_keys=False, default_flow_style=False)
         
         # Commit to Git
+        # TODO: Make owner/repo configurable per tenant
         result = await forgejo.create_or_update_file(
+            owner="crontopus",
+            repo="job-manifests",
             file_path=file_path,
             content=yaml_content,
             message=f"Update job {job_name} in {namespace}",
@@ -241,7 +252,10 @@ async def delete_job(
         file_path = f"{namespace}/{job_name}.yaml"
         
         # Delete from Git
+        # TODO: Make owner/repo configurable per tenant
         result = await forgejo.delete_file(
+            owner="crontopus",
+            repo="job-manifests",
             file_path=file_path,
             message=f"Delete job {job_name} from {namespace}",
             author_name=current_user.username,
