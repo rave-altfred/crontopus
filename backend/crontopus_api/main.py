@@ -31,7 +31,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(checkins.router, prefix=settings.api_prefix)
 app.include_router(agents.router, prefix=settings.api_prefix)
-app.include_router(jobs.router, prefix=settings.api_prefix)
+app.include_router(jobs.router, prefix=f"{settings.api_prefix}/jobs")
 # Note: Job definitions live in Git - jobs router fetches from Forgejo
 
 # Log all registered routes on startup
