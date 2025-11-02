@@ -5,13 +5,88 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from crontopus_api.config import get_db
+from crontopus_api.config import get_db, settings
 from crontopus_api.models import User, Tenant
 from crontopus_api.schemas.auth import UserRegister, UserLogin, Token, UserResponse
 from crontopus_api.security import verify_password, get_password_hash, create_access_token
 from crontopus_api.security.dependencies import get_current_user
+from crontopus_api.services.forgejo import ForgejoClient
+import httpx
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
+
+
+async def create_tenant_repository(tenant_id: str) -> bool:
+    """
+    Create a Git repository for a new tenant.
+    
+    Args:
+        tenant_id: The tenant ID
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        url = f"{settings.forgejo_url}/api/v1/orgs/crontopus/repos"
+        headers = {
+            "Authorization": f"token {settings.forgejo_token}",
+            "Content-Type": "application/json"
+        }
+        
+        repo_name = f"job-manifests-{tenant_id}"
+        
+        payload = {
+            "name": repo_name,
+            "description": f"Job manifests for tenant {tenant_id}",
+            "private": True,
+            "auto_init": True,
+            "default_branch": "main",
+            "readme": "Default"
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, headers=headers, json=payload, timeout=30.0)
+            
+            if response.status_code == 201:
+                logger.info(f"Created Git repository: {repo_name}")
+                
+                # Create production and staging directories with placeholder files
+                forgejo = ForgejoClient(
+                    base_url=settings.forgejo_url,
+                    username=settings.forgejo_username,
+                    token=settings.forgejo_token
+                )
+                
+                # Create .gitkeep files in production and staging directories
+                for namespace in ["production", "staging"]:
+                    try:
+                        await forgejo.create_or_update_file(
+                            owner="crontopus",
+                            repo=repo_name,
+                            file_path=f"{namespace}/.gitkeep",
+                            content="# Directory for job manifests\n",
+                            message=f"Initialize {namespace} directory",
+                            author_name="Crontopus",
+                            author_email="bot@crontopus.io"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Could not create {namespace} directory: {e}")
+                
+                return True
+            elif response.status_code == 409:
+                # Repository already exists
+                logger.info(f"Repository {repo_name} already exists")
+                return True
+            else:
+                logger.error(f"Failed to create repository: {response.status_code} - {response.text}")
+                return False
+                
+    except Exception as e:
+        logger.error(f"Error creating tenant repository: {e}")
+        return False
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -35,6 +110,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     
     # Check if tenant exists, create if not
     tenant = db.query(Tenant).filter(Tenant.id == user_data.tenant_id).first()
+    is_new_tenant = False
     if not tenant:
         tenant = Tenant(
             id=user_data.tenant_id,
@@ -42,6 +118,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         )
         db.add(tenant)
         db.commit()
+        is_new_tenant = True
     
     # Create new user
     hashed_password = get_password_hash(user_data.password)
@@ -55,6 +132,14 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    
+    # Create Git repository for new tenant
+    if is_new_tenant:
+        try:
+            await create_tenant_repository(user_data.tenant_id)
+        except Exception as e:
+            logger.error(f"Failed to create Git repository for tenant {user_data.tenant_id}: {e}")
+            # Don't fail registration if Git repo creation fails
     
     return new_user
 
