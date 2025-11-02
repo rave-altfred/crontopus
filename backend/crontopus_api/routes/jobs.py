@@ -76,10 +76,11 @@ async def list_jobs(
     This endpoint fetches the manifest list from Forgejo.
     """
     try:
-        # TODO: Make owner/repo configurable per tenant
+        # Use tenant-specific repository for isolation
+        repo_name = f"job-manifests-{current_user.tenant_id}"
         manifests = await forgejo.list_job_manifests(
             owner="crontopus",
-            repo="job-manifests",
+            repo=repo_name,
             namespace=namespace
         )
         
@@ -87,7 +88,7 @@ async def list_jobs(
             "jobs": manifests,
             "count": len(manifests),
             "source": "git",
-            "repository": "https://git.crontopus.com/crontopus/job-manifests"
+            "repository": f"https://git.crontopus.com/crontopus/{repo_name}"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch jobs from Git: {str(e)}")
@@ -141,10 +142,11 @@ async def create_job(
         file_path = f"{job.namespace}/{job.name}.yaml"
         
         # Commit to Git
-        # TODO: Make owner/repo configurable per tenant
+        # Use tenant-specific repository for isolation
+        repo_name = f"job-manifests-{current_user.tenant_id}"
         result = await forgejo.create_or_update_file(
             owner="crontopus",
-            repo="job-manifests",
+            repo=repo_name,
             file_path=file_path,
             content=yaml_content,
             message=f"Create job {job.name} in {job.namespace}",
@@ -180,10 +182,11 @@ async def update_job(
         file_path = f"{namespace}/{job_name}.yaml"
         
         # Fetch current manifest
-        # TODO: Make owner/repo configurable per tenant
+        # Use tenant-specific repository for isolation
+        repo_name = f"job-manifests-{current_user.tenant_id}"
         manifest_data = await forgejo.get_job_manifest(
             owner="crontopus",
-            repo="job-manifests",
+            repo=repo_name,
             file_path=file_path
         )
         if not manifest_data:
@@ -214,10 +217,11 @@ async def update_job(
         yaml_content = yaml.dump(manifest, sort_keys=False, default_flow_style=False)
         
         # Commit to Git
-        # TODO: Make owner/repo configurable per tenant
+        # Use tenant-specific repository for isolation
+        repo_name = f"job-manifests-{current_user.tenant_id}"
         result = await forgejo.create_or_update_file(
             owner="crontopus",
-            repo="job-manifests",
+            repo=repo_name,
             file_path=file_path,
             content=yaml_content,
             message=f"Update job {job_name} in {namespace}",
@@ -252,10 +256,11 @@ async def delete_job(
         file_path = f"{namespace}/{job_name}.yaml"
         
         # Delete from Git
-        # TODO: Make owner/repo configurable per tenant
+        # Use tenant-specific repository for isolation
+        repo_name = f"job-manifests-{current_user.tenant_id}"
         result = await forgejo.delete_file(
             owner="crontopus",
-            repo="job-manifests",
+            repo=repo_name,
             file_path=file_path,
             message=f"Delete job {job_name} from {namespace}",
             author_name=current_user.username,
@@ -291,9 +296,11 @@ async def get_job_by_name(
     job_path = f"{namespace}/{job_name}"
     
     try:
+        # Use tenant-specific repository for isolation
+        repo_name = f"job-manifests-{current_user.tenant_id}"
         manifest = await forgejo.get_job_manifest(
             owner="crontopus",
-            repo="job-manifests",
+            repo=repo_name,
             file_path=job_path
         )
         
