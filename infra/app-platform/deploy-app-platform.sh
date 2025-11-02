@@ -46,8 +46,9 @@ echo -e "${GREEN}✓ Authenticated${NC}"
 
 # Build backend image
 echo ""
-echo -e "${BLUE}Building backend image...${NC}"
+echo -e "${BLUE}Building backend image (with fresh build)...${NC}"
 docker build \
+  --no-cache \
   -t ${REGISTRY}/backend:${VERSION} \
   -t ${REGISTRY}/backend:latest \
   --platform linux/amd64 \
