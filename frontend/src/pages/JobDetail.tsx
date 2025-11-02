@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { jobsApi, type JobDetailResponse } from '../api/jobs';
 import { runsApi, type JobRun } from '../api/runs';
 import { ManifestViewer } from '../components/ManifestViewer';
 
 export const JobDetail = () => {
+  const navigate = useNavigate();
   const { '*': jobPath } = useParams();
   const [job, setJob] = useState<JobDetailResponse | null>(null);
   const [runs, setRuns] = useState<JobRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!jobPath) return;
@@ -47,6 +50,28 @@ export const JobDetail = () => {
 
   const { manifest } = job;
   const gitUrl = `https://git.crontopus.com/crontopus/job-manifests/src/branch/main/${jobPath}`;
+  
+  // Extract namespace and job name from path (e.g., "production/backup-db.yaml")
+  const namespace = jobPath?.split('/')[0] || '';
+  const jobFileName = jobPath?.split('/').pop() || '';
+  const jobName = jobFileName.replace(/\.(yaml|yml)$/, '');
+
+  const handleDelete = async () => {
+    if (!namespace || !jobName) return;
+
+    setDeleting(true);
+    try {
+      await jobsApi.delete(namespace, jobName);
+      // Navigate back to jobs list
+      navigate('/jobs');
+    } catch (err: any) {
+      console.error('Failed to delete job:', err);
+      setError(err.response?.data?.detail || 'Failed to delete job');
+      setShowDeleteModal(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -58,14 +83,28 @@ export const JobDetail = () => {
           <h2 className="text-2xl font-bold text-gray-900">{manifest.metadata.name}</h2>
           <p className="text-sm text-gray-500 mt-1">{jobPath}</p>
         </div>
-        <a
-          href={gitUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-        >
-          Edit in Git →
-        </a>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => navigate(`/jobs/${namespace}/${jobName}/edit`)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+          >
+            ✏️ Edit
+          </button>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
+          >
+            🗑️ Delete
+          </button>
+          <a
+            href={gitUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm font-medium"
+          >
+            View in Git →
+          </a>
+        </div>
       </div>
 
       {!job.valid && job.error && (
@@ -181,6 +220,35 @@ export const JobDetail = () => {
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Job</h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete <strong>{manifest.metadata.name}</strong>?
+              This will remove the job from Git and cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete Job'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
