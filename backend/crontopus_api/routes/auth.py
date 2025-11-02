@@ -96,9 +96,12 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     """
     Register a new user.
     
-    Creates a new user account associated with a tenant.
-    If the tenant doesn't exist, it will be created.
+    Creates a new user account with their own tenant.
+    Each user gets their own tenant (tenant_id = username).
     """
+    # Auto-set tenant_id to username (one tenant per user)
+    tenant_id = user_data.username
+    
     # Check if user already exists
     existing_user = db.query(User).filter(
         (User.email == user_data.email) | (User.username == user_data.username)
@@ -111,12 +114,12 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         )
     
     # Check if tenant exists, create if not
-    tenant = db.query(Tenant).filter(Tenant.id == user_data.tenant_id).first()
+    tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
     is_new_tenant = False
     if not tenant:
         tenant = Tenant(
-            id=user_data.tenant_id,
-            name=user_data.tenant_id.replace("-", " ").title()
+            id=tenant_id,
+            name=tenant_id.replace("-", " ").title()
         )
         db.add(tenant)
         db.commit()
@@ -125,7 +128,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     # Create new user
     hashed_password = get_password_hash(user_data.password)
     new_user = User(
-        tenant_id=user_data.tenant_id,
+        tenant_id=tenant_id,
         email=user_data.email,
         username=user_data.username,
         hashed_password=hashed_password
@@ -139,16 +142,16 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     repo_created = False
     if is_new_tenant:
         try:
-            repo_created = await create_tenant_repository(user_data.tenant_id)
+            repo_created = await create_tenant_repository(tenant_id)
             if not repo_created:
-                logger.error(f"Repository creation returned False for tenant {user_data.tenant_id}")
+                logger.error(f"Repository creation returned False for tenant {tenant_id}")
         except Exception as e:
-            logger.error(f"Exception creating Git repository for tenant {user_data.tenant_id}: {e}", exc_info=True)
+            logger.error(f"Exception creating Git repository for tenant {tenant_id}: {e}", exc_info=True)
             # Don't fail registration if Git repo creation fails
     
     # Log successful registration
-    logger.info(f"User registered: {user_data.username}, tenant: {user_data.tenant_id}, new_tenant: {is_new_tenant}, repo_created: {repo_created}")
-    print(f"[AUTH] User registered: {user_data.username}, tenant: {user_data.tenant_id}, new_tenant: {is_new_tenant}, repo_created: {repo_created}", flush=True)
+    logger.info(f"User registered: {user_data.username}, tenant: {tenant_id}, new_tenant: {is_new_tenant}, repo_created: {repo_created}")
+    print(f"[AUTH] User registered: {user_data.username}, tenant: {tenant_id}, new_tenant: {is_new_tenant}, repo_created: {repo_created}", flush=True)
     
     return new_user
 

@@ -6,10 +6,11 @@ from pydantic import BaseModel, EmailStr, Field
 
 class UserRegister(BaseModel):
     """Schema for user registration."""
-    tenant_id: str = Field(default="default", min_length=3, max_length=50)
     email: EmailStr
     username: str = Field(..., min_length=3, max_length=50)
     password: str = Field(..., min_length=8)
+    
+    # tenant_id is auto-set to username (not exposed in API)
 
 
 class UserLogin(BaseModel):
