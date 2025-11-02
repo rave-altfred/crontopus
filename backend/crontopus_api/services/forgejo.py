@@ -243,8 +243,9 @@ class ForgejoClient:
             payload['sha'] = sha
         
         async with httpx.AsyncClient() as client:
-            response = await client.post(
-                url if not sha else url,
+            # Use PUT for both create and update (Forgejo API spec)
+            response = await client.put(
+                url,
                 headers=self.headers,
                 json=payload,
                 timeout=30.0
