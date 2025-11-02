@@ -180,12 +180,18 @@ When adding new endpoints to backend:
 ```
 GET  /api/auth/me
 POST /api/auth/login
-GET  /api/runs
-GET  /api/agents
-GET  /api/jobs/        ← Note trailing slash!
-POST /api/jobs         ← No trailing slash
-GET  /api/jobs/{namespace}/{job_name}
+GET  /api/runs           ← Returns {runs: [], total, page, page_size}
+GET  /api/agents         ← Returns {agents: [], total, page, page_size}
+GET  /api/jobs/          ← Returns {jobs: [], count, source, repository} (Note trailing slash!)
+POST /api/jobs           ← Create job (No trailing slash)
+PUT  /api/jobs/{namespace}/{job_name}
+DELETE /api/jobs/{namespace}/{job_name}
 ```
+
+**Response Structure:**
+- `/api/runs` and `/api/agents` return paginated responses with nested arrays
+- Frontend clients must extract the nested array (e.g., `response.data.runs`, `response.data.agents`)
+- `/api/jobs/` returns `{jobs: [...], count, source, repository}` - extract `response.data.jobs`
 
 ### Job Management
 - Job CRUD operations go through backend API endpoints:

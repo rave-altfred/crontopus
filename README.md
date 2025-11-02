@@ -150,6 +150,11 @@ Frontend will run at `http://localhost:5173`
 
 When calling APIs from frontend/CLI, match the exact path including trailing slashes.
 
+**Response Structures**:
+- `/api/runs` returns `{runs: [], total, page, page_size}` - extract `response.data.runs`
+- `/api/agents` returns `{agents: [], total, page, page_size}` - extract `response.data.agents`
+- `/api/jobs/` returns `{jobs: [], count, source, repository}` - extract `response.data.jobs`
+
 ### Deployment
 
 See [infra/README.md](infra/README.md) for deployment instructions.

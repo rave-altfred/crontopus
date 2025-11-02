@@ -419,14 +419,21 @@
   - `PUT /api/jobs/{namespace}/{job_name}` - Update existing job
   - `DELETE /api/jobs/{namespace}/{job_name}` - Delete job from Git
   - Pydantic models: JobCreateRequest, JobUpdateRequest
-- [ ] Create JobForm component in frontend
-  - Form fields: name, namespace, schedule, command, args, env, labels
-  - Cron expression validation/helper
+- [x] Create JobNew page component in frontend
+  - Form fields: name, namespace, schedule, command, args, env, labels, timezone, enabled/paused
+  - Comprehensive form validation
   - Error handling and validation feedback
-- [ ] Add job creation page (`/jobs/new`)
-  - Use JobForm component
+- [x] Add job creation page (`/jobs/new`)
+  - JobNew component with full form
   - POST to backend on submit
-  - Success message and redirect to job detail
+  - Success message and redirect to jobs list
+- [x] Add "New Job" button to jobs list page
+  - Prominent button in page header
+  - Links to `/jobs/new` route
+- [x] Fix API response handling issues
+  - Fixed agents API to extract `agents` array from response
+  - Fixed runs API to extract `runs` array from response
+  - Both endpoints return paginated responses with nested arrays
 - [ ] Add edit functionality to job detail page
   - Edit button with form pre-filled from current manifest
   - PUT updated data to backend
@@ -441,9 +448,9 @@
   - Delete job → Verify removal from Git
   - Agent sync → Verify scheduler entries updated
 
-**Deliverable**: Users can create, edit, and delete jobs through UI while maintaining GitOps architecture
+**Deliverable**: ✅ Users can create jobs through UI while maintaining GitOps architecture (edit/delete pending)
 
-**Implementation Status**: Backend complete (ForgejoClient + API endpoints), frontend in progress
+**Implementation Status**: Backend complete, job creation UI complete and deployed, edit/delete functionality pending
 
 ### 6.7 Manifest Validation & CI (Optional - Future)
 - [ ] Build manifest validation CLI tool
