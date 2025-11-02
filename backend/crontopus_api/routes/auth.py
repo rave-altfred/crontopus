@@ -29,6 +29,7 @@ async def create_tenant_repository(tenant_id: str) -> bool:
     Returns:
         True if successful, False otherwise
     """
+    logger.info(f"Starting repository creation for tenant: {tenant_id}")
     try:
         url = f"{settings.forgejo_url}/api/v1/orgs/crontopus/repos"
         headers = {
@@ -134,12 +135,18 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     db.refresh(new_user)
     
     # Create Git repository for new tenant
+    repo_created = False
     if is_new_tenant:
         try:
-            await create_tenant_repository(user_data.tenant_id)
+            repo_created = await create_tenant_repository(user_data.tenant_id)
+            if not repo_created:
+                logger.error(f"Repository creation returned False for tenant {user_data.tenant_id}")
         except Exception as e:
-            logger.error(f"Failed to create Git repository for tenant {user_data.tenant_id}: {e}")
+            logger.error(f"Exception creating Git repository for tenant {user_data.tenant_id}: {e}", exc_info=True)
             # Don't fail registration if Git repo creation fails
+    
+    # Log successful registration
+    logger.info(f"User registered: {user_data.username}, tenant: {user_data.tenant_id}, new_tenant: {is_new_tenant}, repo_created: {repo_created}")
     
     return new_user
 
