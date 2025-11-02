@@ -16,7 +16,7 @@ export interface Agent {
 export const agentsApi = {
   list: async (): Promise<Agent[]> => {
     const response = await apiClient.get('/agents');
-    return response.data;
+    return response.data.agents || [];
   },
 
   get: async (id: string): Promise<Agent> => {

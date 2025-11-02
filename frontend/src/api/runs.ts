@@ -15,7 +15,7 @@ export interface JobRun {
 export const runsApi = {
   list: async (params?: { job_name?: string; page?: number; page_size?: number }): Promise<JobRun[]> => {
     const response = await apiClient.get('/runs', { params });
-    return response.data;
+    return response.data.runs || [];
   },
 
   get: async (id: string): Promise<JobRun> => {
