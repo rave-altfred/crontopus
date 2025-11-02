@@ -147,11 +147,39 @@ if [ -z "$APP_ID" ]; then
             
             # Wait for deployment to complete
             echo -e "${BLUE}Waiting for deployment to complete...${NC}"
-            # Get the latest deployment and wait for it
             sleep 5  # Give the system time to create the deployment
-            # No need to wait explicitly - the update command handles it
+            
+            # Get latest deployment ID and wait for it
+            LATEST_DEPLOYMENT_ID=$(doctl apps list-deployments $APP_ID --format ID --no-header | head -n 1)
+            
+            if [ -n "$LATEST_DEPLOYMENT_ID" ]; then
+                echo -e "${BLUE}Monitoring deployment ${LATEST_DEPLOYMENT_ID}...${NC}"
+                
+                # Poll deployment status
+                MAX_WAIT=600  # 10 minutes
+                ELAPSED=0
+                while [ $ELAPSED -lt $MAX_WAIT ]; do
+                    DEPLOY_STATUS=$(doctl apps get-deployment $APP_ID $LATEST_DEPLOYMENT_ID --format Phase --no-header 2>/dev/null)
+                    
+                    if [ "$DEPLOY_STATUS" = "ACTIVE" ]; then
+                        echo -e "${GREEN}✓ Deployment successful${NC}"
+                        break
+                    elif [ "$DEPLOY_STATUS" = "ERROR" ] || [ "$DEPLOY_STATUS" = "CANCELED" ]; then
+                        echo -e "${RED}✗ Deployment failed with status: ${DEPLOY_STATUS}${NC}"
+                        DEPLOYMENT_EXIT_CODE=1
+                        break
+                    else
+                        echo -e "${BLUE}Status: ${DEPLOY_STATUS}... (${ELAPSED}s elapsed)${NC}"
+                        sleep 10
+                        ELAPSED=$((ELAPSED + 10))
+                    fi
+                done
+                
+                if [ $ELAPSED -ge $MAX_WAIT ]; then
+                    echo -e "${YELLOW}⚠ Deployment timeout after ${MAX_WAIT}s${NC}"
+                fi
+            fi
         fi
-        DEPLOYMENT_EXIT_CODE=0  # Reset since we handled it above
         
         if [ $DEPLOYMENT_EXIT_CODE -ne 0 ]; then
             echo -e "${RED}✗ Deployment failed${NC}"
@@ -188,8 +216,38 @@ else
         echo -e "${GREEN}✓ App spec updated, deployment started${NC}"
         echo -e "${BLUE}Waiting for deployment to complete...${NC}"
         sleep 5
+        
+        # Get latest deployment ID and wait for it
+        LATEST_DEPLOYMENT_ID=$(doctl apps list-deployments $APP_ID --format ID --no-header | head -n 1)
+        
+        if [ -n "$LATEST_DEPLOYMENT_ID" ]; then
+            echo -e "${BLUE}Monitoring deployment ${LATEST_DEPLOYMENT_ID}...${NC}"
+            
+            # Poll deployment status
+            MAX_WAIT=600  # 10 minutes
+            ELAPSED=0
+            while [ $ELAPSED -lt $MAX_WAIT ]; do
+                DEPLOY_STATUS=$(doctl apps get-deployment $APP_ID $LATEST_DEPLOYMENT_ID --format Phase --no-header 2>/dev/null)
+                
+                if [ "$DEPLOY_STATUS" = "ACTIVE" ]; then
+                    echo -e "${GREEN}✓ Deployment successful${NC}"
+                    break
+                elif [ "$DEPLOY_STATUS" = "ERROR" ] || [ "$DEPLOY_STATUS" = "CANCELED" ]; then
+                    echo -e "${RED}✗ Deployment failed with status: ${DEPLOY_STATUS}${NC}"
+                    DEPLOYMENT_EXIT_CODE=1
+                    break
+                else
+                    echo -e "${BLUE}Status: ${DEPLOY_STATUS}... (${ELAPSED}s elapsed)${NC}"
+                    sleep 10
+                    ELAPSED=$((ELAPSED + 10))
+                fi
+            done
+            
+            if [ $ELAPSED -ge $MAX_WAIT ]; then
+                echo -e "${YELLOW}⚠ Deployment timeout after ${MAX_WAIT}s${NC}"
+            fi
+        fi
     fi
-    DEPLOYMENT_EXIT_CODE=0
     
     if [ $DEPLOYMENT_EXIT_CODE -ne 0 ]; then
         echo -e "${RED}✗ Deployment failed${NC}"
