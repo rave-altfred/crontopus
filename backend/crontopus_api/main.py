@@ -34,6 +34,19 @@ app.include_router(agents.router, prefix=settings.api_prefix)
 app.include_router(jobs.router, prefix=settings.api_prefix)
 # Note: Job definitions live in Git - jobs router fetches from Forgejo
 
+# Log all registered routes on startup
+import logging
+logger = logging.getLogger("uvicorn")
+
+@app.on_event("startup")
+async def log_routes():
+    logger.info("="*50)
+    logger.info("Registered routes:")
+    for route in app.routes:
+        if hasattr(route, 'methods') and hasattr(route, 'path'):
+            logger.info(f"  {','.join(route.methods)} {route.path}")
+    logger.info("="*50)
+
 
 @app.get("/health")
 async def health_check():
