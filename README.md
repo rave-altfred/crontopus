@@ -13,20 +13,26 @@ Crontopus is built around **GitOps principles** with a clean separation of conce
 - **Job Manifests** — YAML files in Git (Forgejo) define what jobs to run, when, and how
 - **Version Control** — All changes tracked via Git commits, PRs, and reviews
 - **Single Source of Truth** — Git is the authoritative source for job configurations
-- **Repository**: https://git.crontopus.com/crontopus/job-manifests (private)
+- **Tenant-Specific Repositories** — Each tenant has a private repository: `crontopus/job-manifests-{username}`
+  - Automatically created during user registration
+  - Complete isolation between tenants
+  - Example: User "alice" gets repository `crontopus/job-manifests-alice`
 - **UI Management** — Users create/edit/delete jobs via UI, which commits to Git behind the scenes
 
 ### Runtime Components
 - **Backend (FastAPI)** — REST API for authentication, run history, metrics, agent management, and job CRUD (commits to Git)
   - Production: https://crontopus.com/api
-  - Job endpoints: POST/PUT/DELETE `/api/jobs` (commits YAML manifests to Forgejo)
-- **Agent (Go)** — Pulls job manifests from Git, reconciles with native OS scheduler (cron/Task Scheduler). **Never executes jobs directly.**
+  - Job endpoints: POST/PUT/DELETE `/api/jobs` (commits YAML manifests to tenant-specific Forgejo repos)
+  - Automatic Git repository creation for new tenants
+- **Agent (Go)** — Pulls job manifests from tenant's Git repository, reconciles with native OS scheduler (cron/Task Scheduler). **Never executes jobs directly.**
 - **CLI** — Wrapper for API calls (auth, viewing run history, agent management) and Git operations (viewing jobs)
 - **Frontend (React)** — Web console for creating/editing/viewing jobs and run history
   - Production: https://crontopus.com
   - Jobs are managed via UI forms that commit to Git via backend API
+  - Full CRUD interface: create, edit, delete jobs with real-time Git sync
 - **Forgejo (Git)** — Self-hosted Git server for job manifests
   - Production: https://git.crontopus.com
+  - Tenant-specific private repositories (auto-created)
 - **Internal Admin** — Private dashboard for operators (tenants, plans, system health) [Planned]
 - **Infra** — Deployment scripts and configurations for all services
 
@@ -55,10 +61,10 @@ crontopus/
 
 - **Ping Mode (Agent Optional)** — Any existing scheduler (cron, Jenkins, Windows Task Scheduler, Kubernetes CronJob, etc.) includes a simple HTTP **check-in** to report run results directly to Crontopus.  
 - **Agent Mode (Native Scheduler Management)** — Install a signed agent to **apply and reconcile job definitions** on the local OS scheduler (create/update/remove, enable/disable), handle token rotation, and enforce schedule/policy constraints. **The agent never executes jobs.**  
-- **GitOps Integration** — Sync job manifests and policies from Git **Forgejo**.  
+- **GitOps Integration** — Sync job manifests and policies from tenant-specific Git repositories in **Forgejo**.  
 - **API First Development** — UI and CLI both talk to the same REST endpoints.  
 - **Alerts & Metrics** — Slack/email/PagerDuty notifications and Prometheus metrics.  
-- **Multi-Tenant & Secure** — Isolated tenants; signed agent enrollment; no inbound ports required.
+- **Multi-Tenant & Secure** — Complete tenant isolation with private Git repositories; signed agent enrollment; no inbound ports required.
 
 ---
 

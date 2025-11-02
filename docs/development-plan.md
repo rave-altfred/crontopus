@@ -411,14 +411,16 @@
 
 ### 6.6 Job Management UI (GitOps + UI)
 - [x] Extend ForgejoClient with Git write operations
-  - `create_or_update_file()` - Commit new/updated files to Git
+  - `create_or_update_file()` - Commit new/updated files to Git (POST for new, PUT for updates)
   - `delete_file()` - Remove files from Git repository
   - Base64 encoding and author attribution
+  - Fixed Forgejo API: POST creates new files, PUT updates existing (requires SHA)
 - [x] Add job CRUD endpoints to backend
   - `POST /api/jobs` - Create new job (commits YAML to Git)
   - `PUT /api/jobs/{namespace}/{job_name}` - Update existing job
   - `DELETE /api/jobs/{namespace}/{job_name}` - Delete job from Git
   - Pydantic models: JobCreateRequest, JobUpdateRequest
+  - Tenant-specific repositories: `job-manifests-{tenant_id}`
 - [x] Create JobNew page component in frontend
   - Form fields: name, namespace, schedule, command, args, env, labels, timezone, enabled/paused
   - Comprehensive form validation
@@ -444,15 +446,30 @@
   - DELETE request to backend
   - Redirect to jobs list after successful deletion
   - GitOps compliant - removes file from Git
+- [x] Implement tenant-specific Git repositories
+  - Repository naming: `crontopus/job-manifests-{tenant_id}`
+  - Automatic repository creation during user registration
+  - Complete tenant isolation (each tenant has own private repo)
+  - Auto-initialized with `production/` and `staging/` directories
+- [x] Simplify tenant model to username-based
+  - `tenant_id = username` (one tenant per user)
+  - Automatic tenant assignment during registration
+  - Repository created automatically for new tenants
+  - Removed tenant_id from registration form
+- [x] Deployment infrastructure improvements
+  - Deployment script uses dynamic version tags (not "latest")
+  - Added deployment status polling with 10-minute timeout
+  - Script waits for ACTIVE/ERROR/CANCELED status before completing
 - [x] Test end-to-end workflow
   - TypeScript compilation successful
   - All components integrated with routing
   - API client methods implemented (create, update, delete)
-  - Ready for production deployment and testing
+  - Production deployment verified at https://crontopus.com
+  - Tenant repository auto-creation tested and working
 
-**Deliverable**: ✅ Users can create, edit, and delete jobs through UI while maintaining GitOps architecture
+**Deliverable**: ✅ Users can create, edit, and delete jobs through UI while maintaining GitOps architecture with full tenant isolation
 
-**Implementation Status**: ✅ Complete - Backend and frontend fully implemented, ready for deployment
+**Implementation Status**: ✅ **COMPLETE** - Deployed to production with tenant-specific repositories and automatic Git integration
 
 ### 6.7 Manifest Validation & CI (Optional - Future)
 - [ ] Build manifest validation CLI tool

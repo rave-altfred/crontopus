@@ -32,9 +32,13 @@ Crontopus is a **monorepo** for an API-first job scheduling and monitoring platf
 1. **GitOps-First**: Job definitions live in Git (Forgejo) as YAML manifests, NOT in database
    - Users create/edit/delete jobs via UI, which commits to Git via backend API
    - Git remains single source of truth
-2. **Agent as Reconciler**: Agent pulls from Git and manages scheduler state, does NOT execute jobs
+   - Each tenant has a private repository: `crontopus/job-manifests-{tenant_id}`
+2. **Agent as Reconciler**: Agent pulls from tenant's Git repo and manages scheduler state, does NOT execute jobs
 3. **Ping-Based Check-ins**: Jobs report results via HTTP POST to control plane
-4. **Multi-Tenant**: Isolated tenant data and policies
+4. **Multi-Tenant**: Complete isolation with tenant-specific Git repositories
+   - One tenant per user (`tenant_id = username`)
+   - Repositories auto-created during registration
+   - All job operations scoped to tenant's repository
 5. **Database for Runtime Only**: Database stores users, tenants, run history, metrics - NOT job definitions
 
 ## Component Relationships
@@ -208,9 +212,21 @@ DELETE /api/jobs/{namespace}/{job_name}
 - Use `core/formatter.py` for consistent output formatting
 
 ### Multi-Tenancy
-- All API endpoints must enforce tenant isolation
-- Agent enrollment must be tenant-specific
-- Frontend must show only tenant-scoped data
+- **Tenant Model**: One tenant per user (`tenant_id = username`)
+- **Git Repositories**: Each tenant has a private repository (`crontopus/job-manifests-{tenant_id}`)
+- **Auto-Creation**: Repository automatically created during user registration
+  - Initialized with `production/` and `staging/` directories
+  - Includes `.gitkeep` files for directory structure
+- **Isolation**: All API endpoints enforce tenant isolation
+  - Job CRUD operations scoped to tenant's repository
+  - Agents pull from tenant-specific repository
+  - Frontend shows only tenant-scoped data
+- **Registration Flow**:
+  1. User registers with username/email/password
+  2. Backend sets `tenant_id = username`
+  3. Backend calls Forgejo API to create `crontopus/job-manifests-{username}`
+  4. Repository initialized as private with directory structure
+  5. User can immediately create jobs via UI
 
 ## Documentation
 
@@ -244,7 +260,7 @@ See `docs/` directory for detailed specifications:
 **Services:**
 - Backend + Frontend: https://crontopus.com (App Platform)
 - Git Server: https://git.crontopus.com (Droplet + Volume)
-- Job Manifests: https://git.crontopus.com/crontopus/job-manifests
+- Job Manifests: Tenant-specific repositories at `https://git.crontopus.com/crontopus/job-manifests-{username}`
 
 **Deployment Commands:**
 
@@ -270,3 +286,5 @@ cd infra/forgejo
 - CORS is configured at App Platform level using service-level `routes` (not `ingress`)
 - Frontend API URL is set at build time via `VITE_API_URL` build arg in Dockerfile
 - Forgejo data persists on DigitalOcean Volume, survives droplet recreation
+- Deployment script uses dynamic version tags (format: `YYYYMMDD-HHMMSS`)
+- Script polls deployment status every 10s until ACTIVE/ERROR/CANCELED (10-minute timeout)
