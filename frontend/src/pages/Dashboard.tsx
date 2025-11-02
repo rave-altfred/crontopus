@@ -14,10 +14,14 @@ export const Dashboard = () => {
       agentsApi.list(),
     ])
       .then(([runs, agentsList]) => {
-        setRecentRuns(runs);
-        setAgents(agentsList);
+        setRecentRuns(Array.isArray(runs) ? runs : []);
+        setAgents(Array.isArray(agentsList) ? agentsList : []);
       })
-      .catch((err) => console.error('Failed to load dashboard data:', err))
+      .catch((err) => {
+        console.error('Failed to load dashboard data:', err);
+        setRecentRuns([]);
+        setAgents([]);
+      })
       .finally(() => setLoading(false));
   }, []);
 
