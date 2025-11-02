@@ -13,7 +13,7 @@ from ..services.forgejo import ForgejoClient
 from ..config import settings
 
 
-router = APIRouter(prefix="/jobs", tags=["jobs"])
+router = APIRouter(tags=["jobs"])
 
 
 class JobCreateRequest(BaseModel):

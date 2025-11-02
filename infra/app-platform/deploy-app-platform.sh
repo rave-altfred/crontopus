@@ -14,8 +14,19 @@ NC='\033[0m' # No Color
 
 # Configuration
 REGISTRY="registry.digitalocean.com/crontopus-registry"
-VERSION="${1:-$(date +%Y%m%d-%H%M%S)}"
+VERSION="$(date +%Y%m%d-%H%M%S)"
 APP_ID="${DIGITALOCEAN_APP_ID:-}"
+
+# Parse flags
+NO_CACHE=""
+for arg in "$@"; do
+    case $arg in
+        --no-cache)
+            NO_CACHE="--no-cache"
+            shift
+            ;;
+    esac
+done
 
 echo -e "${BLUE}================================================${NC}"
 echo -e "${BLUE}  Crontopus Deployment${NC}"
@@ -46,9 +57,13 @@ echo -e "${GREEN}✓ Authenticated${NC}"
 
 # Build backend image
 echo ""
-echo -e "${BLUE}Building backend image (with fresh build)...${NC}"
+if [ -n "$NO_CACHE" ]; then
+  echo -e "${BLUE}Building backend image (no cache)...${NC}"
+else
+  echo -e "${BLUE}Building backend image...${NC}"
+fi
 docker build \
-  --no-cache \
+  $NO_CACHE \
   -t ${REGISTRY}/backend:${VERSION} \
   -t ${REGISTRY}/backend:latest \
   --platform linux/amd64 \
@@ -59,13 +74,17 @@ echo -e "${GREEN}✓ Backend image built${NC}"
 # Build frontend image (if Dockerfile exists)
 if [ -f "./frontend/Dockerfile" ]; then
   echo ""
-  echo -e "${BLUE}Building frontend image (with fresh build)...${NC}"
+  if [ -n "$NO_CACHE" ]; then
+    echo -e "${BLUE}Building frontend image (no cache)...${NC}"
+  else
+    echo -e "${BLUE}Building frontend image...${NC}"
+  fi
   
 # Create .env for build with API URL
   echo "VITE_API_URL=https://crontopus.com/api" > ./frontend/.env.production
   
   docker build \
-    --no-cache \
+    $NO_CACHE \
     -t ${REGISTRY}/frontend:${VERSION} \
     -t ${REGISTRY}/frontend:latest \
     --platform linux/amd64 \
