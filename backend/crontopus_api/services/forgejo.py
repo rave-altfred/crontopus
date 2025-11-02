@@ -243,13 +243,23 @@ class ForgejoClient:
             payload['sha'] = sha
         
         async with httpx.AsyncClient() as client:
-            # Use PUT for both create and update (Forgejo API spec)
-            response = await client.put(
-                url,
-                headers=self.headers,
-                json=payload,
-                timeout=30.0
-            )
+            # Use POST for creating new files, PUT for updating existing files
+            if sha:
+                # File exists, use PUT to update
+                response = await client.put(
+                    url,
+                    headers=self.headers,
+                    json=payload,
+                    timeout=30.0
+                )
+            else:
+                # File doesn't exist, use POST to create
+                response = await client.post(
+                    url,
+                    headers=self.headers,
+                    json=payload,
+                    timeout=30.0
+                )
             response.raise_for_status()
             return response.json()
     
