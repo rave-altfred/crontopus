@@ -30,6 +30,7 @@ async def create_tenant_repository(tenant_id: str) -> bool:
         True if successful, False otherwise
     """
     logger.info(f"Starting repository creation for tenant: {tenant_id}")
+    print(f"[AUTH] Starting repository creation for tenant: {tenant_id}", flush=True)
     try:
         url = f"{settings.forgejo_url}/api/v1/orgs/crontopus/repos"
         headers = {
@@ -147,6 +148,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     
     # Log successful registration
     logger.info(f"User registered: {user_data.username}, tenant: {user_data.tenant_id}, new_tenant: {is_new_tenant}, repo_created: {repo_created}")
+    print(f"[AUTH] User registered: {user_data.username}, tenant: {user_data.tenant_id}, new_tenant: {is_new_tenant}, repo_created: {repo_created}", flush=True)
     
     return new_user
 
