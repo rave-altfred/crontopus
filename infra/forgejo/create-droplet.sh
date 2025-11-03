@@ -3,10 +3,10 @@ set -e
 
 # Create Forgejo Droplet on DigitalOcean
 # Region: fra1 (Frankfurt)
-# VPC: 30be8537-17ab-439e-9197-1b26478b2d8d
+# VPC: 803fc5f1-6165-4f81-8b92-a055a62f6292 (app-platform VPC)
 # Automatically attaches persistent volume and sets up mount
 
-VPC_ID="30be8537-17ab-439e-9197-1b26478b2d8d"
+VPC_ID="803fc5f1-6165-4f81-8b92-a055a62f6292"
 REGION="fra1"
 DROPLET_NAME="forgejo-crontopus"
 VOLUME_NAME="forgejo-data-volume"
