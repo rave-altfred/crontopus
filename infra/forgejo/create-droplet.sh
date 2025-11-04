@@ -29,7 +29,7 @@ echo "✅ Found volume: $VOLUME_ID"
 echo ""
 
 # Check if volume is attached to another droplet
-ATTACHED_TO=$(doctl compute volume get "$VOLUME_ID" --format DropletIDs --no-header)
+ATTACHED_TO=$(doctl compute volume get "$VOLUME_ID" --format DropletIDs --no-header | tr -d '[]')
 if [ -n "$ATTACHED_TO" ] && [ "$ATTACHED_TO" != "" ]; then
     echo "⚠️  Volume is currently attached to droplet: $ATTACHED_TO"
     echo "Detaching..."

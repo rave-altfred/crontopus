@@ -57,6 +57,24 @@ ssh "$DEPLOY_USER@$DROPLET_IP" << 'ENDSSH'
     fi
 ENDSSH
 
+# Check if postgres data exists on volume
+echo "🔍 Checking for existing database..."
+if ssh "$DEPLOY_USER@$DROPLET_IP" "[ -d /mnt/forgejo-data/postgres/base ] && [ \"\$(ls -A /mnt/forgejo-data/postgres/base 2>/dev/null)\" ]" 2>/dev/null; then
+    echo "✅ Existing database found on volume - will preserve it"
+    echo "⚠️  Make sure you're using the SAME postgres password as before!"
+    echo ""
+    read -p "Continue with deployment? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Deployment aborted."
+        exit 1
+    fi
+    EXISTING_DB=true
+else
+    echo "📋 No existing database found - will create new one"
+    EXISTING_DB=false
+fi
+
 # Start all services
 # Install certbot and get SSL certificate
 echo "🔒 Setting up SSL certificate..."
@@ -65,6 +83,14 @@ ssh "$DEPLOY_USER@$DROPLET_IP" << 'ENDSSH'
     if ! command -v certbot &> /dev/null; then
         snap install --classic certbot
         ln -sf /snap/bin/certbot /usr/bin/certbot
+    fi
+    
+    # If using volume and certificates exist there, restore them first
+    if mountpoint -q /mnt/forgejo-data 2>/dev/null && [ -d "/mnt/forgejo-data/letsencrypt/live" ]; then
+        echo "📋 Restoring SSL certificates from volume..."
+        mkdir -p /etc/letsencrypt
+        cp -av /mnt/forgejo-data/letsencrypt/* /etc/letsencrypt/
+        echo "✅ Certificates restored from volume"
     fi
     
     # Check if certificate exists
