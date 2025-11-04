@@ -1,5 +1,6 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { ThemeSelector } from '../components/ThemeSelector';
 
 export const MainLayout = () => {
   const { user, logout } = useAuth();
@@ -11,16 +12,17 @@ export const MainLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white dark:bg-gray-800 shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Crontopus</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Crontopus</h1>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user?.username}</span>
+            <ThemeSelector />
+            <span className="text-sm text-gray-600 dark:text-gray-300">{user?.username}</span>
             <button
               onClick={handleLogout}
-              className="text-sm text-indigo-600 hover:text-indigo-800"
+              className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
             >
               Logout
             </button>
@@ -32,12 +34,12 @@ export const MainLayout = () => {
         <div className="flex gap-8">
           {/* Sidebar */}
           <aside className="w-64 flex-shrink-0">
-            <nav className="bg-white rounded-lg shadow p-4">
+            <nav className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
               <ul className="space-y-2">
                 <li>
                   <Link
                     to="/"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"
+                    className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                   >
                     Dashboard
                   </Link>
@@ -45,7 +47,7 @@ export const MainLayout = () => {
                 <li>
                   <Link
                     to="/jobs"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"
+                    className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                   >
                     Jobs
                   </Link>
@@ -53,7 +55,7 @@ export const MainLayout = () => {
                 <li>
                   <Link
                     to="/runs"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"
+                    className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                   >
                     Job Runs
                   </Link>
@@ -61,7 +63,7 @@ export const MainLayout = () => {
                 <li>
                   <Link
                     to="/agents"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"
+                    className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                   >
                     Agents
                   </Link>
