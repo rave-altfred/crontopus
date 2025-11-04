@@ -30,14 +30,14 @@ export const Jobs = () => {
   }, [filter]);
 
   if (loading) {
-    return <div className="text-gray-600">Loading...</div>;
+    return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
   }
 
   if (error) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-gray-900">Job Manifests</h2>
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Job Manifests</h2>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
           {error}
         </div>
       </div>
@@ -47,7 +47,7 @@ export const Jobs = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Job Manifests</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Job Manifests</h2>
         <div className="flex items-center space-x-4">
           <Link
             to="/jobs/new"
@@ -60,7 +60,7 @@ export const Jobs = () => {
               href={repository}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
             >
               View in Git →
             </a>
@@ -74,7 +74,7 @@ export const Jobs = () => {
           className={`px-4 py-2 rounded-md text-sm font-medium ${
             filter === 'all'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
           All
@@ -84,7 +84,7 @@ export const Jobs = () => {
           className={`px-4 py-2 rounded-md text-sm font-medium ${
             filter === 'production'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
           Production
@@ -94,43 +94,43 @@ export const Jobs = () => {
           className={`px-4 py-2 rounded-md text-sm font-medium ${
             filter === 'staging'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
           Staging
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Job Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Environment
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Path
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {jobs.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={4} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                   No job manifests found
                 </td>
               </tr>
             ) : (
               jobs.map((job) => (
-                <tr key={job.sha} className="hover:bg-gray-50">
+                <tr key={job.sha} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {job.name.replace(/\.(yaml|yml)$/, '')}
                     </div>
                   </td>
@@ -145,13 +145,13 @@ export const Jobs = () => {
                       {job.namespace}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {job.path}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link
                       to={`/jobs/${job.path}`}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
                     >
                       View
                     </Link>
@@ -163,7 +163,7 @@ export const Jobs = () => {
         </table>
       </div>
 
-      <div className="text-sm text-gray-500">
+      <div className="text-sm text-gray-500 dark:text-gray-400">
         <p>
           Showing {jobs.length} job{jobs.length !== 1 ? 's' : ''} from Git
         </p>

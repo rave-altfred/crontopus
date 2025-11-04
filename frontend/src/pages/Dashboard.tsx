@@ -26,7 +26,7 @@ export const Dashboard = () => {
   }, []);
 
   if (loading) {
-    return <div className="text-gray-600">Loading...</div>;
+    return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
   }
 
   const activeAgents = agents.filter(a => a.status === 'active').length;
@@ -35,38 +35,38 @@ export const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h2>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">Active Agents</h3>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{activeAgents}</p>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Agents</h3>
+          <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{activeAgents}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">Successful Runs (Last 5)</h3>
-          <p className="mt-2 text-3xl font-bold text-green-600">{successfulRuns}</p>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Successful Runs (Last 5)</h3>
+          <p className="mt-2 text-3xl font-bold text-green-600 dark:text-green-400">{successfulRuns}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">Failed Runs (Last 5)</h3>
-          <p className="mt-2 text-3xl font-bold text-red-600">{failedRuns}</p>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Failed Runs (Last 5)</h3>
+          <p className="mt-2 text-3xl font-bold text-red-600 dark:text-red-400">{failedRuns}</p>
         </div>
       </div>
 
       {/* Recent Runs */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Recent Job Runs</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Job Runs</h3>
         </div>
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {recentRuns.length === 0 ? (
-            <div className="px-6 py-4 text-gray-500">No runs yet</div>
+            <div className="px-6 py-4 text-gray-500 dark:text-gray-400">No runs yet</div>
           ) : (
             recentRuns.map((run) => (
               <div key={run.id} className="px-6 py-4 flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900">{run.job_name}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="font-medium text-gray-900 dark:text-white">{run.job_name}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(run.started_at).toLocaleString()}
                   </p>
                 </div>
@@ -85,8 +85,8 @@ export const Dashboard = () => {
             ))
           )}
         </div>
-        <div className="px-6 py-4 border-t border-gray-200">
-          <Link to="/runs" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+          <Link to="/runs" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium">
             View all runs →
           </Link>
         </div>
