@@ -655,6 +655,189 @@
 
 ---
 
+## Phase 9: Agent Distribution & Enhancement
+
+**Status**: Agent core functionality complete (Phase 3), enhancements pending
+
+### 9.1 Agent Documentation
+- [ ] Create comprehensive `agent/README.md`
+  - Installation instructions for Linux, macOS, Windows
+  - Configuration guide with all options explained
+  - Troubleshooting section
+  - Architecture overview
+- [ ] Document scheduler-specific behavior
+  - Cron syntax and limitations
+  - Task Scheduler XML format details
+  - Platform-specific quirks
+- [ ] Add agent deployment examples
+  - Systemd service file (Linux)
+  - Launchd plist (macOS)
+  - Windows Service configuration
+- [ ] Create user guide for agent management
+  - Enrollment workflow
+  - Configuration best practices
+  - Security considerations
+
+**Deliverable**: Complete agent documentation for end users
+
+### 9.2 Agent Testing & Platform Verification
+- [x] Linux/macOS cron testing (verified on macOS)
+- [ ] Linux testing on multiple distributions
+  - Ubuntu/Debian (system cron)
+  - RHEL/CentOS (cronie)
+  - Alpine (busybox cron)
+- [ ] Windows Task Scheduler end-to-end testing
+  - Windows 10/11 compatibility
+  - Windows Server editions
+  - PowerShell execution context
+- [ ] Cross-platform integration tests
+  - Git sync on all platforms
+  - Manifest parsing consistency
+  - Scheduler reconciliation accuracy
+- [ ] Performance testing
+  - Large manifest repositories (100+ jobs)
+  - High-frequency reconciliation
+  - Memory and CPU profiling
+
+**Deliverable**: Agent verified on all target platforms with performance benchmarks
+
+### 9.3 Binary Distribution
+- [ ] Set up automated builds
+  - GitHub Actions for multi-platform builds
+  - Build matrix: linux (amd64, arm64), darwin (amd64, arm64), windows (amd64)
+  - Versioned releases with semantic versioning
+- [ ] Create installation scripts
+  - `install.sh` for Linux/macOS (curl-to-bash installer)
+  - `install.ps1` for Windows (PowerShell installer)
+  - Package managers: Homebrew (macOS), apt/yum (Linux), Chocolatey (Windows)
+- [ ] Binary signing and verification
+  - Code signing certificates
+  - Checksum files (SHA256)
+  - GPG signatures for verification
+- [ ] Release automation
+  - Automated GitHub releases on version tags
+  - Release notes generation from commits
+  - Binary upload to CDN/artifact storage
+
+**Deliverable**: Users can install agent via one-command installers on all platforms
+
+### 9.4 System Service Integration
+- [ ] Linux systemd integration
+  - `.service` file template
+  - Auto-start on boot
+  - Log rotation with journald
+  - Resource limits (cgroups)
+- [ ] macOS launchd integration
+  - `.plist` file template
+  - LaunchAgent vs LaunchDaemon guidance
+  - Log management with unified logging
+- [ ] Windows Service wrapper
+  - Native Windows Service implementation
+  - Event Log integration
+  - Service recovery policies
+  - Service Control Manager integration
+- [ ] Service management CLI commands
+  - `crontopus-agent install` - Install as system service
+  - `crontopus-agent uninstall` - Remove service
+  - `crontopus-agent start/stop/restart` - Service control
+  - `crontopus-agent status` - Service status check
+
+**Deliverable**: Agent runs as native system service on all platforms
+
+### 9.5 Agent Security Hardening
+- [ ] Secure credential storage
+  - Linux: Keyring integration (libsecret, gnome-keyring)
+  - macOS: Keychain integration
+  - Windows: Credential Manager (DPAPI)
+  - Fallback: Encrypted file with OS-specific key derivation
+- [ ] Agent binary signing and verification
+  - Code signing for all platforms
+  - Backend verification of agent signatures during enrollment
+  - Version-based revocation (block outdated agents)
+- [ ] TLS certificate pinning
+  - Pin backend API certificate
+  - Detect MITM attacks
+  - Configurable pinning policies
+- [ ] Secure update mechanism
+  - Auto-update capability with signature verification
+  - Rollback support on failed updates
+  - Update channels (stable, beta)
+- [ ] Audit logging
+  - Log all scheduler modifications
+  - Git sync events with commit hashes
+  - Enrollment and token operations
+  - Tamper-evident logs
+
+**Deliverable**: Agent meets enterprise security standards (Phase 8.1 dependency)
+
+### 9.6 Agent Observability
+- [ ] Structured logging
+  - JSON log format option
+  - Log levels (debug, info, warn, error)
+  - Contextual fields (agent_id, job_name, commit_hash)
+  - Log aggregation friendly
+- [ ] Metrics exposure
+  - Prometheus `/metrics` endpoint (optional HTTP server)
+  - Metrics: sync_duration, reconciliation_changes, heartbeat_failures, scheduler_errors
+  - Job-level metrics: execution_count, last_run_timestamp
+- [ ] Health check endpoint
+  - HTTP health endpoint for monitoring
+  - Reports: git_sync_status, scheduler_status, backend_connectivity
+  - Used by service managers and monitoring tools
+- [ ] Distributed tracing
+  - OpenTelemetry integration
+  - Trace reconciliation operations
+  - Link agent operations to backend API calls
+
+**Deliverable**: Agent operations are fully observable (Phase 4 integration)
+
+### 9.7 Advanced Agent Features
+- [ ] Job dependency support
+  - Parse `spec.dependsOn` from manifests
+  - Coordinate execution order with backend
+  - Timeout and failure handling
+- [ ] Resource limits enforcement
+  - Parse `spec.resources` from manifests
+  - Apply cgroup limits (Linux)
+  - Job priority and nice values
+- [ ] Execution isolation (optional)
+  - Container execution mode (Docker/Podman)
+  - VM execution mode (Firecracker)
+  - Sandboxing for untrusted jobs
+- [ ] Multi-repository support
+  - Sync from multiple Git repositories
+  - Repository priorities and namespacing
+  - Conflict resolution strategies
+- [ ] Intelligent reconciliation
+  - Incremental sync (only changed files)
+  - Conditional reconciliation (only if commit changed)
+  - Reconciliation dry-run mode
+
+**Deliverable**: Agent supports advanced job orchestration features
+
+### 9.8 Agent Update & Maintenance
+- [ ] Version compatibility matrix
+  - Document agent-to-backend compatibility
+  - API versioning strategy
+  - Deprecation notices
+- [ ] Auto-update mechanism
+  - Backend notifies agent of new versions
+  - Agent downloads and verifies binary
+  - Graceful restart with job preservation
+  - Rollback on update failures
+- [ ] Configuration validation
+  - `crontopus-agent validate --config config.yaml`
+  - Pre-flight checks before service start
+  - Migration tool for config upgrades
+- [ ] Telemetry and crash reporting
+  - Optional telemetry collection
+  - Crash dumps with privacy controls
+  - Version adoption metrics
+
+**Deliverable**: Agent lifecycle management is seamless for operators
+
+---
+
 ## Development Guidelines
 
 ### Component Order
