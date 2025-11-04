@@ -143,6 +143,12 @@ npm run dev
 
 Frontend will run at `http://localhost:5173`
 
+**Tech Stack:**
+- React 19 + TypeScript + Vite
+- Tailwind CSS v4 with dark mode support
+- lucide-react for icons
+- react-syntax-highlighter for code display
+
 ### API Routing
 
 **Important**: FastAPI adds trailing slashes to root routes!

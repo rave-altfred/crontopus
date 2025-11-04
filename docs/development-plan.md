@@ -314,10 +314,26 @@
 
 **Deliverable**: ✅ Web console with core features: auth, dashboard, runs, agents
 
+### 5.4 UI/UX Enhancements
+- [x] Theme selection (light/dark/auto)
+  - ThemeContext with localStorage persistence
+  - ThemeSelector component with lucide-react icons (Sun, Moon, Monitor)
+  - Tailwind CSS v4 dark mode configuration via `@variant dark`
+  - System preference detection for auto mode
+  - Real-time theme switching without page reload
+- [x] Dark mode styling across all pages
+  - Dashboard, Jobs, Runs, Agents pages
+  - MainLayout header and sidebar
+  - Login and Register pages (future)
+  - Consistent dark mode color scheme
+
+**Deliverable**: ✅ Professional theme support with persistent user preference
+
 **Deployment Status**: ✅ Frontend and backend fully deployed to production at https://crontopus.com
 - Frontend served via Nginx with SPA routing
 - API routing configured using service-level `routes`: `/api/*` and `/health` → backend, `/` → frontend  
-- Tailwind CSS v4 with @tailwindcss/postcss
+- Tailwind CSS v4 with @tailwindcss/postcss (dark mode via CSS `@variant`)
+- lucide-react for icon library
 - Docker multi-stage builds for optimized images
 - Health checks and monitoring active
 - Custom domains with automatic DNS updates

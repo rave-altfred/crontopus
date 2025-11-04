@@ -134,7 +134,7 @@ python3 -m venv venv
 ```bash
 cd frontend
 
-# Install dependencies (check for package.json)
+# Install dependencies
 npm install
 
 # Run dev server
@@ -143,6 +143,13 @@ npm run dev
 # Build for production
 npm run build
 ```
+
+**Tech Stack:**
+- React 19 + TypeScript + Vite
+- Tailwind CSS v4 (configured via CSS, not tailwind.config.js)
+- Dark mode support (light/dark/auto with lucide-react icons)
+- lucide-react for icons
+- react-syntax-highlighter for code display
 
 ### Internal Admin
 ```bash
