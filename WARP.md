@@ -262,6 +262,12 @@ See `docs/` directory for detailed specifications:
 - Git Server: https://git.crontopus.com (Droplet + Volume)
 - Job Manifests: Tenant-specific repositories at `https://git.crontopus.com/crontopus/job-manifests-{username}`
 
+**Network Architecture:**
+- VPC: `803fc5f1-6165-4f81-8b92-a055a62f6292` (dedicated app VPC)
+- All services (App Platform, Forgejo droplet) run in same VPC for private network communication
+- App Platform uses private networking to access Forgejo via internal IP
+- Database accessible via private VPC networking
+
 **Deployment Commands:**
 
 ```bash
@@ -277,14 +283,19 @@ doctl apps create-deployment 934e7b77-38da-49bb-bfcf-0ab6d7b8fa2f --wait
 cd infra/forgejo
 ./create-volume.sh         # One-time: create persistent volume
 ./destroy-droplet.sh       # Destroy old droplet (preserves volume)
-./create-droplet.sh        # Create new droplet with volume
-./deploy.sh <droplet_ip>   # Deploy Forgejo
+./create-droplet.sh        # Create new droplet with volume (same VPC)
+./deploy.sh <droplet_ip>   # Deploy Forgejo (detects existing DB and prompts)
 ```
 
 **Important Notes:**
 - Database migrations run automatically on backend startup via `start.sh`
 - CORS is configured at App Platform level using service-level `routes` (not `ingress`)
 - Frontend API URL is set at build time via `VITE_API_URL` build arg in Dockerfile
-- Forgejo data persists on DigitalOcean Volume, survives droplet recreation
+- Forgejo data persists on DigitalOcean Volume at `/mnt/forgejo-data` (survives droplet recreation)
+  - Deploy script detects existing postgres data and prompts before overwriting
+  - SSL certificates automatically restored from volume if they exist
+  - Volume detachment issues fixed (properly strips brackets from droplet IDs)
+- All services run in same VPC (`803fc5f1-6165-4f81-8b92-a055a62f6292`) for private networking
 - Deployment script uses dynamic version tags (format: `YYYYMMDD-HHMMSS`)
 - Script polls deployment status every 10s until ACTIVE/ERROR/CANCELED (10-minute timeout)
+- App-platform deployment waits for completion before running DNS updates (both create and update paths)

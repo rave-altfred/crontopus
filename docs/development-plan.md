@@ -373,6 +373,11 @@
 - [x] Update deployment scripts to handle volume setup
 - [x] Document backup and restore procedures
 - [x] Add droplet lifecycle management (destroy/recreate with volume preservation)
+- [x] Fix database preservation on droplet recreation
+  - Deploy script detects existing postgres data before deployment
+  - Confirmation prompt when existing database found
+  - SSL certificates automatically restored from volume
+  - Volume detachment parsing fixed (strips brackets from droplet IDs)
 
 **Deliverable**: ✅ Forgejo data persisted on DigitalOcean Volume with backup strategy
 
@@ -384,10 +389,30 @@
 
 **Implementation**:
 - Volume: `forgejo-data-volume` (10GB, fra1)
-- New droplet: 139.59.214.80
+- Droplet: Recreated in same VPC as app-platform
 - Auto-mount on boot via user-data script
 - SSL certificates synced to volume
 - Scripts: create-volume.sh, destroy-droplet.sh, updated deploy.sh
+- Database preservation verified through droplet recreation
+
+### 6.8 VPC Network Consolidation
+- [x] Move all services to single VPC for private networking
+  - VPC ID: `803fc5f1-6165-4f81-8b92-a055a62f6292` (dedicated app VPC)
+  - App Platform migrated to dedicated VPC
+  - Forgejo droplet recreated in same VPC
+  - Private network communication between services
+- [x] Update infrastructure documentation
+  - Network architecture diagram
+  - VPC configuration details
+  - Service connectivity requirements
+
+**Deliverable**: ✅ All services running in single VPC with private networking
+
+**Benefits**:
+- Improved security (private service-to-service communication)
+- Better network performance (low latency within VPC)
+- Simplified firewall rules
+- Foundation for future service mesh
 
 ### 6.5 Frontend Jobs Integration
 - [x] Create jobs API client (TypeScript interfaces)
