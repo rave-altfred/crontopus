@@ -681,25 +681,50 @@
 **Deliverable**: Complete agent documentation for end users
 
 ### 9.2 Agent Testing & Platform Verification
+
+**Testing Strategy**: Hybrid approach using GitHub Actions (Linux/macOS) + DigitalOcean Droplets (Windows Server)
+
 - [x] Linux/macOS cron testing (verified on macOS)
-- [ ] Linux testing on multiple distributions
-  - Ubuntu/Debian (system cron)
-  - RHEL/CentOS (cronie)
-  - Alpine (busybox cron)
-- [ ] Windows Task Scheduler end-to-end testing
-  - Windows 10/11 compatibility
-  - Windows Server editions
-  - PowerShell execution context
+- [ ] Linux testing on multiple distributions (GitHub Actions)
+  - Ubuntu 20.04/22.04 LTS (system cron)
+  - Debian 11/12 (system cron)
+  - RHEL 8/9 / Rocky Linux (cronie)
+  - Alpine Linux (busybox cron)
+  - Verify crontab format consistency
+  - Test user vs system crontab
+- [ ] **Windows Server testing** (DigitalOcean Droplet - **CRITICAL for enterprise**)
+  - **Windows Server 2019 Datacenter** (primary target)
+  - **Windows Server 2022 Datacenter** (latest LTS)
+  - Windows Server 2016 (legacy support)
+  - Task Scheduler XML format validation
+  - PowerShell execution context (ExecutionPolicy, profiles)
+  - Active Directory domain-joined scenarios
+  - Service account permissions testing
+  - Event Log integration verification
+  - Remote Desktop testing workflow
+- [ ] Windows Desktop testing (GitHub Actions / local VMs)
+  - Windows 10 Pro/Enterprise (21H2, 22H2)
+  - Windows 11 Pro/Enterprise
+  - User-level vs system-level task creation
 - [ ] Cross-platform integration tests
-  - Git sync on all platforms
-  - Manifest parsing consistency
+  - Git sync on all platforms (HTTPS, SSH, token auth)
+  - Manifest parsing consistency (line endings, encoding)
   - Scheduler reconciliation accuracy
+  - Token storage and encryption
+  - Enrollment and heartbeat flow
 - [ ] Performance testing
   - Large manifest repositories (100+ jobs)
-  - High-frequency reconciliation
-  - Memory and CPU profiling
+  - High-frequency reconciliation (5s interval)
+  - Memory and CPU profiling with pprof
+  - Concurrent job scheduling stress test
+  - Long-running agent stability (24h+ uptime)
 
-**Deliverable**: Agent verified on all target platforms with performance benchmarks
+**Test Infrastructure**:
+- GitHub Actions: Linux (free), macOS (free)
+- DigitalOcean Droplet: Windows Server 2019/2022 (~$24/month)
+- Cost-effective: Destroy/recreate droplet as needed for testing
+
+**Deliverable**: Agent verified on all target platforms with enterprise Windows Server validation
 
 ### 9.3 Binary Distribution
 - [ ] Set up automated builds

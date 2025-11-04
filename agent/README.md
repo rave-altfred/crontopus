@@ -171,8 +171,10 @@ git:
 ### Windows (Task Scheduler)
 
 **Supported:**
-- ✅ Windows 10/11
-- ✅ Windows Server 2016+
+- ✅ **Windows Server 2019 Datacenter** (Primary Enterprise Target)
+- ✅ **Windows Server 2022 Datacenter** (Latest LTS)
+- ✅ Windows Server 2016 (Legacy Support)
+- ✅ Windows 10/11 Pro/Enterprise (Desktop)
 - ✅ Task Scheduler 2.0 (Vista+)
 
 **Implementation Details:**
@@ -180,16 +182,28 @@ git:
 - Uses `schtasks.exe` CLI
 - Creates tasks via XML definition
 - Simplified cron-to-trigger conversion
+- Compatible with domain-joined servers
+- Supports service account execution
+
+**Enterprise Features:**
+- Event Log integration for audit trail
+- Active Directory compatible
+- Service Control Manager integration
+- PowerShell execution support
+- Task history and logging
 
 **Current Limitations:**
 - ⚠️ **Basic cron conversion**: Only simple schedules supported initially
 - ⚠️ **No complex expressions**: Ranges, steps, lists need enhancement
 - ⚠️ Full Task Scheduler feature set not yet utilized
+- ⚠️ **Testing in progress**: Windows Server validation ongoing
 
 **Planned Enhancements:**
-- Full cron expression support
+- Full cron expression support (all 5-field patterns)
 - Multiple triggers per task
-- Advanced scheduling (idle, on event)
+- Advanced scheduling (idle, on event, on logon)
+- Group Managed Service Account (gMSA) support
+- Better error handling and retry logic
 
 ---
 
