@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Service identifier -->
+    <key>Label</key>
+    <string>com.crontopus.agent</string>
+    
+    <!-- Command to run -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/crontopus-agent</string>
+        <string>--config</string>
+        <string>/Users/USERNAME/.crontopus/config.yaml</string>
+    </array>
+    
+    <!-- Start on system boot -->
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <!-- Keep agent running (restart on crash) -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+        <key>Crashed</key>
+        <true/>
+    </dict>
+    
+    <!-- Restart throttling -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    
+    <!-- Working directory -->
+    <key>WorkingDirectory</key>
+    <string>/Users/USERNAME/.crontopus</string>
+    
+    <!-- Logging -->
+    <key>StandardOutPath</key>
+    <string>/Users/USERNAME/.crontopus/agent.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/Users/USERNAME/.crontopus/agent.error.log</string>
+    
+    <!-- Environment variables -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/USERNAME</string>
+    </dict>
+    
+    <!-- Resource limits -->
+    <key>SoftResourceLimits</key>
+    <dict>
+        <key>NumberOfFiles</key>
+        <integer>4096</integer>
+    </dict>
+    
+    <key>HardResourceLimits</key>
+    <dict>
+        <key>NumberOfFiles</key>
+        <integer>8192</integer>
+    </dict>
+    
+    <!-- Process nice value (lower priority) -->
+    <key>Nice</key>
+    <integer>5</integer>
+    
+    <!-- Run as user (LaunchAgent - runs as logged-in user) -->
+    <!-- For LaunchDaemon (system-wide), use UserName key instead -->
+</dict>
+</plist>
