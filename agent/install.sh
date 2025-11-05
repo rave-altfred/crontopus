@@ -11,7 +11,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-REPO="YOUR_GITHUB_ORG/crontopus"  # Update with actual repo
+REPO="rave-altfred/crontopus"
 VERSION="${CRONTOPUS_VERSION:-latest}"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 BINARY_NAME="crontopus-agent"

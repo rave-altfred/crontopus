@@ -4,7 +4,7 @@
 param(
     [string]$Version = "latest",
     [string]$InstallDir = "C:\Program Files\Crontopus",
-    [string]$Repo = "YOUR_GITHUB_ORG/crontopus"  # Update with actual repo
+    [string]$Repo = "rave-altfred/crontopus"
 )
 
 $ErrorActionPreference = "Stop"

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -17,10 +18,20 @@ import (
 	"github.com/crontopus/agent/pkg/sync"
 )
 
+// Version is set during build via ldflags
+var Version = "dev"
+
 func main() {
 	// Parse command line flags
 	configPath := flag.String("config", "config.yaml", "Path to configuration file")
+	versionFlag := flag.Bool("version", false, "Print version and exit")
 	flag.Parse()
+
+	// Handle version flag
+	if *versionFlag {
+		fmt.Printf("Crontopus Agent v%s\n", Version)
+		os.Exit(0)
+	}
 
 	// Load configuration
 	cfg, err := config.LoadConfig(*configPath)
