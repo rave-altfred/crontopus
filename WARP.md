@@ -72,9 +72,16 @@ Key:
 - CLI/Frontend write jobs via Backend API → Git
 ```
 
-## Development Commands
+## Current Development Phase
 
-**Note**: This project is currently in early scaffolding phase. Many build/test commands need to be defined.
+**Phase 9: Agent Distribution & Enhancement**
+- Phase 9.1: Agent Documentation ✅ Complete
+- Phase 9.2: Agent Testing & Platform Verification (in progress)
+- Phase 9.3: Binary Distribution (in progress)
+
+See `docs/development-plan.md` for full roadmap.
+
+## Development Commands
 
 ### Backend (FastAPI)
 ```bash
@@ -103,7 +110,18 @@ go build -o build/crontopus-agent ./cmd/crontopus-agent
 
 # Run the agent (requires enrollment token)
 ./build/crontopus-agent --config /path/to/config.yaml
+
+# For detailed documentation:
+# - See agent/README.md for complete installation guide
+# - See agent/examples/ for systemd/launchd/Task Scheduler templates
+# - See agent/docs/windows-server-testing.md for Windows Server testing
 ```
+
+**Agent Status (Phase 9.1 Complete)**:
+- ✅ Comprehensive documentation (README, deployment examples)
+- ✅ Platform support: Linux, macOS, Windows Server 2019/2022, Windows 10/11
+- ✅ Windows Server testing strategy with DigitalOcean droplets (~$24/month)
+- ⚠️ Binary distribution and automated releases (Phase 9.3 - in progress)
 
 ### CLI (Python)
 ```bash

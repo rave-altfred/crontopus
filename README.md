@@ -133,6 +133,16 @@ cp config.example.yaml config.yaml
 ./build/crontopus-agent --config config.yaml
 ```
 
+**See [agent/README.md](agent/README.md) for comprehensive installation, configuration, and deployment guide.**
+
+**Platform Support:**
+- ✅ Linux (Ubuntu, Debian, RHEL, Alpine) with cron
+- ✅ macOS with cron
+- ✅ **Windows Server 2019/2022** (enterprise focus)
+- ✅ Windows 10/11 Pro/Enterprise
+
+**Testing:** Windows Server testing guide available at [agent/docs/windows-server-testing.md](agent/docs/windows-server-testing.md)
+
 **Frontend Setup:**
 
 ```bash
