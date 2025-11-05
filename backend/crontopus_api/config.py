@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     api_title: str = "Crontopus API"
     api_version: str = "0.2.0"  # Added job CRUD endpoints
     api_prefix: str = "/api"
+    api_url: Optional[str] = None  # Public API URL (e.g., https://crontopus.com)
     environment: str = "development"
     
     # Security
@@ -87,3 +88,15 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def get_settings() -> Settings:
+    """
+    Dependency for FastAPI routes to get application settings.
+    
+    Usage:
+        @app.get("/config")
+        def read_config(settings: Settings = Depends(get_settings)):
+            return {"api_url": settings.api_url}
+    """
+    return settings
