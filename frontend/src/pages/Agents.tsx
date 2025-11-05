@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Download } from 'lucide-react';
 import { agentsApi, type Agent } from '../api/agents';
 
 export const Agents = () => {
@@ -21,6 +23,13 @@ export const Agents = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Agents</h2>
+        <Link
+          to="/agents/download"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition"
+        >
+          <Download className="w-4 h-4" />
+          Download Agent
+        </Link>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">

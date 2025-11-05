@@ -12,6 +12,7 @@ import { Jobs } from './pages/Jobs';
 import { JobDetail } from './pages/JobDetail';
 import { JobNew } from './pages/JobNew';
 import { JobEdit } from './pages/JobEdit';
+import { AgentDownload } from './pages/AgentDownload';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           >
             <Route index element={<Dashboard />} />
             <Route path="agents" element={<Agents />} />
+            <Route path="agents/download" element={<AgentDownload />} />
             <Route path="runs" element={<Runs />} />
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/new" element={<JobNew />} />
