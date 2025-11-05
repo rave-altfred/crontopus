@@ -1,0 +1,240 @@
+name: Agent Release
+
+on:
+  push:
+    tags:
+      - 'agent-v*.*.*'  # Trigger on agent version tags (e.g., agent-v0.1.0)
+  workflow_dispatch:  # Allow manual triggering for testing
+
+permissions:
+  contents: write  # Required for creating releases
+
+jobs:
+  build:
+    name: Build Agent Binaries
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          # Linux builds
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            output: crontopus-agent-linux-amd64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm64
+            output: crontopus-agent-linux-arm64
+          
+          # macOS builds
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+            output: crontopus-agent-darwin-amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+            output: crontopus-agent-darwin-arm64
+          
+          # Windows builds
+          - os: ubuntu-latest
+            goos: windows
+            goarch: amd64
+            output: crontopus-agent-windows-amd64.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache-dependency-path: agent/go.sum
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/agent-v}
+          else
+            VERSION="dev-$(git rev-parse --short HEAD)"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+
+      - name: Build binary
+        working-directory: agent
+        env:
+          CGO_ENABLED: 0
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          go build \
+            -ldflags="-s -w -X main.Version=${{ steps.get_version.outputs.version }}" \
+            -o ../build/${{ matrix.output }} \
+            ./cmd/crontopus-agent
+
+      - name: Generate SHA256 checksum
+        working-directory: build
+        run: |
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            sha256sum ${{ matrix.output }} > ${{ matrix.output }}.sha256
+          else
+            shasum -a 256 ${{ matrix.output }} > ${{ matrix.output }}.sha256
+          fi
+          cat ${{ matrix.output }}.sha256
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.output }}
+          path: |
+            build/${{ matrix.output }}
+            build/${{ matrix.output }}.sha256
+          retention-days: 7
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for changelog
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          find release-artifacts -type f -exec mv {} release/ \;
+          ls -lh release/
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/agent-v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          
+          cat > RELEASE_NOTES.md << 'EOF'
+          # Crontopus Agent v$VERSION
+          
+          ## Installation
+          
+          ### Quick Install (Linux/macOS)
+          
+          ```bash
+          curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/agent/install.sh | bash
+          ```
+          
+          ### Manual Download
+          
+          #### Linux (x86_64)
+          ```bash
+          wget https://github.com/${{ github.repository }}/releases/download/agent-v$VERSION/crontopus-agent-linux-amd64
+          chmod +x crontopus-agent-linux-amd64
+          sudo mv crontopus-agent-linux-amd64 /usr/local/bin/crontopus-agent
+          ```
+          
+          #### Linux (ARM64)
+          ```bash
+          wget https://github.com/${{ github.repository }}/releases/download/agent-v$VERSION/crontopus-agent-linux-arm64
+          chmod +x crontopus-agent-linux-arm64
+          sudo mv crontopus-agent-linux-arm64 /usr/local/bin/crontopus-agent
+          ```
+          
+          #### macOS (Intel)
+          ```bash
+          wget https://github.com/${{ github.repository }}/releases/download/agent-v$VERSION/crontopus-agent-darwin-amd64
+          chmod +x crontopus-agent-darwin-amd64
+          sudo mv crontopus-agent-darwin-amd64 /usr/local/bin/crontopus-agent
+          ```
+          
+          #### macOS (Apple Silicon)
+          ```bash
+          wget https://github.com/${{ github.repository }}/releases/download/agent-v$VERSION/crontopus-agent-darwin-arm64
+          chmod +x crontopus-agent-darwin-arm64
+          sudo mv crontopus-agent-darwin-arm64 /usr/local/bin/crontopus-agent
+          ```
+          
+          #### Windows
+          
+          Download `crontopus-agent-windows-amd64.exe` from this release and place in `C:\Program Files\Crontopus\`
+          
+          Or use PowerShell:
+          ```powershell
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/${{ github.repository }}/main/agent/install.ps1" -OutFile "install.ps1"
+          .\install.ps1
+          ```
+          
+          ## Verification
+          
+          All binaries include SHA256 checksums. Verify integrity:
+          
+          ```bash
+          sha256sum -c crontopus-agent-linux-amd64.sha256
+          ```
+          
+          ## Platform Support
+          
+          - ✅ Linux (Ubuntu, Debian, RHEL, Alpine)
+          - ✅ macOS (Intel and Apple Silicon)
+          - ✅ **Windows Server 2019/2022** (Enterprise)
+          - ✅ Windows 10/11 Pro/Enterprise
+          
+          ## Documentation
+          
+          - [Installation Guide](https://github.com/${{ github.repository }}/blob/main/agent/README.md)
+          - [Configuration Reference](https://github.com/${{ github.repository }}/blob/main/agent/README.md#configuration-reference)
+          - [Windows Server Testing](https://github.com/${{ github.repository }}/blob/main/agent/docs/windows-server-testing.md)
+          - [Deployment Examples](https://github.com/${{ github.repository }}/tree/main/agent/examples)
+          
+          ## Changelog
+          
+          EOF
+          
+          # Add commits since last tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            echo "### Initial Release" >> RELEASE_NOTES.md
+            echo "" >> RELEASE_NOTES.md
+            git log --pretty=format:"- %s (%h)" --max-count=20 >> RELEASE_NOTES.md
+          else
+            git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
+          fi
+          
+          # Replace $VERSION placeholder
+          sed -i "s/\$VERSION/$VERSION/g" RELEASE_NOTES.md
+          
+          cat RELEASE_NOTES.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update latest tag
+        if: "!contains(github.ref, 'alpha') && !contains(github.ref, 'beta') && !contains(github.ref, 'rc')"
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag -f agent-latest
+          git push -f origin agent-latest

@@ -730,24 +730,41 @@
 **Deliverable**: Agent verified on all target platforms with enterprise Windows Server validation
 
 ### 9.3 Binary Distribution
-- [ ] Set up automated builds
-  - GitHub Actions for multi-platform builds
+- [x] Set up automated builds
+  - GitHub Actions for multi-platform builds (`.github/workflows/agent-release.yml`)
   - Build matrix: linux (amd64, arm64), darwin (amd64, arm64), windows (amd64)
-  - Versioned releases with semantic versioning
-- [ ] Create installation scripts
-  - `install.sh` for Linux/macOS (curl-to-bash installer)
-  - `install.ps1` for Windows (PowerShell installer)
-  - Package managers: Homebrew (macOS), apt/yum (Linux), Chocolatey (Windows)
-- [ ] Binary signing and verification
-  - Code signing certificates
-  - Checksum files (SHA256)
-  - GPG signatures for verification
-- [ ] Release automation
+  - Versioned releases with semantic versioning (agent-v0.1.0)
+  - Triggers on `agent-v*.*.*` tags
+- [x] Create installation scripts
+  - `agent/install.sh` for Linux/macOS (curl-to-bash installer)
+  - `agent/install.ps1` for Windows (PowerShell installer)
+  - Auto-detect platform and architecture
+  - SHA256 checksum verification
+  - Package managers: Homebrew (macOS), apt/yum (Linux), Chocolatey (Windows) - **Future**
+- [x] Binary signing and verification
+  - Checksum files (SHA256) - automated in workflow
+  - Code signing certificates - **Future enhancement**
+  - GPG signatures for verification - **Future enhancement**
+- [x] Release automation
   - Automated GitHub releases on version tags
   - Release notes generation from commits
-  - Binary upload to CDN/artifact storage
+  - Binary upload to GitHub Releases
+  - Latest tag tracking (`agent-latest`)
 
-**Deliverable**: Users can install agent via one-command installers on all platforms
+**Deliverable**: ✅ Users can install agent via one-command installers on all platforms
+
+**Usage**:
+```bash
+# Create a release
+git tag agent-v0.1.0
+git push origin agent-v0.1.0
+
+# Install on Linux/macOS
+curl -fsSL https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/install.sh | bash
+
+# Install on Windows
+iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/install.ps1 | iex
+```
 
 ### 9.4 System Service Integration
 - [ ] Linux systemd integration
