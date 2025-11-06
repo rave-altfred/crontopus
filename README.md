@@ -61,6 +61,7 @@ crontopus/
 
 - **Ping Mode (Agent Optional)** — Any existing scheduler (cron, Jenkins, Windows Task Scheduler, Kubernetes CronJob, etc.) includes a simple HTTP **check-in** to report run results directly to Crontopus.  
 - **Agent Mode (Native Scheduler Management)** — Install a signed agent to **apply and reconcile job definitions** on the local OS scheduler (create/update/remove, enable/disable), handle token rotation, and enforce schedule/policy constraints. **The agent never executes jobs.**  
+- **Zero-Configuration Agent Deployment** — Download pre-configured installers from webapp with embedded credentials - run one command and agent is ready!  
 - **GitOps Integration** — Sync job manifests and policies from tenant-specific Git repositories in **Forgejo**.  
 - **API First Development** — UI and CLI both talk to the same REST endpoints.  
 - **Alerts & Metrics** — Slack/email/PagerDuty notifications and Prometheus metrics.  
@@ -121,15 +122,24 @@ python3 -m venv venv
 
 **Agent Setup:**
 
+**Recommended: Zero-Configuration Install** (from webapp):
+1. Login to https://crontopus.com
+2. Navigate to "Download Agent" page
+3. Select your platform (Linux/macOS/Windows)
+4. Download and run the pre-configured installer
+5. Agent automatically installs, configures, and starts running!
+
+**Manual Installation:**
 ```bash
+# Linux/macOS
+curl -fsSL https://raw.githubusercontent.com/rave-altfred/crontopus/main/agent/install.sh | bash
+
+# Windows (PowerShell)
+iwr -useb https://raw.githubusercontent.com/rave-altfred/crontopus/main/agent/install.ps1 | iex
+
+# Or build from source
 cd agent
 go build -o build/crontopus-agent ./cmd/crontopus-agent
-
-# Configure agent
-cp config.example.yaml config.yaml
-# Edit config.yaml with your settings
-
-# Run agent
 ./build/crontopus-agent --config config.yaml
 ```
 

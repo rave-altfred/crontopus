@@ -885,7 +885,7 @@ iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/instal
 
 **Goal**: Zero-configuration agent installation from webapp
 
-- [ ] Backend: Dynamic installer generation endpoint
+- [x] Backend: Dynamic installer generation endpoint
   - `GET /api/agents/install/script/{platform}` - Generate pre-configured install script
   - Embed user's enrollment token in script
   - Embed tenant-specific Git repository URL
@@ -896,34 +896,37 @@ iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/instal
   - Track token usage (one-time use preferred)
   - Token revocation endpoint
   - Audit log for install token generation
-- [ ] Frontend: Agent download page
+- [x] Frontend: Agent download page
   - Platform selection UI (Linux, macOS, Windows)
   - Download buttons for each platform
   - Visual instructions for running downloaded script
   - Security warnings about token protection
   - Copy-paste command option (alternative to download)
-- [ ] Frontend: Download page UI/UX
+- [x] Frontend: Download page UI/UX
   - Clear "Download Agent" navigation item
   - Step-by-step instructions with icons
   - Platform auto-detection (suggest correct platform)
   - "What happens next?" explanation
   - Link to deployment documentation
-- [ ] Script generation logic
+- [x] Script generation logic
   - Generate bash installer with embedded config
   - Generate PowerShell installer with embedded config
   - Auto-fill enrollment token, Git repo URL, username
   - Create config.yaml with pre-configured values
   - Include agent binary download and installation
   - Add post-install verification steps
+  - **Automatic agent startup** - Agent starts running immediately after install
 
 **User Flow**:
 1. User clicks "Download Agent" in webapp
 2. Selects platform (Linux/macOS/Windows)
 3. Downloads pre-configured install script
 4. Runs script with single command
-5. Agent auto-installs and enrolls with zero manual config
+5. Agent auto-installs, enrolls, and **starts running** with zero manual config
 
-**Deliverable**: Users can deploy agents with zero configuration - download, run, done!
+**Deliverable**: ✅ Users can deploy agents with zero configuration - download, run, done!
+
+**Implementation Status**: ✅ **COMPLETE** - Backend generates platform-specific installers with embedded credentials, frontend provides download UI with platform selection, agents start automatically after installation
 
 **Benefits**:
 - ✅ Zero-configuration deployment

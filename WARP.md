@@ -76,8 +76,9 @@ Key:
 
 **Phase 9: Agent Distribution & Enhancement**
 - Phase 9.1: Agent Documentation ✅ Complete
-- Phase 9.2: Agent Testing & Platform Verification (in progress)
-- Phase 9.3: Binary Distribution (in progress)
+- Phase 9.2: Agent Testing & Platform Verification (pending)
+- Phase 9.3: Binary Distribution ✅ Complete
+- Phase 9.9: Pre-Configured Agent Download ✅ Complete
 
 See `docs/development-plan.md` for full roadmap.
 
@@ -117,11 +118,13 @@ go build -o build/crontopus-agent ./cmd/crontopus-agent
 # - See agent/docs/windows-server-testing.md for Windows Server testing
 ```
 
-**Agent Status (Phase 9.1 Complete)**:
+**Agent Status (Phase 9.1, 9.3, 9.9 Complete)**:
 - ✅ Comprehensive documentation (README, deployment examples)
 - ✅ Platform support: Linux, macOS, Windows Server 2019/2022, Windows 10/11
 - ✅ Windows Server testing strategy with DigitalOcean droplets (~$24/month)
-- ⚠️ Binary distribution and automated releases (Phase 9.3 - in progress)
+- ✅ Binary distribution and automated releases (GitHub Actions)
+- ✅ Pre-configured agent installers with automatic startup
+- ✅ Zero-configuration deployment from webapp
 
 ### CLI (Python)
 ```bash

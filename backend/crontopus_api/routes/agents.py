@@ -341,14 +341,37 @@ else
 fi
 
 echo ""
+echo "[4/4] Starting agent..."
+echo ""
+
+# Start agent in background
+nohup crontopus-agent --config ~/.crontopus/config.yaml > ~/.crontopus/agent.log 2>&1 &
+AGENT_PID=$!
+
+# Wait a moment and check if it's still running
+sleep 2
+if ps -p $AGENT_PID > /dev/null; then
+    echo "✓ Agent started successfully (PID: $AGENT_PID)"
+    echo "✓ Logs: ~/.crontopus/agent.log"
+else
+    echo "✗ Agent failed to start. Check logs at ~/.crontopus/agent.log"
+    exit 1
+fi
+
+echo ""
 echo "===================================================="
 echo "  Installation Complete!"
 echo "===================================================="
 echo ""
-echo "To start the agent:"
-echo "  crontopus-agent --config ~/.crontopus/config.yaml"
+echo "Agent Status:"
+echo "  PID: $AGENT_PID"
+echo "  Config: ~/.crontopus/config.yaml"
+echo "  Logs: ~/.crontopus/agent.log"
 echo ""
-echo "To install as a system service:"
+echo "To stop the agent:"
+echo "  kill $AGENT_PID"
+echo ""
+echo "To install as a system service (recommended):"
 if [ "$OS" = "darwin" ]; then
     echo "  # macOS (launchd)"
     echo "  curl -fsSL https://raw.githubusercontent.com/rave-altfred/crontopus/main/agent/examples/com.crontopus.agent.plist -o ~/Library/LaunchAgents/com.crontopus.agent.plist"
@@ -453,14 +476,46 @@ if (Get-Command crontopus-agent.exe -ErrorAction SilentlyContinue) {{
 }}
 
 Write-Host ""
+Write-Host "[4/4] Starting agent..." -ForegroundColor Yellow
+Write-Host ""
+
+# Start agent in background
+try {{
+    $AgentProcess = Start-Process -FilePath "crontopus-agent.exe" `
+        -ArgumentList "--config", "C:\\ProgramData\\Crontopus\\config.yaml" `
+        -NoNewWindow `
+        -PassThru `
+        -RedirectStandardOutput "C:\\ProgramData\\Crontopus\\agent.log" `
+        -RedirectStandardError "C:\\ProgramData\\Crontopus\\agent-error.log"
+    
+    # Wait a moment and check if it's still running
+    Start-Sleep -Seconds 2
+    if ($AgentProcess.HasExited) {{
+        Write-Host "✗ Agent failed to start. Check logs at C:\\ProgramData\\Crontopus\\agent-error.log" -ForegroundColor Red
+        exit 1
+    }} else {{
+        Write-Host "✓ Agent started successfully (PID: $($AgentProcess.Id))" -ForegroundColor Green
+        Write-Host "✓ Logs: C:\\ProgramData\\Crontopus\\agent.log" -ForegroundColor Green
+    }}
+}} catch {{
+    Write-Host "✗ Failed to start agent: $_" -ForegroundColor Red
+    exit 1
+}}
+
+Write-Host ""
 Write-Host "====================================================" -ForegroundColor Cyan
 Write-Host "  Installation Complete!" -ForegroundColor Cyan
 Write-Host "====================================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "To start the agent:"
-Write-Host "  crontopus-agent.exe --config C:\\ProgramData\\Crontopus\\config.yaml"
+Write-Host "Agent Status:"
+Write-Host "  PID: $($AgentProcess.Id)"
+Write-Host "  Config: C:\\ProgramData\\Crontopus\\config.yaml"
+Write-Host "  Logs: C:\\ProgramData\\Crontopus\\agent.log"
 Write-Host ""
-Write-Host "To install as a Windows Service:"
+Write-Host "To stop the agent:"
+Write-Host "  Stop-Process -Id $($AgentProcess.Id)"
+Write-Host ""
+Write-Host "To install as a Windows Service (recommended):"
 Write-Host "  See: https://github.com/rave-altfred/crontopus/blob/main/agent/examples/crontopus-agent-task.xml"
 Write-Host ""
 Write-Host "Documentation: https://github.com/rave-altfred/crontopus/blob/main/agent/README.md"
