@@ -311,7 +311,7 @@ class ForgejoClient:
         token_name: str = 'crontopus-git-access'
     ) -> str:
         """
-        Create an access token for a user.
+        Create an access token for a user (using admin API).
         
         Args:
             username: Username to create token for
@@ -320,7 +320,7 @@ class ForgejoClient:
         Returns:
             Access token string
         """
-        url = f'{self.base_url}/api/v1/users/{username}/tokens'
+        url = f'{self.base_url}/api/v1/admin/users/{username}/tokens'
         
         payload = {
             'name': token_name
