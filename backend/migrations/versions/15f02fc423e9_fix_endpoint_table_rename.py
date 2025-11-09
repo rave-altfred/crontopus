@@ -26,9 +26,17 @@ def upgrade() -> None:
     inspector = sa.inspect(conn)
     tables = inspector.get_table_names()
     
-    if 'agent' in tables and 'endpoint' not in tables:
-        # Need to rename
-        op.rename_table('agent', 'endpoint')
+    # Handle various historical table names and rename to singular 'endpoint'
+    if 'endpoint' not in tables:
+        if 'agent' in tables:
+            op.rename_table('agent', 'endpoint')
+        elif 'agents' in tables:
+            op.rename_table('agents', 'endpoint')
+        elif 'endpoints' in tables:
+            op.rename_table('endpoints', 'endpoint')
+    
+    # Refresh tables after potential rename
+    tables = sa.inspect(conn).get_table_names()
     
     # Ensure job_instances table exists
     if 'job_instances' not in tables:
