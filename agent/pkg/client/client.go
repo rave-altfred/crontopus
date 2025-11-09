@@ -33,10 +33,12 @@ func (c *Client) SetToken(token string) {
 
 // EnrollRequest represents agent enrollment request
 type EnrollRequest struct {
-	Name     string `json:"name"`
-	Hostname string `json:"hostname"`
-	Platform string `json:"platform"`
-	Version  string `json:"version"`
+	Name        string `json:"name"`
+	Hostname    string `json:"hostname"`
+	Platform    string `json:"platform"`
+	Version     string `json:"version"`
+	GitRepoURL  string `json:"git_repo_url,omitempty"`
+	GitBranch   string `json:"git_branch,omitempty"`
 }
 
 // EnrollResponse represents agent enrollment response

@@ -5,7 +5,7 @@ from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-from crontopus_api.models.agent import AgentStatus
+from crontopus_api.models.agent import EndpointStatus
 
 
 class AgentEnroll(BaseModel):
@@ -30,7 +30,7 @@ class AgentEnrollResponse(BaseModel):
 
 class AgentHeartbeat(BaseModel):
     """Schema for agent heartbeat request."""
-    status: Optional[AgentStatus] = Field(None, description="Agent status")
+    status: Optional[EndpointStatus] = Field(None, description="Agent status")
     platform: Optional[str] = Field(None, description="Platform info")
     version: Optional[str] = Field(None, description="Agent version")
 
@@ -41,7 +41,7 @@ class AgentResponse(BaseModel):
     tenant_id: str
     name: str
     hostname: Optional[str]
-    status: AgentStatus
+    status: EndpointStatus
     
     last_heartbeat: Optional[datetime]
     enrolled_at: datetime

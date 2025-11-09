@@ -60,10 +60,12 @@ func main() {
 		}
 
 		enrollReq := client.EnrollRequest{
-			Name:     cfg.Agent.Name,
-			Hostname: cfg.Agent.Hostname,
-			Platform: cfg.Agent.Platform,
-			Version:  cfg.Agent.Version,
+			Name:        cfg.Agent.Name,
+			Hostname:    cfg.Agent.Hostname,
+			Platform:    cfg.Agent.Platform,
+			Version:     cfg.Agent.Version,
+			GitRepoURL:  cfg.Git.RepoURL,
+			GitBranch:   cfg.Git.Branch,
 		}
 
 		enrollResp, err := apiClient.Enroll(enrollReq, cfg.Backend.EnrollmentToken)
