@@ -28,6 +28,7 @@ class Endpoint(TenantScopedBase):
     Endpoints run the agent binary which pulls job manifests from Git
     and reconciles with OS schedulers. They report heartbeat to backend.
     """
+    __tablename__ = 'endpoints'
     
     # Endpoint identification
     name = Column(String(255), nullable=False, index=True)
