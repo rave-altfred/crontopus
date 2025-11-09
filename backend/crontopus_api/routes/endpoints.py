@@ -562,9 +562,10 @@ echo "[2/3] Creating configuration file..."
 # Create config directory
 mkdir -p ~/.crontopus
 
-# Auto-detect platform
+# Auto-detect platform and version
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 HOSTNAME=$(hostname)
+VERSION=$(crontopus-agent --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "0.1.0")
 
 # Generate config file with pre-configured values
 cat > ~/.crontopus/config.yaml << EOF
@@ -572,7 +573,7 @@ agent:
   name: "${{HOSTNAME}}-agent"
   hostname: "${{HOSTNAME}}"
   platform: "${{OS}}"
-  version: "0.1.0"
+  version: "${{VERSION}}"
   token_path: "~/.crontopus/agent-token"
 
 backend:
@@ -786,13 +787,22 @@ if (-not (Test-Path $ConfigDir)) {{
     New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null
 }}
 
+# Detect agent version
+$AgentVersion = "0.1.0"
+try {{
+    $VersionOutput = & crontopus-agent.exe --version 2>$null
+    if ($VersionOutput -match '[0-9]+\.[0-9]+\.[0-9]+') {{
+        $AgentVersion = $matches[0]
+    }}
+}} catch {{}}
+
 # Generate config file with pre-configured values
 $ConfigContent = @"
 agent:
   name: "$($env:COMPUTERNAME)-agent"
   hostname: "$($env:COMPUTERNAME)"
   platform: "windows"
-  version: "0.1.0"
+  version: "$AgentVersion"
   token_path: "C:\\ProgramData\\Crontopus\\agent-token"
 
 backend:
