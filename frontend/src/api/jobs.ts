@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { Agent } from './agents';
 
 export interface JobManifest {
   apiVersion: string;
@@ -106,5 +107,10 @@ export const jobsApi = {
   delete: async (namespace: string, jobName: string): Promise<any> => {
     const response = await apiClient.delete(`/jobs/${namespace}/${jobName}`);
     return response.data;
+  },
+
+  getEndpoints: async (namespace: string, jobName: string): Promise<Agent[]> => {
+    const response = await apiClient.get(`/jobs/${namespace}/${jobName}/endpoints`);
+    return response.data.endpoints;
   },
 };

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { jobsApi, type JobListItem } from '../api/jobs';
+import type { Agent } from '../api/agents';
 
 export const Jobs = () => {
   const [jobs, setJobs] = useState<JobListItem[]>([]);
@@ -8,6 +10,9 @@ export const Jobs = () => {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'production' | 'staging'>('all');
   const [repository, setRepository] = useState<string>('');
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [endpointsByJob, setEndpointsByJob] = useState<Record<string, Agent[]>>({});
+  const [loadingEndpoints, setLoadingEndpoints] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const namespace = filter === 'all' ? undefined : filter;
@@ -105,6 +110,7 @@ export const Jobs = () => {
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
+              <th className="px-6 py-3 w-8"></th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Job Name
               </th>
@@ -122,13 +128,44 @@ export const Jobs = () => {
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {jobs.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                   No job manifests found
                 </td>
               </tr>
             ) : (
-              jobs.map((job) => (
-                <tr key={job.sha} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+              jobs.map((job) => {
+                const jobKey = `${job.namespace}/${job.name.replace(/\.(yaml|yml)$/, '')}`;
+                return (
+                  <>
+                    <tr
+                      key={job.sha}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                      onClick={async () => {
+                        const next = !expanded[jobKey];
+                        setExpanded({ ...expanded, [jobKey]: next });
+                        if (next && !endpointsByJob[jobKey] && !loadingEndpoints[jobKey]) {
+                          setLoadingEndpoints({ ...loadingEndpoints, [jobKey]: true });
+                          try {
+                            const endpoints = await jobsApi.getEndpoints(
+                              job.namespace,
+                              job.name.replace(/\.(yaml|yml)$/, '')
+                            );
+                            setEndpointsByJob({ ...endpointsByJob, [jobKey]: endpoints });
+                          } catch (e) {
+                            console.error('Failed to load endpoints for job', jobKey, e);
+                          } finally {
+                            setLoadingEndpoints({ ...loadingEndpoints, [jobKey]: false });
+                          }
+                        }
+                      }}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap w-8">
+                        {expanded[jobKey] ? (
+                          <ChevronDown className="w-4 h-4 text-gray-500" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-gray-500" />
+                        )}
+                      </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {job.name.replace(/\.(yaml|yml)$/, '')}
@@ -148,16 +185,72 @@ export const Jobs = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {job.path}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link
-                      to={`/jobs/${job.path}`}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <Link
+                          to={`/jobs/${job.path}`}
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          View
+                        </Link>
+                      </td>
+                    </tr>
+                    {expanded[jobKey] && (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-3 bg-gray-50 dark:bg-gray-900">
+                          {loadingEndpoints[jobKey] ? (
+                            <div className="text-sm text-gray-500 dark:text-gray-400">Loading endpoints...</div>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">Endpoints running this job</div>
+                              <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                  <thead className="bg-gray-100 dark:bg-gray-800">
+                                    <tr>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Platform</th>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Heartbeat</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    {(endpointsByJob[jobKey] || []).length === 0 ? (
+                                      <tr>
+                                        <td colSpan={4} className="px-4 py-2 text-sm text-center text-gray-500 dark:text-gray-400">
+                                          No endpoints running this job yet
+                                        </td>
+                                      </tr>
+                                    ) : (
+                                      (endpointsByJob[jobKey] || []).map((ep) => (
+                                        <tr key={ep.id}>
+                                          <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{ep.name}</td>
+                                          <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{ep.platform}</td>
+                                          <td className="px-4 py-2 text-sm">
+                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                              ep.status === 'active'
+                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                            }`}>
+                                              {ep.status}
+                                            </span>
+                                          </td>
+                                          <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+                                            {new Date(ep.last_heartbeat).toLocaleString()}
+                                          </td>
+                                        </tr>
+                                      ))
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                );
+              })
             )}
           </tbody>
         </table>
