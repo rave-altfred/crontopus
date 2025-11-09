@@ -50,6 +50,9 @@ export const Endpoints = () => {
                 Platform
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Machine ID
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -60,7 +63,7 @@ export const Endpoints = () => {
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {endpoints.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                   No endpoints enrolled yet
                 </td>
               </tr>
@@ -100,6 +103,11 @@ export const Endpoints = () => {
                     <div className="text-sm text-gray-500 dark:text-gray-400">{endpoint.platform}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-xs font-mono text-gray-500 dark:text-gray-400">
+                      {endpoint.machine_id ? endpoint.machine_id.substring(0, 12) + '...' : 'N/A'}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         endpoint.status === 'active'
@@ -120,7 +128,7 @@ export const Endpoints = () => {
                   </tr>
                   {expanded[String(endpoint.id)] && (
                     <tr>
-                      <td colSpan={6} className="px-6 py-3 bg-gray-50 dark:bg-gray-900">
+                      <td colSpan={7} className="px-6 py-3 bg-gray-50 dark:bg-gray-900">
                         {loadingJobs[String(endpoint.id)] ? (
                           <div className="text-sm text-gray-500 dark:text-gray-400">Loading jobs...</div>
                         ) : (
