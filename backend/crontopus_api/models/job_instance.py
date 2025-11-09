@@ -40,7 +40,7 @@ class JobInstance(TenantScopedBase):
     namespace = Column(String(255), nullable=False, default="production", index=True)
     
     # Endpoint relationship
-    endpoint_id = Column(Integer, ForeignKey("endpoints.id", ondelete="CASCADE"), nullable=False, index=True)
+    endpoint_id = Column(Integer, ForeignKey("endpoint.id", ondelete="CASCADE"), nullable=False, index=True)
     
     # Status
     status = Column(

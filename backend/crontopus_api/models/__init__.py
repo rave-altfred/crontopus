@@ -11,6 +11,7 @@ from .job_run import JobRun, JobStatus
 from .agent import Agent, AgentStatus  # Keep for backward compatibility during migration
 from .endpoint import Endpoint, EndpointStatus
 from .job_instance import JobInstance, JobInstanceStatus, JobInstanceSource
+from .enrollment_token import EnrollmentToken
 
 __all__ = [
     "TenantScopedBase",
@@ -25,4 +26,5 @@ __all__ = [
     "JobInstance",
     "JobInstanceStatus",
     "JobInstanceSource",
+    "EnrollmentToken",
 ]
