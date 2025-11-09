@@ -13,6 +13,17 @@ export interface Agent {
   git_repo_branch: string;
 }
 
+export interface JobInstance {
+  id: number;
+  job_name: string;
+  namespace: string;
+  endpoint_id: number;
+  status: string;
+  source: string;
+  original_command: string | null;
+  last_seen: string;
+}
+
 export const agentsApi = {
   list: async (): Promise<Agent[]> => {
     const response = await apiClient.get('/agents');
@@ -26,5 +37,10 @@ export const agentsApi = {
 
   revoke: async (id: string): Promise<void> => {
     await apiClient.delete(`/agents/${id}`);
+  },
+
+  getJobs: async (endpointId: string): Promise<JobInstance[]> => {
+    const response = await apiClient.get(`/endpoints/${endpointId}/jobs`);
+    return response.data.jobs || [];
   },
 };
