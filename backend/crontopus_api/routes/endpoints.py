@@ -59,11 +59,10 @@ async def enroll_endpoint(
     
     Only authenticated users can enroll endpoints.
     """
-    # Check if endpoint with same machine_id already exists
+    # Check if endpoint with same machine_id already exists (across all tenants)
     existing_endpoint = None
     if endpoint_data.machine_id:
         existing_endpoint = db.query(Endpoint).filter(
-            Endpoint.tenant_id == current_user.tenant_id,
             Endpoint.machine_id == endpoint_data.machine_id
         ).first()
     
@@ -72,7 +71,8 @@ async def enroll_endpoint(
     token_hash = get_password_hash(token)
     
     if existing_endpoint:
-        # Reuse existing endpoint, update token and metadata
+        # Transfer endpoint to new tenant and update token and metadata
+        existing_endpoint.tenant_id = current_user.tenant_id  # Transfer to new tenant
         existing_endpoint.name = endpoint_data.name
         existing_endpoint.hostname = endpoint_data.hostname
         existing_endpoint.platform = endpoint_data.platform
