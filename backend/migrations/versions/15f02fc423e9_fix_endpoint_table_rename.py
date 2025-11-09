@@ -22,9 +22,14 @@ def upgrade() -> None:
     # Check if we need to rename agent -> endpoint
     # This migration handles the case where the database was at rev 6e6023d3e120
     # but the rename didn't actually happen
+    import logging
+    logger = logging.getLogger('alembic.runtime.migration')
+    
     conn = op.get_bind()
     inspector = sa.inspect(conn)
     tables = inspector.get_table_names()
+    
+    logger.info(f"[MIGRATION] Current tables: {sorted(tables)}")
     
     # Handle various historical table names and rename to singular 'endpoint'
     if 'endpoint' not in tables:
