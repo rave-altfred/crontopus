@@ -19,8 +19,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Rename agent table to endpoints
-    op.rename_table('agent', 'endpoints')
+    # Rename agent table to endpoint (singular)
+    op.rename_table('agent', 'endpoint')
     
     # Create job_instances table
     op.create_table(
@@ -36,7 +36,7 @@ def upgrade() -> None:
         sa.Column('source', sa.String(length=10), nullable=False),
         sa.Column('original_command', sa.Text(), nullable=True),
         sa.Column('last_seen', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.ForeignKeyConstraint(['endpoint_id'], ['endpoints.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['endpoint_id'], ['endpoint.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id')
     )
     
@@ -59,5 +59,5 @@ def downgrade() -> None:
     op.drop_index('ix_job_instances_job_name', 'job_instances')
     op.drop_table('job_instances')
     
-    # Rename endpoints back to agent
-    op.rename_table('endpoints', 'agent')
+    # Rename endpoint back to agent
+    op.rename_table('endpoint', 'agent')
