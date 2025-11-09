@@ -946,8 +946,9 @@ iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/instal
 - **Endpoint** = A machine/server running an agent instance (many endpoints can run the same agent)
 - **Enrollment Token** = Long-lived token for remote agent deployment (replaces short-lived JWT)
 - **Machine ID** = Platform-specific unique identifier for deduplication on reinstallation
+- **Git Token** = Forgejo access token for secure repository cloning
 
-**Goal**: Enable secure, zero-configuration agent deployment with automatic endpoint deduplication.
+**Goal**: Enable secure, zero-configuration agent deployment with automatic endpoint deduplication and Git authentication.
 
 ### 10.1 Enrollment Token System
 
@@ -1009,7 +1010,34 @@ iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/instal
 
 **Deliverable**: ✅ Agent installs as system service automatically on all platforms
 
-**Implementation Status**: ✅ **COMPLETE** - Agent v0.1.2 deployed to production
+### 10.4 Git Authentication with Forgejo Access Tokens
+
+- [x] Add `git_token` column to User model
+- [x] Create migration `efa1a3d79845_add_git_token_to_users.py`
+- [x] Implement Forgejo user creation and access token generation
+  - `ForgejoClient.create_user()` - Create Forgejo user for tenant
+  - `ForgejoClient.create_access_token()` - Generate access token for Git operations
+- [x] Update registration flow to create Forgejo users and store tokens
+  - Token stored in `User.git_token` field
+  - Automatic user provisioning on registration
+- [x] Update installer generation to embed Git tokens
+  - Changed from `git.auth.type: basic` to `git.auth.type: token`
+  - Config includes `git.auth.token` with Forgejo access token
+  - Fallback to enrollment token if git_token not available
+- [x] Agent support for token-based Git authentication
+  - Updated `config.go` with `GitAuthConfig` (Type, Token)
+  - Modified `git.Syncer` to construct authenticated URLs
+  - Method: `https://username:token@git.crontopus.com/repo.git`
+- [x] Agent v0.1.3 released with Git authentication support
+  - GitHub Actions workflow successful
+  - Binaries available for all platforms
+- [x] Migration table name fix deployed
+  - Fixed from `'users'` to `'user'` (singular)
+  - Deployment successful (version 20251109-205602)
+
+**Deliverable**: ✅ Agents authenticate to Git using Forgejo access tokens
+
+**Implementation Status**: ✅ **COMPLETE** - Agent v0.1.3 deployed to production
 
 **Benefits**:
 - ✅ Secure remote agent deployment without exposing short-lived JWT tokens
@@ -1017,6 +1045,9 @@ iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/instal
 - ✅ No duplicate endpoints on reinstallation
 - ✅ Zero-configuration deployment with automatic startup
 - ✅ Platform-specific unique machine identification
+- ✅ Secure Git repository access with per-user tokens
+- ✅ Follows industry standards (Docker, AWS CLI, GitLab Runner pattern)
+- ✅ File-based token storage with OS permissions (0600)
 
 ---
 

@@ -88,14 +88,17 @@ Key:
 - Phase 10.1: Enrollment Token System ✅ Complete
 - Phase 10.2: Machine ID-Based Deduplication ✅ Complete
 - Phase 10.3: Automatic Service Installation ✅ Complete
+- Phase 10.4: Git Authentication with Forgejo Access Tokens ✅ Complete
 
 **Key Achievements**:
 - ✅ Long-lived enrollment tokens for secure remote agent deployment
 - ✅ Machine ID-based endpoint deduplication (no duplicate endpoints on reinstall)
 - ✅ Automatic system service installation on all platforms (launchd/systemd/Task Scheduler)
-- ✅ Agent v0.1.2 released with machine_id support
+- ✅ Git authentication with Forgejo access tokens (HTTP + token auth)
+- ✅ Automatic Forgejo user and access token creation on registration
+- ✅ Agent v0.1.3 released with Git authentication support
 - ✅ Frontend enrollment token management UI
-- ✅ Zero-configuration deployment with automatic startup
+- ✅ Zero-configuration deployment with automatic startup and Git sync
 
 **Previous Phases**:
 - Phase 9.1: Agent Documentation ✅ Complete
@@ -153,6 +156,8 @@ go build -o build/crontopus-agent ./cmd/crontopus-agent
 - ✅ Long-lived enrollment tokens (replaces short-lived JWT)
 - ✅ Machine ID-based deduplication (prevents duplicate endpoints)
 - ✅ Automatic system service installation (launchd/systemd/Task Scheduler)
+- ✅ Git authentication with Forgejo access tokens (agent v0.1.3)
+- ✅ Secure token-based repository cloning (follows industry standards)
 
 ### CLI (Python)
 ```bash
@@ -289,6 +294,10 @@ DELETE /api/jobs/{namespace}/{job_name}
 - **Auto-Creation**: Repository automatically created during user registration
   - Initialized with `production/` and `staging/` directories
   - Includes `.gitkeep` files for directory structure
+- **Git Authentication**: Automatic Forgejo user and access token creation
+  - Token stored in `User.git_token` column
+  - Embedded in agent installer config as `git.auth.token`
+  - Agent constructs authenticated URLs: `https://username:token@git.crontopus.com/repo.git`
 - **Isolation**: All API endpoints enforce tenant isolation
   - Job CRUD operations scoped to tenant's repository
   - Agents pull from tenant-specific repository
@@ -296,9 +305,12 @@ DELETE /api/jobs/{namespace}/{job_name}
 - **Registration Flow**:
   1. User registers with username/email/password
   2. Backend sets `tenant_id = username`
-  3. Backend calls Forgejo API to create `crontopus/job-manifests-{username}`
-  4. Repository initialized as private with directory structure
-  5. User can immediately create jobs via UI
+  3. Backend creates Forgejo user via `ForgejoClient.create_user()`
+  4. Backend generates access token via `ForgejoClient.create_access_token()`
+  5. Token stored in `User.git_token` for agent installers
+  6. Backend creates `crontopus/job-manifests-{username}` repository
+  7. Repository initialized as private with directory structure
+  8. User can immediately create jobs via UI and agents can clone repository
 
 ## Documentation
 

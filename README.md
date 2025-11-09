@@ -8,6 +8,7 @@ It combines the simplicity of "ping-based" cron monitoring with the control of a
 - **Endpoint** = Machine/server running an agent instance (many endpoints can run the same agent)
 - **Enrollment Token** = Long-lived token for secure remote agent deployment
 - **Machine ID** = Platform-specific unique identifier (prevents duplicate endpoints)
+- **Git Token** = Forgejo access token for secure repository cloning (auto-created per user)
 - **Job Definition** = YAML manifest in Git (desired state)
 - **Job Instance** = Actual scheduled job on a specific endpoint (current state)
 
@@ -71,9 +72,11 @@ crontopus/
 - **Agent Mode (Native Scheduler Management)** — Install a signed agent to **apply and reconcile job definitions** on the local OS scheduler (create/update/remove, enable/disable), handle token rotation, and enforce schedule/policy constraints. **The agent never executes jobs.**  
 - **Zero-Configuration Deployment** — Download pre-configured installers from webapp with embedded credentials - run one command and agent is ready!  
   - Long-lived enrollment tokens (no JWT expiration issues)
+  - Automatic Git authentication with Forgejo access tokens
   - Automatic system service installation (launchd/systemd/Task Scheduler)
   - Agent starts immediately and survives reboots
 - **Smart Deduplication** — Machine ID-based endpoint detection prevents duplicate entries on reinstallation. Reinstall on the same machine reuses existing endpoint.
+- **Secure Git Access** — Automatic Forgejo user and access token creation on registration. Agents authenticate using per-user tokens (follows industry standards).
 - **Bidirectional Sync** — Agent reconciles between Git (desired state) and scheduler (current state). Discovers existing cron jobs and imports them to Git automatically.
 - **Automatic Callback Injection** — Agent wraps all job commands with check-in callbacks. Jobs automatically report success/failure without manual instrumentation.
 - **Multi-Endpoint Management** — Track which jobs are running on which machines (endpoints). View job-to-endpoint and endpoint-to-job relationships in web UI.
