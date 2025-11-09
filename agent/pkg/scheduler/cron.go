@@ -114,6 +114,49 @@ func (s *CronScheduler) List() ([]JobEntry, error) {
 	return jobs, nil
 }
 
+// ListAll returns ALL cron jobs (including non-Crontopus jobs)
+func (s *CronScheduler) ListAll() ([]JobEntry, error) {
+	entries, err := s.readCrontab()
+	if err != nil {
+		return nil, fmt.Errorf("failed to read crontab: %w", err)
+	}
+
+	jobs := []JobEntry{}
+	for i, entry := range entries {
+		// Skip empty lines and comments
+		entry = strings.TrimSpace(entry)
+		if entry == "" || strings.HasPrefix(entry, "#") {
+			continue
+		}
+
+		// Try to parse as Crontopus-managed job first
+		if job := s.parseCronEntry(entry); job != nil {
+			jobs = append(jobs, *job)
+			continue
+		}
+
+		// Parse as discovered job (non-Crontopus)
+		fields := strings.Fields(entry)
+		if len(fields) < 6 {
+			continue // Invalid entry
+		}
+
+		schedule := strings.Join(fields[0:5], " ")
+		command := strings.Join(fields[5:], " ")
+
+		// Generate a unique name for discovered jobs
+		name := fmt.Sprintf("discovered-job-%d", i)
+
+		jobs = append(jobs, JobEntry{
+			Name:     name,
+			Schedule: schedule,
+			Command:  command,
+		})
+	}
+
+	return jobs, nil
+}
+
 // Verify checks if a job exists
 func (s *CronScheduler) Verify(name string) (bool, error) {
 	entries, err := s.readCrontab()

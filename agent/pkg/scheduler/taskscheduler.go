@@ -114,6 +114,71 @@ func (s *TaskScheduler) List() ([]JobEntry, error) {
 	return jobs, nil
 }
 
+// ListAll returns ALL scheduled tasks (including non-Crontopus tasks)
+func (s *TaskScheduler) ListAll() ([]JobEntry, error) {
+	// List all tasks (not just Crontopus folder)
+	cmd := exec.Command("schtasks", "/Query", "/FO", "LIST", "/V")
+	output, err := cmd.Output()
+	
+	if err != nil {
+		return nil, fmt.Errorf("failed to list all tasks: %w", err)
+	}
+
+	jobs := []JobEntry{}
+	lines := strings.Split(string(output), "\n")
+	
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "TaskName:") {
+			taskPath := strings.TrimSpace(strings.TrimPrefix(line, "TaskName:"))
+			
+			// Skip system tasks and empty names
+			if taskPath == "" || strings.HasPrefix(taskPath, "\\Microsoft\\") {
+				continue
+			}
+			
+			// Extract task name from path
+			parts := strings.Split(taskPath, "\\")
+			taskName := parts[len(parts)-1]
+			if taskName == "" {
+				continue
+			}
+			
+			// Try to get task details
+			cmd := exec.Command("schtasks", "/Query", "/TN", taskPath, "/XML")
+			taskOutput, err := cmd.Output()
+			if err != nil {
+				continue // Skip if we can't read details
+			}
+			
+			// Parse XML
+			var task Task
+			if err := xml.Unmarshal(taskOutput, &task); err != nil {
+				continue
+			}
+			
+			command := ""
+			if len(task.Actions.Exec) > 0 {
+				command = task.Actions.Exec[0].Command
+				if task.Actions.Exec[0].Arguments != "" {
+					command += " " + task.Actions.Exec[0].Arguments
+				}
+			}
+			
+			// Convert triggers to cron (simplified)
+			schedule := s.triggersToSimpleCron(task.Triggers)
+			
+			jobs = append(jobs, JobEntry{
+				Name:     taskName,
+				Schedule: schedule,
+				Command:  command,
+			})
+		}
+	}
+
+	return jobs, nil
+}
+
 // Verify checks if a task exists
 func (s *TaskScheduler) Verify(name string) (bool, error) {
 	taskPath := s.folderPath + name

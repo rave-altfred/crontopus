@@ -19,8 +19,11 @@ type Scheduler interface {
 	// Remove deletes a scheduled job by name
 	Remove(name string) error
 
-	// List returns all currently scheduled jobs
+	// List returns all currently scheduled jobs managed by Crontopus
 	List() ([]JobEntry, error)
+
+	// ListAll returns ALL scheduled jobs (including non-Crontopus jobs)
+	ListAll() ([]JobEntry, error)
 
 	// Verify checks if a job exists and matches the expected state
 	Verify(name string) (bool, error)

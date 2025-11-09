@@ -10,15 +10,21 @@ import (
 
 // Reconciler manages synchronization between Git manifests and OS scheduler
 type Reconciler struct {
-	scheduler scheduler.Scheduler
-	parser    *manifest.Parser
+	scheduler     scheduler.Scheduler
+	parser        *manifest.Parser
+	backendURL    string
+	endpointID    int
+	endpointToken string
 }
 
 // NewReconciler creates a new reconciler
-func NewReconciler(sch scheduler.Scheduler, parser *manifest.Parser) *Reconciler {
+func NewReconciler(sch scheduler.Scheduler, parser *manifest.Parser, backendURL string, endpointID int, endpointToken string) *Reconciler {
 	return &Reconciler{
-		scheduler: sch,
-		parser:    parser,
+		scheduler:     sch,
+		parser:        parser,
+		backendURL:    backendURL,
+		endpointID:    endpointID,
+		endpointToken: endpointToken,
 	}
 }
 

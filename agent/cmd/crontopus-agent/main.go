@@ -71,8 +71,14 @@ func main() {
 			log.Fatalf("Failed to enroll agent: %v", err)
 		}
 
+		// Support both endpoint_id (new) and agent_id (backward compat)
+		endpointID := enrollResp.EndpointID
+		if endpointID == 0 {
+			endpointID = enrollResp.AgentID
+		}
+
 		tokenData = &auth.TokenData{
-			AgentID: enrollResp.AgentID,
+			AgentID: endpointID,
 			Token:   enrollResp.Token,
 		}
 
@@ -80,9 +86,9 @@ func main() {
 			log.Fatalf("Failed to save token: %v", err)
 		}
 
-		log.Printf("Agent enrolled successfully! Agent ID: %d", tokenData.AgentID)
+		log.Printf("Endpoint enrolled successfully! Endpoint ID: %d", tokenData.AgentID)
 	} else {
-		log.Printf("Using existing agent token (Agent ID: %d)", tokenData.AgentID)
+		log.Printf("Using existing endpoint token (Endpoint ID: %d)", tokenData.AgentID)
 	}
 
 	// Set token for API client
@@ -95,12 +101,52 @@ func main() {
 	}
 	log.Printf("Scheduler initialized for platform: %s", cfg.Agent.Platform)
 
-	// List existing jobs managed by Crontopus
-	jobs, err := sch.List()
+	// List all jobs (including discovered jobs)
+	allJobs, err := sch.ListAll()
 	if err != nil {
-		log.Printf("Warning: Failed to list existing jobs: %v", err)
+		log.Printf("Warning: Failed to list all jobs: %v", err)
 	} else {
-		log.Printf("Found %d existing Crontopus-managed jobs", len(jobs))
+		log.Printf("Found %d total jobs on this endpoint", len(allJobs))
+		
+		// Filter Crontopus-managed vs discovered jobs
+		managedJobs, err := sch.List()
+		if err != nil {
+			log.Printf("Warning: Failed to list managed jobs: %v", err)
+		} else {
+			managedCount := len(managedJobs)
+			discoveredCount := len(allJobs) - managedCount
+			log.Printf("  - %d Crontopus-managed jobs", managedCount)
+			log.Printf("  - %d discovered jobs", discoveredCount)
+			
+			// Send discovered jobs to backend
+			if discoveredCount > 0 {
+				log.Println("Reporting discovered jobs to backend...")
+				discoveredJobs := []client.DiscoveredJob{}
+				
+				// Build map of managed job names for fast lookup
+				managedNames := make(map[string]bool)
+				for _, j := range managedJobs {
+					managedNames[j.Name] = true
+				}
+				
+				// Find jobs that aren't managed
+				for _, j := range allJobs {
+					if !managedNames[j.Name] {
+						discoveredJobs = append(discoveredJobs, client.DiscoveredJob{
+							Name:     j.Name,
+							Schedule: j.Schedule,
+							Command:  j.Command,
+						})
+					}
+				}
+				
+				if err := apiClient.DiscoverJobs(tokenData.AgentID, discoveredJobs); err != nil {
+					log.Printf("Warning: Failed to report discovered jobs: %v", err)
+				} else {
+					log.Printf("Reported %d discovered jobs to backend", len(discoveredJobs))
+				}
+			}
+		}
 	}
 
 	// Initialize Git syncer
@@ -141,7 +187,8 @@ func main() {
 
 	// Start heartbeat goroutine
 	stopChan := make(chan struct{})
-	go heartbeatLoop(apiClient, tokenData.AgentID, cfg, stopChan)
+	endpointID := tokenData.AgentID // AgentID field now stores EndpointID
+	go heartbeatLoop(apiClient, endpointID, cfg, stopChan)
 
 	// Wait for interrupt signal
 	sigChan := make(chan os.Signal, 1)
@@ -155,17 +202,17 @@ func main() {
 	time.Sleep(1 * time.Second) // Give heartbeat goroutine time to finish
 }
 
-func heartbeatLoop(apiClient *client.Client, agentID int, cfg *config.Config, stopChan chan struct{}) {
+func heartbeatLoop(apiClient *client.Client, endpointID int, cfg *config.Config, stopChan chan struct{}) {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
 	// Send initial heartbeat
-	sendHeartbeat(apiClient, agentID, cfg)
+	sendHeartbeat(apiClient, endpointID, cfg)
 
 	for {
 		select {
 		case <-ticker.C:
-			sendHeartbeat(apiClient, agentID, cfg)
+			sendHeartbeat(apiClient, endpointID, cfg)
 		case <-stopChan:
 			log.Println("Heartbeat loop stopping...")
 			return
@@ -173,17 +220,17 @@ func heartbeatLoop(apiClient *client.Client, agentID int, cfg *config.Config, st
 	}
 }
 
-func sendHeartbeat(apiClient *client.Client, agentID int, cfg *config.Config) {
+func sendHeartbeat(apiClient *client.Client, endpointID int, cfg *config.Config) {
 	req := client.HeartbeatRequest{
 		Status:   "active",
 		Platform: cfg.Agent.Platform,
 		Version:  cfg.Agent.Version,
 	}
 
-	if err := apiClient.Heartbeat(agentID, req); err != nil {
+	if err := apiClient.Heartbeat(endpointID, req); err != nil {
 		log.Printf("Failed to send heartbeat: %v", err)
 	} else {
-		log.Printf("Heartbeat sent (Agent ID: %d)", agentID)
+		log.Printf("Heartbeat sent (Endpoint ID: %d)", endpointID)
 	}
 }
 
