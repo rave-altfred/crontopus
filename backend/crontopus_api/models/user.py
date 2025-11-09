@@ -27,5 +27,8 @@ class User(TenantScopedBase):
     # Role within tenant (e.g., "admin", "user", "viewer")
     role = Column(String, default="user", nullable=False)
     
+    # Forgejo Git access token (for cloning job manifest repositories)
+    git_token = Column(String, nullable=True)
+    
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, tenant_id={self.tenant_id})>"

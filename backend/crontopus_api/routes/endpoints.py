@@ -477,12 +477,16 @@ async def get_install_script(
     # User's enrollment token (from query parameter)
     enrollment_token = token
     
+    # User's Git access token
+    git_token = current_user.git_token or enrollment_token  # Fallback to enrollment token if git_token not set
+    
     # Tenant-specific Git repository URL
     git_repo_url = f"https://git.crontopus.com/crontopus/job-manifests-{current_user.username}.git"
     
     if platform in ['linux', 'macos']:
         script_content = _generate_bash_installer(
             enrollment_token=enrollment_token,
+            git_token=git_token,
             git_repo_url=git_repo_url,
             username=current_user.username,
             tenant_id=current_user.tenant_id,
@@ -494,6 +498,7 @@ async def get_install_script(
     elif platform == 'windows':
         script_content = _generate_powershell_installer(
             enrollment_token=enrollment_token,
+            git_token=git_token,
             git_repo_url=git_repo_url,
             username=current_user.username,
             tenant_id=current_user.tenant_id,
@@ -519,6 +524,7 @@ async def get_install_script(
 
 def _generate_bash_installer(
     enrollment_token: str,
+    git_token: str,
     git_repo_url: str,
     username: str,
     tenant_id: str,
@@ -536,6 +542,7 @@ set -e
 
 # Pre-configured values (DO NOT SHARE THIS SCRIPT)
 ENROLLMENT_TOKEN="{enrollment_token}"
+GIT_TOKEN="{git_token}"
 GIT_REPO_URL="{git_repo_url}"
 USERNAME="{username}"
 TENANT_ID="{tenant_id}"
@@ -585,9 +592,8 @@ git:
   branch: "main"
   sync_interval: 30
   auth:
-    type: "basic"
-    username: "${{USERNAME}}"
-    password: "${{ENROLLMENT_TOKEN}}"
+    type: "token"
+    token: "${{GIT_TOKEN}}"
   local_path: "~/.crontopus/job-manifests"
 EOF
 
@@ -741,6 +747,7 @@ echo ""
 
 def _generate_powershell_installer(
     enrollment_token: str,
+    git_token: str,
     git_repo_url: str,
     username: str,
     tenant_id: str,
@@ -757,6 +764,7 @@ $ErrorActionPreference = "Stop"
 
 # Pre-configured values (DO NOT SHARE THIS SCRIPT)
 $EnrollmentToken = "{enrollment_token}"
+$GitToken = "{git_token}"
 $GitRepoUrl = "{git_repo_url}"
 $Username = "{username}"
 $TenantId = "{tenant_id}"
@@ -814,9 +822,8 @@ git:
   branch: "main"
   sync_interval: 30
   auth:
-    type: "basic"
-    username: "$Username"
-    password: "$EnrollmentToken"
+    type: "token"
+    token: "$GitToken"
   local_path: "C:\\ProgramData\\Crontopus\\manifests"
 "@
 

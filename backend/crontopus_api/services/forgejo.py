@@ -263,6 +263,80 @@ class ForgejoClient:
             response.raise_for_status()
             return response.json()
     
+    async def create_user(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        full_name: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Create a new Forgejo user.
+        
+        Args:
+            username: Username for the new user
+            email: Email address
+            password: User password
+            full_name: Optional full name
+            
+        Returns:
+            User object from Forgejo API
+        """
+        url = f'{self.base_url}/api/v1/admin/users'
+        
+        payload = {
+            'username': username,
+            'email': email,
+            'password': password,
+            'must_change_password': False,
+            'send_notify': False
+        }
+        
+        if full_name:
+            payload['full_name'] = full_name
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=payload,
+                timeout=30.0
+            )
+            response.raise_for_status()
+            return response.json()
+    
+    async def create_access_token(
+        self,
+        username: str,
+        token_name: str = 'crontopus-git-access'
+    ) -> str:
+        """
+        Create an access token for a user.
+        
+        Args:
+            username: Username to create token for
+            token_name: Name for the token
+            
+        Returns:
+            Access token string
+        """
+        url = f'{self.base_url}/api/v1/users/{username}/tokens'
+        
+        payload = {
+            'name': token_name
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json=payload,
+                timeout=30.0
+            )
+            response.raise_for_status()
+            result = response.json()
+            return result.get('sha1', '')
+    
     async def delete_file(
         self,
         owner: str,

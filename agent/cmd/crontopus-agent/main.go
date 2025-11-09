@@ -73,7 +73,7 @@ func main() {
 			MachineID:   machineID,
 			Platform:    cfg.Agent.Platform,
 			Version:     cfg.Agent.Version,
-			GitRepoURL:  cfg.Git.RepoURL,
+			GitRepoURL:  cfg.Git.URL,
 			GitBranch:   cfg.Git.Branch,
 		}
 
@@ -161,14 +161,20 @@ func main() {
 	}
 
 	// Initialize Git syncer
-	if cfg.Git.RepoURL == "" {
+	if cfg.Git.URL == "" {
 		log.Println("Warning: No Git repository configured. Agent will only manage existing jobs.")
 	} else {
-		gitSyncer, err := git.NewSyncer(cfg.Git.RepoURL, cfg.Git.LocalPath, cfg.Git.Branch)
+		gitSyncer, err := git.NewSyncer(
+			cfg.Git.URL,
+			cfg.Git.LocalPath,
+			cfg.Git.Branch,
+			cfg.Git.Auth.Token,
+			cfg.Agent.Name, // Use agent name as username
+		)
 		if err != nil {
 			log.Fatalf("Failed to create Git syncer: %v", err)
 		}
-		log.Printf("Git syncer initialized: %s (branch: %s)", cfg.Git.RepoURL, cfg.Git.Branch)
+		log.Printf("Git syncer initialized: %s (branch: %s)", cfg.Git.URL, cfg.Git.Branch)
 
 		// Perform initial sync
 		log.Println("Performing initial Git sync...")

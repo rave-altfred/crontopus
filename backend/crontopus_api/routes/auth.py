@@ -125,13 +125,53 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         db.commit()
         is_new_tenant = True
     
-    # Create new user
+    # Create Forgejo user and access token
+    git_token = None
+    try:
+        forgejo = ForgejoClient(
+            base_url=settings.forgejo_url,
+            username=settings.forgejo_username,
+            token=settings.forgejo_token
+        )
+        
+        # Create Forgejo user
+        try:
+            await forgejo.create_user(
+                username=user_data.username,
+                email=user_data.email,
+                password=user_data.password,  # Same password as Crontopus
+                full_name=user_data.username
+            )
+            logger.info(f"Created Forgejo user: {user_data.username}")
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 422:
+                # User already exists in Forgejo, that's ok
+                logger.info(f"Forgejo user {user_data.username} already exists")
+            else:
+                raise
+        
+        # Generate access token for Git authentication
+        try:
+            git_token = await forgejo.create_access_token(
+                username=user_data.username,
+                token_name="crontopus-git-access"
+            )
+            logger.info(f"Created Git access token for user: {user_data.username}")
+        except Exception as e:
+            logger.error(f"Failed to create Git access token: {e}")
+            # Continue without token - can be created later
+    except Exception as e:
+        logger.error(f"Error setting up Forgejo user: {e}", exc_info=True)
+        # Continue with registration
+    
+    # Create new user with git_token
     hashed_password = get_password_hash(user_data.password)
     new_user = User(
         tenant_id=tenant_id,
         email=user_data.email,
         username=user_data.username,
-        hashed_password=hashed_password
+        hashed_password=hashed_password,
+        git_token=git_token
     )
     
     db.add(new_user)

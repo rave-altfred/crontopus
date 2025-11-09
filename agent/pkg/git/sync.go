@@ -10,13 +10,15 @@ import (
 
 // Syncer handles Git repository operations for job manifests
 type Syncer struct {
-	repoURL   string
-	localPath string
-	branch    string
+	repoURL     string
+	localPath   string
+	branch      string
+	authToken   string // Access token for Git authentication
+	username    string // Username for Git authentication
 }
 
 // NewSyncer creates a new Git syncer
-func NewSyncer(repoURL, localPath, branch string) (*Syncer, error) {
+func NewSyncer(repoURL, localPath, branch, authToken, username string) (*Syncer, error) {
 	if repoURL == "" {
 		return nil, fmt.Errorf("repository URL cannot be empty")
 	}
@@ -31,6 +33,8 @@ func NewSyncer(repoURL, localPath, branch string) (*Syncer, error) {
 		repoURL:   repoURL,
 		localPath: localPath,
 		branch:    branch,
+		authToken: authToken,
+		username:  username,
 	}, nil
 }
 
@@ -50,8 +54,11 @@ func (s *Syncer) Clone() error {
 		}
 	}
 
+	// Construct authenticated URL if token provided
+	cloneURL := s.getAuthenticatedURL()
+	
 	// Clone the repository
-	cmd := exec.Command("git", "clone", "--branch", s.branch, "--single-branch", s.repoURL, s.localPath)
+	cmd := exec.Command("git", "clone", "--branch", s.branch, "--single-branch", cloneURL, s.localPath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to clone repository: %w: %s", err, output)
@@ -130,4 +137,25 @@ func (s *Syncer) HasChanges() (bool, error) {
 	remoteCommit := strings.Fields(string(output))[0]
 
 	return currentCommit != remoteCommit, nil
+}
+
+// getAuthenticatedURL constructs a Git URL with embedded credentials
+func (s *Syncer) getAuthenticatedURL() string {
+	// If no auth token, return original URL
+	if s.authToken == "" {
+		return s.repoURL
+	}
+	
+	// Parse URL and inject credentials
+	// Assumes URL format: https://git.example.com/org/repo.git
+	// Converts to: https://username:token@git.example.com/org/repo.git
+	if strings.HasPrefix(s.repoURL, "https://") {
+		// Remove https:// prefix
+		urlWithoutScheme := strings.TrimPrefix(s.repoURL, "https://")
+		// Construct authenticated URL
+		return fmt.Sprintf("https://%s:%s@%s", s.username, s.authToken, urlWithoutScheme)
+	}
+	
+	// For non-HTTPS URLs, return as-is
+	return s.repoURL
 }

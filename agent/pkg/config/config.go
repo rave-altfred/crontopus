@@ -26,10 +26,17 @@ type AgentConfig struct {
 
 // GitConfig contains Git repository configuration
 type GitConfig struct {
-	RepoURL   string `yaml:"repo_url"`
-	Branch    string `yaml:"branch"`
-	LocalPath string `yaml:"local_path"`
-	SyncInterval int `yaml:"sync_interval"` // seconds
+	URL          string        `yaml:"url"`
+	Branch       string        `yaml:"branch"`
+	LocalPath    string        `yaml:"local_path"`
+	SyncInterval int           `yaml:"sync_interval"` // seconds
+	Auth         GitAuthConfig `yaml:"auth"`
+}
+
+// GitAuthConfig contains Git authentication configuration
+type GitAuthConfig struct {
+	Type  string `yaml:"type"`  // "token", "basic", or "ssh"
+	Token string `yaml:"token"` // For token auth
 }
 
 // BackendConfig contains backend API configuration
