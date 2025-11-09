@@ -19,12 +19,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
-async def create_tenant_repository(tenant_id: str) -> bool:
+async def create_tenant_repository(tenant_id: str, username: str) -> bool:
     """
-    Create a Git repository for a new tenant.
+    Create a Git repository for a new tenant and add user as collaborator.
     
     Args:
         tenant_id: The tenant ID
+        username: Username to add as collaborator
         
     Returns:
         True if successful, False otherwise
@@ -76,6 +77,23 @@ async def create_tenant_repository(tenant_id: str) -> bool:
                         )
                     except Exception as e:
                         logger.warning(f"Could not create {namespace} directory: {e}")
+                
+                # Add user as collaborator with write access
+                try:
+                    collab_url = f"{settings.forgejo_url}/api/v1/repos/crontopus/{repo_name}/collaborators/{username}"
+                    collab_payload = {"permission": "write"}
+                    response = await client.put(
+                        collab_url,
+                        headers=headers,
+                        json=collab_payload,
+                        timeout=30.0
+                    )
+                    if response.status_code in (204, 201):
+                        logger.info(f"Added {username} as collaborator to {repo_name}")
+                    else:
+                        logger.warning(f"Failed to add collaborator: {response.status_code} - {response.text}")
+                except Exception as e:
+                    logger.warning(f"Could not add collaborator: {e}")
                 
                 return True
             elif response.status_code == 409:
@@ -187,7 +205,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     repo_created = False
     if is_new_tenant:
         try:
-            repo_created = await create_tenant_repository(tenant_id)
+            repo_created = await create_tenant_repository(tenant_id, user_data.username)
             if not repo_created:
                 logger.error(f"Repository creation returned False for tenant {tenant_id}")
         except Exception as e:
