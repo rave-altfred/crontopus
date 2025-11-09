@@ -1,15 +1,80 @@
-import { useState } from 'react';
-import { Download, CheckCircle2, AlertTriangle, Monitor, Apple, Terminal } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Download, CheckCircle2, AlertTriangle, Monitor, Apple, Terminal, Key, Trash2, Plus } from 'lucide-react';
 import { apiClient } from '../api/client';
+import { enrollmentTokensApi, type EnrollmentToken } from '../api/enrollmentTokens';
 
 export function AgentDownload() {
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [tokens, setTokens] = useState<EnrollmentToken[]>([]);
+  const [loadingTokens, setLoadingTokens] = useState(true);
+  const [creatingToken, setCreatingToken] = useState(false);
+  const [newToken, setNewToken] = useState<string | null>(null);
+  const [tokenName, setTokenName] = useState('');
+  const [expiresInDays, setExpiresInDays] = useState<number | undefined>(undefined);
+  const [maxUses, setMaxUses] = useState<number | undefined>(undefined);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const handleDownload = async (platform: 'linux' | 'macos' | 'windows') => {
+  useEffect(() => {
+    loadTokens();
+  }, []);
+
+  const loadTokens = async () => {
+    try {
+      const data = await enrollmentTokensApi.list();
+      setTokens(data);
+    } catch (error) {
+      console.error('Failed to load tokens:', error);
+    } finally {
+      setLoadingTokens(false);
+    }
+  };
+
+  const handleCreateToken = async () => {
+    if (!tokenName.trim()) {
+      alert('Please enter a token name');
+      return;
+    }
+
+    setCreatingToken(true);
+    try {
+      const response = await enrollmentTokensApi.create({
+        name: tokenName.trim(),
+        expires_in_days: expiresInDays,
+        max_uses: maxUses,
+      });
+      
+      setNewToken(response.token);
+      setTokenName('');
+      setExpiresInDays(undefined);
+      setMaxUses(undefined);
+      setShowCreateForm(false);
+      await loadTokens();
+    } catch (error) {
+      console.error('Failed to create token:', error);
+      alert('Failed to create enrollment token. Please try again.');
+    } finally {
+      setCreatingToken(false);
+    }
+  };
+
+  const handleDeleteToken = async (id: number) => {
+    if (!confirm('Are you sure you want to revoke this token?')) return;
+
+    try {
+      await enrollmentTokensApi.delete(id);
+      await loadTokens();
+    } catch (error) {
+      console.error('Failed to delete token:', error);
+      alert('Failed to revoke token. Please try again.');
+    }
+  };
+
+  const handleDownload = async (platform: 'linux' | 'macos' | 'windows', token: string) => {
     setDownloading(platform);
     
     try {
-      const response = await apiClient.get(`/agents/install/script/${platform}`, {
+      const response = await apiClient.get(`/endpoints/install/script/${platform}`, {
+        params: { token },
         responseType: 'blob',
       });
       
@@ -37,21 +102,184 @@ export function AgentDownload() {
     <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-2">Download Agent</h1>
       <p className="text-gray-600 dark:text-gray-300 mb-8">
-        Get started by downloading a pre-configured agent for your platform
+        Generate an enrollment token, then download a pre-configured agent for your platform
       </p>
+      
+      {/* Enrollment Tokens Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-2">
+            <Key className="w-5 h-5 text-blue-500" />
+            <h2 className="text-xl font-semibold">Enrollment Tokens</h2>
+          </div>
+          <button
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition"
+          >
+            <Plus className="w-4 h-4" />
+            Generate Token
+          </button>
+        </div>
+        
+        {/* Create Token Form */}
+        {showCreateForm && (
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Token Name *
+                </label>
+                <input
+                  type="text"
+                  value={tokenName}
+                  onChange={(e) => setTokenName(e.target.value)}
+                  placeholder="e.g., Production Servers"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Expires In (days)
+                </label>
+                <input
+                  type="number"
+                  value={expiresInDays || ''}
+                  onChange={(e) => setExpiresInDays(e.target.value ? parseInt(e.target.value) : undefined)}
+                  placeholder="Never"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Max Uses
+                </label>
+                <input
+                  type="number"
+                  value={maxUses || ''}
+                  onChange={(e) => setMaxUses(e.target.value ? parseInt(e.target.value) : undefined)}
+                  placeholder="Unlimited"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleCreateToken}
+                disabled={creatingToken}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition disabled:opacity-50"
+              >
+                {creatingToken ? 'Creating...' : 'Create Token'}
+              </button>
+              <button
+                onClick={() => setShowCreateForm(false)}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* New Token Display */}
+        {newToken && (
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-green-900 dark:text-green-100 mb-2">
+                  Token Created Successfully!
+                </h3>
+                <p className="text-sm text-green-800 dark:text-green-200 mb-2">
+                  Copy this token now - it won't be shown again:
+                </p>
+                <div className="bg-white dark:bg-gray-800 rounded p-3 font-mono text-sm break-all border border-green-300 dark:border-green-700">
+                  <code className="text-gray-800 dark:text-gray-200">{newToken}</code>
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(newToken);
+                    alert('Token copied to clipboard!');
+                  }}
+                  className="mt-2 text-sm text-green-600 dark:text-green-400 hover:underline"
+                >
+                  Copy to clipboard
+                </button>
+              </div>
+              <button
+                onClick={() => setNewToken(null)}
+                className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* Tokens List */}
+        {loadingTokens ? (
+          <div className="text-gray-600 dark:text-gray-400 text-center py-4">Loading tokens...</div>
+        ) : tokens.length === 0 ? (
+          <div className="text-gray-600 dark:text-gray-400 text-center py-8">
+            <Key className="w-12 h-12 mx-auto mb-2 opacity-50" />
+            <p>No enrollment tokens yet. Generate one to get started.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="border-b border-gray-200 dark:border-gray-700">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Name</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Used</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Expires</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Last Used</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {tokens.map((token) => (
+                  <tr key={token.id}>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{token.name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                      {token.used_count}{token.max_uses ? ` / ${token.max_uses}` : ''}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                      {token.expires_at ? new Date(token.expires_at).toLocaleDateString() : 'Never'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                      {token.last_used_at ? new Date(token.last_used_at).toLocaleString() : 'Never'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => handleDeleteToken(token.id)}
+                        className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
       
       {/* Platform Selection */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Choose Your Platform</h2>
         <p className="text-gray-600 dark:text-gray-300 mb-6">
-          The installer is pre-configured with your credentials. No manual setup needed!
+          {!newToken ? (
+            'Generate an enrollment token above, then download the pre-configured installer.'
+          ) : (
+            'Use the token above to download your installer:'
+          )}
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Linux */}
           <button
-            onClick={() => handleDownload('linux')}
-            disabled={downloading === 'linux'}
+            onClick={() => newToken && handleDownload('linux', newToken)}
+            disabled={!newToken || downloading === 'linux'}
             className="flex flex-col items-center p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Terminal className="w-12 h-12 mb-3 text-blue-500" />
@@ -71,8 +299,8 @@ export function AgentDownload() {
           
           {/* macOS */}
           <button
-            onClick={() => handleDownload('macos')}
-            disabled={downloading === 'macos'}
+            onClick={() => newToken && handleDownload('macos', newToken)}
+            disabled={!newToken || downloading === 'macos'}
             className="flex flex-col items-center p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Apple className="w-12 h-12 mb-3 text-blue-500" />
@@ -92,8 +320,8 @@ export function AgentDownload() {
           
           {/* Windows */}
           <button
-            onClick={() => handleDownload('windows')}
-            disabled={downloading === 'windows'}
+            onClick={() => newToken && handleDownload('windows', newToken)}
+            disabled={!newToken || downloading === 'windows'}
             className="flex flex-col items-center p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Monitor className="w-12 h-12 mb-3 text-blue-500" />
