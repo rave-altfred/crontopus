@@ -19,10 +19,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Add git_token column to users table
-    op.add_column('users', sa.Column('git_token', sa.String(), nullable=True))
+    # Add git_token column to user table
+    op.add_column('user', sa.Column('git_token', sa.String(), nullable=True))
 
 
 def downgrade() -> None:
-    # Remove git_token column from users table
-    op.drop_column('users', 'git_token')
+    # Remove git_token column from user table
+    op.drop_column('user', 'git_token')
