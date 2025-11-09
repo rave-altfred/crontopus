@@ -33,6 +33,7 @@ class Endpoint(TenantScopedBase):
     # Endpoint identification
     name = Column(String(255), nullable=False, index=True)
     hostname = Column(String(255), nullable=True)
+    machine_id = Column(String(255), nullable=True, index=True)  # Unique machine identifier
     
     # Status
     status = Column(

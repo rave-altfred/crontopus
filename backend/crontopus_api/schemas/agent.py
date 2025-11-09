@@ -12,6 +12,7 @@ class AgentEnroll(BaseModel):
     """Schema for agent enrollment request."""
     name: str = Field(..., description="Agent name")
     hostname: Optional[str] = Field(None, description="Agent hostname")
+    machine_id: Optional[str] = Field(None, description="Unique machine identifier")
     platform: Optional[str] = Field(None, description="Platform (linux, darwin, windows)")
     version: Optional[str] = Field(None, description="Agent version")
     git_repo_url: Optional[str] = Field(None, description="Git repository URL")

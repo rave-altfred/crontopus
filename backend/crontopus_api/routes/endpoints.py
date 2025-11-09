@@ -52,34 +52,67 @@ async def enroll_endpoint(
     - Enrollment tokens are long-lived and designed for agent deployment
     - JWT tokens are short-lived user session tokens
     
-    Creates a new endpoint and returns an authentication token.
+    If a machine_id is provided and an endpoint with that machine_id already
+    exists for this tenant, it will be reactivated with a new token instead
+    of creating a duplicate. This prevents duplicate endpoints when reinstalling
+    on the same physical machine.
+    
     Only authenticated users can enroll endpoints.
     """
-    # Generate endpoint token
+    # Check if endpoint with same machine_id already exists
+    existing_endpoint = None
+    if endpoint_data.machine_id:
+        existing_endpoint = db.query(Endpoint).filter(
+            Endpoint.tenant_id == current_user.tenant_id,
+            Endpoint.machine_id == endpoint_data.machine_id
+        ).first()
+    
+    # Generate new token
     token = secrets.token_urlsafe(32)
     token_hash = get_password_hash(token)
     
-    # Create endpoint
-    endpoint = Endpoint(
-        tenant_id=current_user.tenant_id,
-        name=endpoint_data.name,
-        hostname=endpoint_data.hostname,
-        platform=endpoint_data.platform,
-        version=endpoint_data.version,
-        git_repo_url=endpoint_data.git_repo_url,
-        git_branch=endpoint_data.git_branch,
-        token_hash=token_hash,
-        status=EndpointStatus.ACTIVE
-    )
-    
-    db.add(endpoint)
-    db.commit()
-    db.refresh(endpoint)
-    
-    return AgentEnrollResponse(
-        agent_id=endpoint.id,  # Keep field name for backward compatibility
-        token=token
-    )
+    if existing_endpoint:
+        # Reuse existing endpoint, update token and metadata
+        existing_endpoint.name = endpoint_data.name
+        existing_endpoint.hostname = endpoint_data.hostname
+        existing_endpoint.platform = endpoint_data.platform
+        existing_endpoint.version = endpoint_data.version
+        existing_endpoint.git_repo_url = endpoint_data.git_repo_url
+        existing_endpoint.git_branch = endpoint_data.git_branch
+        existing_endpoint.token_hash = token_hash
+        existing_endpoint.status = EndpointStatus.ACTIVE
+        existing_endpoint.enrolled_at = datetime.now(timezone.utc)
+        
+        db.commit()
+        db.refresh(existing_endpoint)
+        
+        return AgentEnrollResponse(
+            agent_id=existing_endpoint.id,
+            token=token
+        )
+    else:
+        # Create new endpoint
+        endpoint = Endpoint(
+            tenant_id=current_user.tenant_id,
+            name=endpoint_data.name,
+            hostname=endpoint_data.hostname,
+            machine_id=endpoint_data.machine_id,
+            platform=endpoint_data.platform,
+            version=endpoint_data.version,
+            git_repo_url=endpoint_data.git_repo_url,
+            git_branch=endpoint_data.git_branch,
+            token_hash=token_hash,
+            status=EndpointStatus.ACTIVE
+        )
+        
+        db.add(endpoint)
+        db.commit()
+        db.refresh(endpoint)
+        
+        return AgentEnrollResponse(
+            agent_id=endpoint.id,
+            token=token
+        )
 
 
 @router.get("", response_model=AgentListResponse)

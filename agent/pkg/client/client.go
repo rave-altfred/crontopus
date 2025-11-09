@@ -35,6 +35,7 @@ func (c *Client) SetToken(token string) {
 type EnrollRequest struct {
 	Name        string `json:"name"`
 	Hostname    string `json:"hostname"`
+	MachineID   string `json:"machine_id,omitempty"`
 	Platform    string `json:"platform"`
 	Version     string `json:"version"`
 	GitRepoURL  string `json:"git_repo_url,omitempty"`

@@ -16,6 +16,7 @@ import (
 	"github.com/crontopus/agent/pkg/manifest"
 	"github.com/crontopus/agent/pkg/scheduler"
 	"github.com/crontopus/agent/pkg/sync"
+	"github.com/crontopus/agent/pkg/utils"
 )
 
 // Version is set during build via ldflags
@@ -59,9 +60,17 @@ func main() {
 			log.Fatal("No enrollment token provided in config. Please add enrollment_token to backend section.")
 		}
 
+		// Get machine ID for deduplication
+		machineID, err := utils.GetMachineID()
+		if err != nil {
+			log.Printf("Warning: Failed to get machine ID: %v", err)
+			machineID = "" // Continue without machine ID
+		}
+
 		enrollReq := client.EnrollRequest{
 			Name:        cfg.Agent.Name,
 			Hostname:    cfg.Agent.Hostname,
+			MachineID:   machineID,
 			Platform:    cfg.Agent.Platform,
 			Version:     cfg.Agent.Version,
 			GitRepoURL:  cfg.Git.RepoURL,
