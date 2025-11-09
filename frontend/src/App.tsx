@@ -6,13 +6,13 @@ import { MainLayout } from './layouts/MainLayout';
 import { Login } from './pages/Login';
 import Register from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
-import { Agents } from './pages/Agents';
+import { Endpoints } from './pages/Endpoints';
+import { AgentDownload } from './pages/AgentDownload';
 import { Runs } from './pages/Runs';
 import { Jobs } from './pages/Jobs';
 import { JobDetail } from './pages/JobDetail';
 import { JobNew } from './pages/JobNew';
 import { JobEdit } from './pages/JobEdit';
-import { AgentDownload } from './pages/AgentDownload';
 
 function App() {
   return (
@@ -31,8 +31,8 @@ function App() {
             }
           >
             <Route index element={<Dashboard />} />
-            <Route path="agents" element={<Agents />} />
-            <Route path="agents/download" element={<AgentDownload />} />
+            <Route path="agents" element={<AgentDownload />} />
+            <Route path="endpoints" element={<Endpoints />} />
             <Route path="runs" element={<Runs />} />
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/new" element={<JobNew />} />
