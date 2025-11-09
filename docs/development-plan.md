@@ -937,6 +937,264 @@ iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/instal
 
 ---
 
+## Phase 10: Job Discovery & Multi-Endpoint Management
+
+**Status**: In Progress
+
+**Terminology**:
+- **Agent** = The binary software (one per platform: Linux agent, macOS agent, Windows agent)
+- **Endpoint** = A machine/server running an agent instance (many endpoints can run the same agent)
+- **Job Definition** = YAML manifest in Git (desired state)
+- **Job Instance** = Actual scheduled job on a specific endpoint (current state)
+
+**Goal**: Enable bidirectional sync between Git and schedulers, with automatic job discovery and callback injection.
+
+### 10.1 Terminology Refactor: Agent → Endpoint
+
+- [ ] Rename `Agent` model to `Endpoint` model
+  - Update `backend/crontopus_api/models/agent.py` → `endpoint.py`
+  - Update database table name: `agents` → `endpoints`
+  - Update all foreign key references
+  - Create Alembic migration for rename
+- [ ] Update all API routes from `/api/agents/*` to `/api/endpoints/*`
+  - `POST /api/endpoints/enroll` - Enroll new endpoint
+  - `GET /api/endpoints` - List all endpoints
+  - `GET /api/endpoints/{id}` - Get endpoint details
+  - `POST /api/endpoints/{id}/heartbeat` - Endpoint heartbeat
+  - `DELETE /api/endpoints/{id}` - Revoke endpoint
+- [ ] Update schemas and Pydantic models
+  - `AgentEnroll` → `EndpointEnroll`
+  - `Agent` → `Endpoint`
+  - `AgentStatus` → `EndpointStatus`
+- [ ] Update CLI commands
+  - `crontopus endpoints list` (was `agents list`)
+  - `crontopus endpoints show <id>`
+  - `crontopus endpoints revoke <id>`
+- [ ] Update frontend
+  - Rename Agents page to Endpoints page
+  - Update all API calls to use `/api/endpoints`
+  - Create new Agents page for binary downloads
+
+**Deliverable**: Clear separation between Agent (software) and Endpoint (machine)
+
+**Note**: This is a breaking change. All existing agents must re-enroll after this migration.
+
+### 10.2 Job Instance Tracking
+
+- [ ] Create `JobInstance` model
+  - Fields: id, job_name, endpoint_id, namespace, tenant_id, status, last_seen, source, original_command, created_at, updated_at
+  - Source: 'git' (defined in Git) or 'discovered' (found on endpoint)
+  - Status: 'scheduled', 'running', 'paused', 'error'
+- [ ] Generate Alembic migration for job_instances table
+- [ ] Add JobInstance CRUD operations in backend
+- [ ] Create JobInstance Pydantic schemas
+
+**Deliverable**: Database tracks which jobs are on which endpoints
+
+### 10.3 Job Discovery & Reporting
+
+- [ ] Backend: Job discovery endpoint
+  - `POST /api/endpoints/{endpoint_id}/discovered-jobs`
+  - Accept list of jobs found on endpoint (name, schedule, command)
+  - Create job manifests in Git under `discovered/` namespace
+  - Mark as source='discovered'
+- [ ] Backend: Job instance reporting endpoint
+  - `POST /api/endpoints/{endpoint_id}/job-instances`
+  - Accept current state of endpoint's scheduler
+  - Update JobInstance records with last_seen timestamp
+  - Detect jobs that disappeared from endpoint
+- [ ] Agent: Scheduler discovery on enrollment
+  - Read existing cron entries (Linux/macOS)
+  - Read existing Task Scheduler tasks (Windows)
+  - Parse schedule and command from existing entries
+  - Send discovered jobs to backend on first enrollment
+- [ ] Agent: Job instance reporting on every sync
+  - Report which jobs are currently scheduled
+  - Include status (scheduled/running/paused/error)
+  - Send every sync cycle (30s default)
+
+**Deliverable**: Endpoints report existing jobs and current state to backend
+
+**User Flow**:
+1. Agent enrolls with backend
+2. Agent reads local scheduler (finds 3 existing cron jobs)
+3. Agent sends discovered jobs to backend
+4. Backend creates manifests in Git: `discovered/backup-db.yaml`, etc.
+5. Next sync: Agent pulls from Git (now includes discovered jobs)
+6. Agent reconciles and injects callbacks into all jobs
+
+### 10.4 Callback Injection
+
+- [ ] Agent: Implement callback wrapper logic
+  - Wrap every job command with success/failure callbacks
+  - Format: `(CMD && curl ... success) || curl ... failure`
+  - Use endpoint's authentication token for callbacks
+  - Include job_name, endpoint_id in callback payload
+- [ ] Agent: Detect and preserve existing callbacks
+  - Don't double-wrap jobs that already have callbacks
+  - Parse job command to detect existing curl callbacks
+- [ ] Backend: Job-specific tokens (optional enhancement)
+  - Generate unique token per job for callbacks
+  - Store in JobInstance model
+  - More secure than using endpoint token
+
+**Deliverable**: All jobs automatically report execution status
+
+**Callback Example**:
+```bash
+# Original job
+/scripts/backup.sh
+
+# After callback injection
+(/scripts/backup.sh && curl -X POST https://crontopus.com/api/checkins \
+  -H "Authorization: Bearer $ENDPOINT_TOKEN" \
+  -d '{"job_name":"backup-db","endpoint_id":"123","status":"success"}') || \
+curl -X POST https://crontopus.com/api/checkins \
+  -H "Authorization: Bearer $ENDPOINT_TOKEN" \
+  -d '{"job_name":"backup-db","endpoint_id":"123","status":"failure"}'
+```
+
+### 10.5 Cross-Reference APIs
+
+- [ ] Backend: Job-to-Endpoints mapping
+  - `GET /api/jobs/{namespace}/{job_name}/endpoints`
+  - Returns list of endpoints running this job
+  - Include endpoint status, last run time, last_seen
+- [ ] Backend: Endpoint-to-Jobs mapping
+  - `GET /api/endpoints/{endpoint_id}/jobs`
+  - Returns list of jobs on this endpoint
+  - Include job status, source (git/discovered), last run
+- [ ] Backend: Job instance filtering
+  - Query params: ?source=git|discovered
+  - Query params: ?status=scheduled|running|paused|error
+  - Support pagination
+
+**Deliverable**: API endpoints for many-to-many Job ↔ Endpoint relationships
+
+### 10.6 Frontend: Enhanced Jobs Page
+
+- [ ] Update Jobs list page
+  - Show all jobs from Git (git-defined + discovered)
+  - Add badge: "Git" vs "Discovered"
+  - Add filter: All | Git-defined | Discovered
+- [ ] Make jobs expandable
+  - Click job to expand inline
+  - Show list of endpoints running this job
+  - Show endpoint status (alive/offline)
+  - Show last run time per endpoint
+  - Show success/failure status
+- [ ] Add endpoint count badge
+  - "3 endpoints" badge on each job
+  - Click to expand/collapse
+- [ ] Link to endpoint details
+  - Click endpoint name to navigate to endpoint page
+
+**Deliverable**: Users see which endpoints are running each job
+
+**UI Mockup**:
+```
+Jobs (75)  [+ New Job]  [Filter: All ▼]
+
+┌─────────────────────────────────────────────────────┐
+│ [Git] backup-database            production         │
+│ Schedule: 0 2 * * *              ▼ 3 endpoints      │
+│ ├─ endpoint-prod-01 (alive)   Last: 2h ago ✓       │
+│ ├─ endpoint-prod-02 (alive)   Last: 2h ago ✓       │
+│ └─ endpoint-prod-03 (offline) Last: 1d ago ✗       │
+├─────────────────────────────────────────────────────┤
+│ [Discovered] cleanup-temp        discovered         │
+│ Schedule: 0 3 * * *              ▼ 1 endpoint       │
+│ └─ endpoint-prod-01 (alive)   Last: 1h ago ✓       │
+└─────────────────────────────────────────────────────┘
+```
+
+### 10.7 Frontend: Enhanced Endpoints Page
+
+- [ ] Rename "Agents" page to "Endpoints" page
+- [ ] Update page to show all endpoints
+  - Name, hostname, platform, status (alive/offline)
+  - Last heartbeat time
+  - Job count badge
+- [ ] Make endpoints expandable
+  - Click endpoint to expand inline
+  - Show list of jobs on this endpoint
+  - Show job source (git/discovered)
+  - Show job status and last run
+  - Link to job details
+- [ ] Add filtering
+  - Filter by status: All | Alive | Offline
+  - Filter by platform: All | Linux | macOS | Windows
+  - Search by hostname or name
+
+**Deliverable**: Users see which jobs are running on each endpoint
+
+**UI Mockup**:
+```
+Endpoints (12)  [Search...]
+
+┌─────────────────────────────────────────────────────┐
+│ endpoint-prod-01     Ubuntu 22.04   Alive (2m ago)  │
+│ 10.0.1.15                            ▼ 8 jobs       │
+│ ├─ [Git] backup-database (prod)      Last: 2h ago ✓ │
+│ ├─ [Git] cleanup-logs (prod)         Last: 1h ago ✓ │
+│ ├─ [Discovered] cleanup-temp (disc)  Last: 3h ago ✓ │
+│ └─ [Git] api-health-check (prod)     Last: 5m ago ✓ │
+├─────────────────────────────────────────────────────┤
+│ endpoint-staging-01  macOS 14.2     Alive (1m ago)  │
+│ 192.168.1.50                         ▼ 3 jobs       │
+│ ...                                                  │
+└─────────────────────────────────────────────────────┘
+```
+
+### 10.8 Frontend: New Agents Page
+
+- [ ] Create new "Agents" page for downloads
+  - Moved from "Download Agent" to "Agents"
+  - Show platform selection (Linux, macOS, Windows)
+  - Download pre-configured installers (Phase 9.9)
+- [ ] Update navigation
+  - "Agents" → Binary download page
+  - "Endpoints" → Machines running agents
+  - "Jobs" → Job definitions
+
+**Deliverable**: Clear separation in UI between Agents (downloads) and Endpoints (machines)
+
+### 10.9 Agent Configuration
+
+- [ ] Add discovery settings to agent config
+  - `discovery.enabled: true` - Enable discovery on enrollment
+  - `discovery.import_to_namespace: discovered` - Namespace for imported jobs
+  - `reconciliation.remove_unmanaged: false` - Don't remove jobs not in Git
+  - `reconciliation.inject_callbacks: true` - Auto-inject check-in callbacks
+- [ ] Update agent README with discovery documentation
+- [ ] Add discovery troubleshooting guide
+
+**Deliverable**: Configurable job discovery and callback injection
+
+### 10.10 Testing & Validation
+
+- [ ] Backend tests
+  - Test endpoint enrollment (renamed from agent)
+  - Test job discovery endpoint
+  - Test job instance reporting
+  - Test cross-reference APIs
+- [ ] Agent tests
+  - Test scheduler discovery (cron, Task Scheduler)
+  - Test callback injection
+  - Test job instance reporting
+- [ ] Integration tests
+  - End-to-end: enroll → discover → sync → reconcile → callback
+  - Test with pre-existing cron jobs
+  - Test callback success/failure paths
+- [ ] Frontend tests
+  - Test expandable Jobs page
+  - Test expandable Endpoints page
+  - Test filtering and search
+
+**Deliverable**: Comprehensive test coverage for Phase 10 features
+
+---
+
 ## Development Guidelines
 
 ### Component Order

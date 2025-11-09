@@ -33,13 +33,23 @@ Crontopus is a **monorepo** for an API-first job scheduling and monitoring platf
    - Users create/edit/delete jobs via UI, which commits to Git via backend API
    - Git remains single source of truth
    - Each tenant has a private repository: `crontopus/job-manifests-{tenant_id}`
-2. **Agent as Reconciler**: Agent pulls from tenant's Git repo and manages scheduler state, does NOT execute jobs
-3. **Ping-Based Check-ins**: Jobs report results via HTTP POST to control plane
+2. **Bidirectional Sync**: Agent reconciles between Git (desired state) and scheduler (current state)
+   - **Git → Scheduler**: Apply job definitions from Git to scheduler
+   - **Scheduler → Git**: Discover existing jobs and import to Git
+   - Agent does NOT execute jobs, only manages scheduler entries
+3. **Automatic Callback Injection**: Agent wraps all job commands with check-in callbacks
+   - Jobs automatically report success/failure to control plane
+   - No manual instrumentation required
 4. **Multi-Tenant**: Complete isolation with tenant-specific Git repositories
    - One tenant per user (`tenant_id = username`)
    - Repositories auto-created during registration
    - All job operations scoped to tenant's repository
-5. **Database for Runtime Only**: Database stores users, tenants, run history, metrics - NOT job definitions
+5. **Database for Runtime Only**: Database stores users, tenants, endpoints, run history, job instances - NOT job definitions
+6. **Terminology**:
+   - **Agent** = Binary software (one per platform: Linux agent, macOS agent, Windows agent)
+   - **Endpoint** = Machine/server running an agent instance (many endpoints run the same agent binary)
+   - **Job Definition** = YAML manifest in Git (desired state)
+   - **Job Instance** = Actual scheduled job on a specific endpoint (current state)
 
 ## Component Relationships
 
@@ -74,7 +84,13 @@ Key:
 
 ## Current Development Phase
 
-**Phase 9: Agent Distribution & Enhancement**
+**Phase 10: Job Discovery & Multi-Endpoint Management** (In Progress)
+- Phase 10.1: Terminology Refactor (Agent → Endpoint) - In Progress
+- Phase 10.2: Job Instance Tracking - Pending
+- Phase 10.3: Job Discovery & Reporting - Pending
+- Phase 10.4: Callback Injection - Pending
+
+**Previous Phases**:
 - Phase 9.1: Agent Documentation ✅ Complete
 - Phase 9.2: Agent Testing & Platform Verification (pending)
 - Phase 9.3: Binary Distribution ✅ Complete
@@ -181,11 +197,21 @@ cd internal_admin
 
 ## Important Implementation Notes
 
+### Agent vs Endpoint
+- **Agent** = The binary software (e.g., `crontopus-agent` for Linux, macOS, or Windows)
+- **Endpoint** = A machine/server running an agent instance
+- **Many endpoints** can run the **same agent binary**
+- Database model is now `Endpoint` (not `Agent`)
+- API routes use `/api/endpoints/*` (not `/api/agents/*`)
+
 ### Agent Behavior
 - **NEVER implement job execution in the agent**
 - Agent only performs CRUD operations on OS scheduler entries
-- Agent verifies scheduler entries match desired state (reconciliation loop)
-- Jobs themselves must include check-in logic (`curl` to backend API endpoint)
+- Agent reconciles bidirectionally:
+  - **Git → Scheduler**: Apply job definitions from Git
+  - **Scheduler → Git**: Discover existing jobs and report to backend
+- Agent automatically injects check-in callbacks into all job commands
+- Jobs report execution results automatically via injected callbacks
 
 ### API Structure
 When adding new endpoints to backend:

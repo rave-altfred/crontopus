@@ -1,7 +1,13 @@
 # 🦑 Crontopus
 
 **Crontopus** is a proprietary, API-first job scheduling and monitoring platform inspired by GitOps principles.  
-It combines the simplicity of “ping-based” cron monitoring with the control of an optional signed agent that manages native OS schedulers.
+It combines the simplicity of "ping-based" cron monitoring with the control of an optional signed agent that manages native OS schedulers.
+
+**Terminology**:
+- **Agent** = Binary software (one per platform: Linux, macOS, Windows)
+- **Endpoint** = Machine/server running an agent instance (many endpoints can run the same agent)
+- **Job Definition** = YAML manifest in Git (desired state)
+- **Job Instance** = Actual scheduled job on a specific endpoint (current state)
 
 ---
 
@@ -61,7 +67,10 @@ crontopus/
 
 - **Ping Mode (Agent Optional)** — Any existing scheduler (cron, Jenkins, Windows Task Scheduler, Kubernetes CronJob, etc.) includes a simple HTTP **check-in** to report run results directly to Crontopus.  
 - **Agent Mode (Native Scheduler Management)** — Install a signed agent to **apply and reconcile job definitions** on the local OS scheduler (create/update/remove, enable/disable), handle token rotation, and enforce schedule/policy constraints. **The agent never executes jobs.**  
-- **Zero-Configuration Agent Deployment** — Download pre-configured installers from webapp with embedded credentials - run one command and agent is ready!  
+- **Zero-Configuration Deployment** — Download pre-configured installers from webapp with embedded credentials - run one command and agent is ready!  
+- **Bidirectional Sync** — Agent reconciles between Git (desired state) and scheduler (current state). Discovers existing cron jobs and imports them to Git automatically.
+- **Automatic Callback Injection** — Agent wraps all job commands with check-in callbacks. Jobs automatically report success/failure without manual instrumentation.
+- **Multi-Endpoint Management** — Track which jobs are running on which machines (endpoints). View job-to-endpoint and endpoint-to-job relationships in web UI.
 - **GitOps Integration** — Sync job manifests and policies from tenant-specific Git repositories in **Forgejo**.  
 - **API First Development** — UI and CLI both talk to the same REST endpoints.  
 - **Alerts & Metrics** — Slack/email/PagerDuty notifications and Prometheus metrics.  
