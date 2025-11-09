@@ -4,6 +4,7 @@ Enrollment Token model for agent enrollment.
 Enrollment tokens are long-lived credentials that allow agents to enroll
 without requiring user JWT tokens. This enables easier agent deployment.
 """
+import hashlib
 from sqlalchemy import Column, String, Integer, DateTime, func
 from datetime import datetime, timezone
 
@@ -42,10 +43,16 @@ class EnrollmentToken(TenantScopedBase):
         
         return True
     
-    def increment_usage(self):
+    def increment_usage(self, db):
         """Increment usage counter and update last_used_at."""
         self.used_count += 1
         self.last_used_at = datetime.now(timezone.utc)
+        db.commit()
+    
+    @staticmethod
+    def hash_token(plaintext_token: str) -> str:
+        """Hash a plaintext token for storage/comparison."""
+        return hashlib.sha256(plaintext_token.encode()).hexdigest()
     
     def __repr__(self):
         return f"<EnrollmentToken(id={self.id}, name={self.name}, tenant_id={self.tenant_id}, used={self.used_count}/{self.max_uses or '∞'})>"

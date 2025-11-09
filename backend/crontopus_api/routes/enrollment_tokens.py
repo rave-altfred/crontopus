@@ -14,7 +14,6 @@ from pydantic import BaseModel, Field
 from crontopus_api.config import get_db
 from crontopus_api.models import EnrollmentToken, User
 from crontopus_api.security.dependencies import get_current_user
-from crontopus_api.security.password import get_password_hash
 
 router = APIRouter(prefix="/enrollment-tokens", tags=["enrollment-tokens"])
 
@@ -76,7 +75,7 @@ async def create_enrollment_token(
     """
     # Generate token
     plaintext_token = f"cet_{secrets.token_urlsafe(32)}"  # cet = crontopus enrollment token
-    token_hash = get_password_hash(plaintext_token)
+    token_hash = EnrollmentToken.hash_token(plaintext_token)
     
     # Calculate expiry
     expires_at = None
