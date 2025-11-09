@@ -305,13 +305,49 @@ class ForgejoClient:
             response.raise_for_status()
             return response.json()
     
+    async def reset_user_password(
+        self,
+        username: str,
+        new_password: str
+    ) -> bool:
+        """
+        Reset a user's password (admin operation).
+        
+        Args:
+            username: Username to reset password for
+            new_password: New password to set
+            
+        Returns:
+            True if successful
+        """
+        url = f'{self.base_url}/api/v1/admin/users/{username}'
+        
+        payload = {
+            'password': new_password
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.patch(
+                url,
+                headers=self.headers,
+                json=payload,
+                timeout=30.0
+            )
+            response.raise_for_status()
+            return True
+    
     async def create_access_token(
         self,
         username: str,
         token_name: str = 'crontopus-git-access'
     ) -> str:
         """
-        Create an access token for a user (using admin API).
+        Create an access token for a user.
+        
+        Process:
+        1. Admin resets user password to random value
+        2. Use that password to create token via user API
+        3. Return token (password is discarded)
         
         Args:
             username: Username to create token for
@@ -320,22 +356,35 @@ class ForgejoClient:
         Returns:
             Access token string
         """
-        url = f'{self.base_url}/api/v1/admin/users/{username}/tokens'
+        import secrets
+        
+        # Generate temporary password
+        temp_password = secrets.token_urlsafe(32)
+        
+        # Reset user password (admin operation)
+        await self.reset_user_password(username, temp_password)
+        
+        # Create token using temporary password
+        url = f'{self.base_url}/api/v1/users/{username}/tokens'
         
         payload = {
-            'name': token_name
+            'name': token_name,
+            'scopes': ['read:repository', 'write:repository']  # Git read/write access
         }
         
+        # Authenticate as the user using basic auth with temp password
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 url,
-                headers=self.headers,
+                auth=(username, temp_password),  # Basic auth with temp password
                 json=payload,
                 timeout=30.0
             )
             response.raise_for_status()
             result = response.json()
             return result.get('sha1', '')
+        
+        # temp_password is discarded after this function returns
     
     async def delete_file(
         self,

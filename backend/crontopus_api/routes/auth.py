@@ -128,18 +128,22 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     # Create Forgejo user and access token
     git_token = None
     try:
+        import secrets
+        
         forgejo = ForgejoClient(
             base_url=settings.forgejo_url,
             username=settings.forgejo_username,
             token=settings.forgejo_token
         )
         
-        # Create Forgejo user
+        # Create Forgejo user with random initial password
+        # (will be reset when creating tokens)
         try:
+            initial_password = secrets.token_urlsafe(32)
             await forgejo.create_user(
                 username=user_data.username,
                 email=user_data.email,
-                password=user_data.password,  # Same password as Crontopus
+                password=initial_password,  # Random password (not stored)
                 full_name=user_data.username
             )
             logger.info(f"Created Forgejo user: {user_data.username}")
@@ -151,6 +155,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
                 raise
         
         # Generate access token for Git authentication
+        # Process: Admin resets Forgejo password -> creates token -> discards password
         try:
             git_token = await forgejo.create_access_token(
                 username=user_data.username,
