@@ -5,7 +5,7 @@ from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-from crontopus_api.models.agent import EndpointStatus
+from crontopus_api.models.endpoint import EndpointStatus
 
 
 class AgentEnroll(BaseModel):
