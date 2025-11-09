@@ -89,6 +89,12 @@ async def list_endpoints(
     
     Supports pagination and filtering by status.
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"[DEBUG] list_endpoints called for tenant: {current_user.tenant_id}")
+    logger.info(f"[DEBUG] Endpoint.__tablename__ = {Endpoint.__tablename__}")
+    logger.info(f"[DEBUG] Endpoint.__table__.name = {Endpoint.__table__.name}")
+    
     # Base query with tenant isolation
     query = db.query(Endpoint).filter(Endpoint.tenant_id == current_user.tenant_id)
     

@@ -33,18 +33,28 @@ def upgrade() -> None:
     
     # Handle various historical table names and rename to singular 'endpoint'
     if 'endpoint' not in tables:
+        logger.info("[MIGRATION] 'endpoint' table not found, checking for other names...")
         if 'agent' in tables:
+            logger.info("[MIGRATION] Found 'agent' table, renaming to 'endpoint'")
             op.rename_table('agent', 'endpoint')
         elif 'agents' in tables:
+            logger.info("[MIGRATION] Found 'agents' table, renaming to 'endpoint'")
             op.rename_table('agents', 'endpoint')
         elif 'endpoints' in tables:
+            logger.info("[MIGRATION] Found 'endpoints' table, renaming to 'endpoint'")
             op.rename_table('endpoints', 'endpoint')
+        else:
+            logger.warning("[MIGRATION] No agent/agents/endpoints table found!")
+    else:
+        logger.info("[MIGRATION] 'endpoint' table already exists, skipping rename")
     
     # Refresh tables after potential rename
     tables = sa.inspect(conn).get_table_names()
+    logger.info(f"[MIGRATION] Tables after rename: {sorted(tables)}")
     
     # Ensure job_instances table exists
     if 'job_instances' not in tables:
+        logger.info("[MIGRATION] Creating job_instances table...")
         op.create_table(
             'job_instances',
             sa.Column('id', sa.Integer(), nullable=False),
@@ -69,6 +79,13 @@ def upgrade() -> None:
         op.create_index('ix_job_instances_status', 'job_instances', ['status'])
         op.create_index('ix_job_instances_source', 'job_instances', ['source'])
         op.create_index('ix_job_instances_tenant_id', 'job_instances', ['tenant_id'])
+        logger.info("[MIGRATION] job_instances table created successfully")
+    else:
+        logger.info("[MIGRATION] job_instances table already exists, skipping creation")
+    
+    # Final table list
+    final_tables = sa.inspect(conn).get_table_names()
+    logger.info(f"[MIGRATION] Final tables: {sorted(final_tables)}")
 
 
 def downgrade() -> None:
