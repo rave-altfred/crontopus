@@ -42,6 +42,7 @@ class AgentResponse(BaseModel):
     tenant_id: str
     name: str
     hostname: Optional[str]
+    machine_id: Optional[str]
     status: EndpointStatus
     
     last_heartbeat: Optional[datetime]
