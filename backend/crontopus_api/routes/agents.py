@@ -11,7 +11,11 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from crontopus_api.config import get_db, get_settings
-from crontopus_api.models import Agent, AgentStatus, User
+from crontopus_api.models import Endpoint, EndpointStatus, User
+
+# Backward compatibility aliases
+Agent = Endpoint
+AgentStatus = EndpointStatus
 from crontopus_api.schemas.agent import (
     AgentEnroll,
     AgentEnrollResponse,

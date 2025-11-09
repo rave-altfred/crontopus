@@ -32,6 +32,7 @@ from crontopus_api.schemas.job_instance import (
     JobInstanceResponse
 )
 from crontopus_api.security.dependencies import get_current_user
+from crontopus_api.security.enrollment_auth import get_user_for_enrollment
 from crontopus_api.security.password import get_password_hash
 
 router = APIRouter(prefix="/endpoints", tags=["endpoints"])
@@ -40,11 +41,16 @@ router = APIRouter(prefix="/endpoints", tags=["endpoints"])
 @router.post("/enroll", response_model=AgentEnrollResponse, status_code=status.HTTP_201_CREATED)
 async def enroll_endpoint(
     endpoint_data: AgentEnroll,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_user_for_enrollment),
     db: Session = Depends(get_db)
 ):
     """
     Enroll a new endpoint.
+    
+    Authentication:
+    - Accepts enrollment tokens (cet_...) or JWT tokens
+    - Enrollment tokens are long-lived and designed for agent deployment
+    - JWT tokens are short-lived user session tokens
     
     Creates a new endpoint and returns an authentication token.
     Only authenticated users can enroll endpoints.
@@ -388,15 +394,18 @@ async def get_endpoint_jobs(
 @router.get("/install/script/{platform}")
 async def get_install_script(
     platform: str,
-    current_user: User = Depends(get_current_user)
+    token: str = Query(..., description="Enrollment token (cet_...)"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     Generate a pre-configured install script for the current user.
     
     Platform can be: 'linux', 'macos', or 'windows'.
+    Token: Enrollment token (cet_...) to embed in the script.
     
     The generated script includes:
-    - User's enrollment token (current access token)
+    - User's enrollment token (passed as query parameter)
     - Tenant-specific Git repository URL
     - Username and tenant ID
     - Platform-specific installer that downloads and configures agent
@@ -406,8 +415,34 @@ async def get_install_script(
     """
     settings = get_settings()
     
-    # User's enrollment token (using their current access token)
-    enrollment_token = current_user.username  # TODO: Use actual token from auth context
+    # Validate that the provided token is an enrollment token
+    if not token.startswith("cet_"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid token format. Expected enrollment token (cet_...)"
+        )
+    
+    # Verify token belongs to current user
+    from crontopus_api.models.enrollment_token import EnrollmentToken
+    enrollment_token_record = db.query(EnrollmentToken).filter(
+        EnrollmentToken.token_hash == EnrollmentToken.hash_token(token),
+        EnrollmentToken.tenant_id == current_user.tenant_id
+    ).first()
+    
+    if not enrollment_token_record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Enrollment token not found or does not belong to your account"
+        )
+    
+    if not enrollment_token_record.is_valid():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Enrollment token is expired or usage limit exceeded"
+        )
+    
+    # User's enrollment token (from query parameter)
+    enrollment_token = token
     
     # Tenant-specific Git repository URL
     git_repo_url = f"https://git.crontopus.com/crontopus/job-manifests-{current_user.username}.git"
