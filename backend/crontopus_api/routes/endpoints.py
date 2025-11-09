@@ -662,8 +662,13 @@ if [ "$OS" = "darwin" ]; then
 </plist>
 PLIST_EOF
     
-    # Load the service
+    # Stop any existing instances
+    echo "Stopping any existing agent instances..."
     launchctl unload ~/Library/LaunchAgents/com.crontopus.agent.plist 2>/dev/null || true
+    pkill -f crontopus-agent || true
+    sleep 2
+    
+    # Load the service
     launchctl load ~/Library/LaunchAgents/com.crontopus.agent.plist
     
     echo "✓ Agent installed as launchd service"
@@ -697,6 +702,12 @@ StandardError=append:${{HOME}}/.crontopus/agent.error.log
 [Install]
 WantedBy=multi-user.target
 SYSTEMD_EOF
+    
+    # Stop any existing instances
+    echo "Stopping any existing agent instances..."
+    sudo systemctl stop crontopus-agent 2>/dev/null || true
+    pkill -f crontopus-agent || true
+    sleep 2
     
     # Install service
     sudo mv /tmp/crontopus-agent.service /etc/systemd/system/crontopus-agent.service
@@ -818,8 +829,20 @@ Write-Host ""
 Write-Host "[4/4] Installing as scheduled task..." -ForegroundColor Yellow
 Write-Host ""
 
-# Remove existing task if present
+# Stop any existing agent processes
 $TaskName = "CrontopusAgent"
+Write-Host "Stopping any existing agent instances..." -ForegroundColor Yellow
+try {{
+    Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+}} catch {{}}
+
+try {{
+    Get-Process -Name "crontopus-agent" -ErrorAction SilentlyContinue | Stop-Process -Force
+}} catch {{}}
+
+Start-Sleep -Seconds 2
+
+# Remove existing task if present
 try {{
     Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
 }} catch {{}}
