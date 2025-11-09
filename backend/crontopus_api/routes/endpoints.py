@@ -612,8 +612,8 @@ if [ "$OS" = "darwin" ]; then
     echo "Setting up launchd service..."
     mkdir -p ~/Library/LaunchAgents
     
-    # Create launchd plist
-    cat > ~/Library/LaunchAgents/com.crontopus.agent.plist << 'PLIST_EOF'
+    # Create launchd plist with actual HOME path
+    cat > ~/Library/LaunchAgents/com.crontopus.agent.plist << PLIST_EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">

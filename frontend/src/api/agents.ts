@@ -11,6 +11,7 @@ export interface Agent {
   enrolled_at: string;
   git_repo_url: string;
   git_repo_branch: string;
+  machine_id: string | null;
 }
 
 export interface JobInstance {
