@@ -17,8 +17,12 @@ export interface EnrollmentTokenCreate {
 }
 
 export interface EnrollmentTokenResponse {
+  id: number;
+  name: string;
   token: string;
-  token_record: EnrollmentToken;
+  expires_at: string | null;
+  max_uses: number | null;
+  created_at: string;
 }
 
 export const enrollmentTokensApi = {
@@ -29,7 +33,8 @@ export const enrollmentTokensApi = {
 
   async list(): Promise<EnrollmentToken[]> {
     const response = await apiClient.get('/enrollment-tokens');
-    return response.data;
+    // Backend returns {tokens: [], total, page, page_size}
+    return response.data.tokens || [];
   },
 
   async delete(id: number): Promise<void> {
