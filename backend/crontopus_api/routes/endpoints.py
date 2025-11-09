@@ -15,13 +15,21 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from crontopus_api.config import get_db, get_settings
-from crontopus_api.models import Endpoint, EndpointStatus, User
+from crontopus_api.models import Endpoint, EndpointStatus, User, JobInstance, JobInstanceStatus, JobInstanceSource
 from crontopus_api.schemas.agent import (
     AgentEnroll,
     AgentEnrollResponse,
     AgentHeartbeat,
     AgentResponse,
     AgentListResponse
+)
+from crontopus_api.schemas.job_instance import (
+    DiscoveredJobsRequest,
+    DiscoveredJobsResponse,
+    JobInstancesRequest,
+    JobInstancesResponse,
+    EndpointJobsResponse,
+    JobInstanceResponse
 )
 from crontopus_api.security.dependencies import get_current_user
 from crontopus_api.security.password import get_password_hash
@@ -192,6 +200,183 @@ async def revoke_endpoint(
     db.commit()
     
     return {"message": "Endpoint revoked", "endpoint_id": endpoint_id}
+
+
+@router.post("/{endpoint_id}/discovered-jobs", response_model=DiscoveredJobsResponse)
+async def report_discovered_jobs(
+    endpoint_id: int,
+    discovered_jobs: DiscoveredJobsRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Report jobs discovered on an endpoint.
+    
+    Endpoint agents call this endpoint when they discover existing
+    cron jobs or scheduled tasks. These jobs are imported to Git
+    under the 'discovered' namespace.
+    
+    TODO: Actually create job manifests in Git for discovered jobs
+    TODO: Add endpoint token authentication
+    """
+    # Verify endpoint exists
+    endpoint = db.query(Endpoint).filter(Endpoint.id == endpoint_id).first()
+    if not endpoint:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Endpoint not found"
+        )
+    
+    jobs_created = 0
+    
+    for job in discovered_jobs.jobs:
+        # Check if job instance already exists for this endpoint
+        existing = db.query(JobInstance).filter(
+            JobInstance.endpoint_id == endpoint_id,
+            JobInstance.job_name == job.name,
+            JobInstance.namespace == job.namespace
+        ).first()
+        
+        if not existing:
+            # Create new job instance
+            job_instance = JobInstance(
+                tenant_id=endpoint.tenant_id,
+                job_name=job.name,
+                namespace=job.namespace,
+                endpoint_id=endpoint_id,
+                status=JobInstanceStatus.SCHEDULED,
+                source=JobInstanceSource.DISCOVERED,
+                original_command=job.command
+            )
+            db.add(job_instance)
+            jobs_created += 1
+        else:
+            # Update existing instance
+            existing.last_seen = datetime.now(timezone.utc)
+            existing.original_command = job.command
+    
+    db.commit()
+    
+    # TODO: Create job manifests in Git for discovered jobs
+    # This would involve:
+    # 1. Generate YAML manifest from job data
+    # 2. Commit to tenant's Git repo under discovered/ namespace
+    # 3. Store Git commit hash for tracking
+    
+    return DiscoveredJobsResponse(
+        message=f"Discovered {jobs_created} new jobs",
+        jobs_created=jobs_created,
+        endpoint_id=endpoint_id
+    )
+
+
+@router.post("/{endpoint_id}/job-instances", response_model=JobInstancesResponse)
+async def report_job_instances(
+    endpoint_id: int,
+    instances_data: JobInstancesRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Report current job instances on an endpoint.
+    
+    Endpoint agents call this endpoint periodically (during sync) to report
+    which jobs are currently scheduled. This enables tracking of:
+    - Which endpoints are running which jobs
+    - Job deployment status across infrastructure
+    - Drift detection (jobs removed from endpoint)
+    
+    TODO: Add endpoint token authentication
+    """
+    # Verify endpoint exists
+    endpoint = db.query(Endpoint).filter(Endpoint.id == endpoint_id).first()
+    if not endpoint:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Endpoint not found"
+        )
+    
+    instances_updated = 0
+    reported_job_ids = []
+    
+    for instance_report in instances_data.instances:
+        # Find or create job instance
+        job_instance = db.query(JobInstance).filter(
+            JobInstance.endpoint_id == endpoint_id,
+            JobInstance.job_name == instance_report.job_name,
+            JobInstance.namespace == instance_report.namespace
+        ).first()
+        
+        if job_instance:
+            # Update existing instance
+            job_instance.status = getattr(JobInstanceStatus, instance_report.status.upper())
+            job_instance.last_seen = datetime.now(timezone.utc)
+            if instance_report.original_command:
+                job_instance.original_command = instance_report.original_command
+            reported_job_ids.append(job_instance.id)
+        else:
+            # Create new instance
+            job_instance = JobInstance(
+                tenant_id=endpoint.tenant_id,
+                job_name=instance_report.job_name,
+                namespace=instance_report.namespace,
+                endpoint_id=endpoint_id,
+                status=getattr(JobInstanceStatus, instance_report.status.upper()),
+                source=getattr(JobInstanceSource, instance_report.source.upper()),
+                original_command=instance_report.original_command
+            )
+            db.add(job_instance)
+        
+        instances_updated += 1
+    
+    # Mark jobs not reported as potentially removed (optional drift detection)
+    # This could be enabled via configuration
+    # db.query(JobInstance).filter(
+    #     JobInstance.endpoint_id == endpoint_id,
+    #     JobInstance.id.notin_(reported_job_ids)
+    # ).update({"status": JobInstanceStatus.ERROR})
+    
+    db.commit()
+    
+    return JobInstancesResponse(
+        message=f"Updated {instances_updated} job instances",
+        instances_updated=instances_updated,
+        endpoint_id=endpoint_id
+    )
+
+
+@router.get("/{endpoint_id}/jobs", response_model=EndpointJobsResponse)
+async def get_endpoint_jobs(
+    endpoint_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get all jobs running on a specific endpoint.
+    
+    Returns job instances with their current status.
+    Enforces tenant isolation.
+    """
+    # Verify endpoint exists and belongs to tenant
+    endpoint = db.query(Endpoint).filter(
+        Endpoint.id == endpoint_id,
+        Endpoint.tenant_id == current_user.tenant_id
+    ).first()
+    
+    if not endpoint:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Endpoint not found"
+        )
+    
+    # Get all job instances for this endpoint
+    job_instances = db.query(JobInstance).filter(
+        JobInstance.endpoint_id == endpoint_id
+    ).all()
+    
+    return EndpointJobsResponse(
+        endpoint_id=endpoint_id,
+        jobs=job_instances,
+        total=len(job_instances)
+    )
 
 
 @router.get("/install/script/{platform}")

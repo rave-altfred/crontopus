@@ -18,10 +18,12 @@ from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
 import yaml
 
+from sqlalchemy.orm import Session
 from ..security.dependencies import get_current_user
 from ..models.user import User
+from ..models import JobInstance, Endpoint
 from ..services.forgejo import ForgejoClient
-from ..config import settings
+from ..config import settings, get_db
 
 
 router = APIRouter(tags=["jobs"])
@@ -316,3 +318,54 @@ async def get_job_by_name(
         }
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Job not found: {str(e)}")
+
+
+@router.get("/{namespace}/{job_name}/endpoints")
+async def get_job_endpoints(
+    namespace: str,
+    job_name: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get all endpoints running a specific job.
+    
+    Returns list of endpoints with their job instance status.
+    Enforces tenant isolation.
+    """
+    # Strip .yaml extension if present
+    if job_name.endswith(('.yaml', '.yml')):
+        job_name = job_name[:-5] if job_name.endswith('.yaml') else job_name[:-4]
+    
+    # Get all job instances for this job in tenant
+    job_instances = db.query(JobInstance).join(Endpoint).filter(
+        JobInstance.job_name == job_name,
+        JobInstance.namespace == namespace,
+        JobInstance.tenant_id == current_user.tenant_id
+    ).all()
+    
+    # Get endpoint details for each instance
+    endpoints_data = []
+    for instance in job_instances:
+        endpoint = db.query(Endpoint).filter(Endpoint.id == instance.endpoint_id).first()
+        if endpoint:
+            endpoints_data.append({
+                "endpoint_id": endpoint.id,
+                "name": endpoint.name,
+                "hostname": endpoint.hostname,
+                "platform": endpoint.platform,
+                "status": endpoint.status.value,
+                "last_heartbeat": endpoint.last_heartbeat,
+                "job_instance": {
+                    "status": instance.status.value,
+                    "source": instance.source.value,
+                    "last_seen": instance.last_seen
+                }
+            })
+    
+    return {
+        "job_name": job_name,
+        "namespace": namespace,
+        "endpoints": endpoints_data,
+        "total": len(endpoints_data)
+    }
