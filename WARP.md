@@ -84,17 +84,26 @@ Key:
 
 ## Current Development Phase
 
-**Phase 10: Job Discovery & Multi-Endpoint Management** (In Progress)
-- Phase 10.1: Terminology Refactor (Agent → Endpoint) - In Progress
-- Phase 10.2: Job Instance Tracking - Pending
-- Phase 10.3: Job Discovery & Reporting - Pending
-- Phase 10.4: Callback Injection - Pending
+**Phase 10: Enrollment Token System & Endpoint Management** ✅ **COMPLETE**
+- Phase 10.1: Enrollment Token System ✅ Complete
+- Phase 10.2: Machine ID-Based Deduplication ✅ Complete
+- Phase 10.3: Automatic Service Installation ✅ Complete
+
+**Key Achievements**:
+- ✅ Long-lived enrollment tokens for secure remote agent deployment
+- ✅ Machine ID-based endpoint deduplication (no duplicate endpoints on reinstall)
+- ✅ Automatic system service installation on all platforms (launchd/systemd/Task Scheduler)
+- ✅ Agent v0.1.2 released with machine_id support
+- ✅ Frontend enrollment token management UI
+- ✅ Zero-configuration deployment with automatic startup
 
 **Previous Phases**:
 - Phase 9.1: Agent Documentation ✅ Complete
 - Phase 9.2: Agent Testing & Platform Verification (pending)
 - Phase 9.3: Binary Distribution ✅ Complete
 - Phase 9.9: Pre-Configured Agent Download ✅ Complete
+
+**Next Phase**: Phase 11 - Job Discovery & Multi-Endpoint Tracking (Planned)
 
 See `docs/development-plan.md` for full roadmap.
 
@@ -134,13 +143,16 @@ go build -o build/crontopus-agent ./cmd/crontopus-agent
 # - See agent/docs/windows-server-testing.md for Windows Server testing
 ```
 
-**Agent Status (Phase 9.1, 9.3, 9.9 Complete)**:
+**Agent Status (Phase 9.1, 9.3, 9.9, 10 Complete)**:
 - ✅ Comprehensive documentation (README, deployment examples)
 - ✅ Platform support: Linux, macOS, Windows Server 2019/2022, Windows 10/11
 - ✅ Windows Server testing strategy with DigitalOcean droplets (~$24/month)
 - ✅ Binary distribution and automated releases (GitHub Actions)
 - ✅ Pre-configured agent installers with automatic startup
 - ✅ Zero-configuration deployment from webapp
+- ✅ Long-lived enrollment tokens (replaces short-lived JWT)
+- ✅ Machine ID-based deduplication (prevents duplicate endpoints)
+- ✅ Automatic system service installation (launchd/systemd/Task Scheduler)
 
 ### CLI (Python)
 ```bash
@@ -236,13 +248,19 @@ When adding new endpoints to backend:
 
 **Registered Routes:**
 ```
-GET  /api/auth/me
-POST /api/auth/login
-GET  /api/runs           ← Returns {runs: [], total, page, page_size}
-GET  /api/agents         ← Returns {agents: [], total, page, page_size}
-GET  /api/jobs/          ← Returns {jobs: [], count, source, repository} (Note trailing slash!)
-POST /api/jobs           ← Create job (No trailing slash)
-PUT  /api/jobs/{namespace}/{job_name}
+GET    /api/auth/me
+POST   /api/auth/login
+GET    /api/runs                                      ← Returns {runs: [], total, page, page_size}
+GET    /api/agents                                    ← Returns {agents: [], total, page, page_size}
+GET    /api/endpoints                                 ← Returns {agents: [], total, page, page_size} (backward compat)
+POST   /api/endpoints/enroll                          ← Enroll endpoint (accepts JWT or enrollment token)
+GET    /api/endpoints/install/script/{platform}       ← Download pre-configured installer
+GET    /api/enrollment-tokens                         ← List enrollment tokens
+POST   /api/enrollment-tokens                         ← Create enrollment token
+DELETE /api/enrollment-tokens/{id}                    ← Delete enrollment token
+GET    /api/jobs/                                     ← Returns {jobs: [], count, source, repository} (Note trailing slash!)
+POST   /api/jobs                                      ← Create job (No trailing slash)
+PUT    /api/jobs/{namespace}/{job_name}
 DELETE /api/jobs/{namespace}/{job_name}
 ```
 

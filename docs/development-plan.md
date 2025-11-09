@@ -937,49 +937,96 @@ iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/instal
 
 ---
 
-## Phase 10: Job Discovery & Multi-Endpoint Management
+## Phase 10: Enrollment Token System & Endpoint Management
 
-**Status**: In Progress
+**Status**: ✅ Complete
 
 **Terminology**:
 - **Agent** = The binary software (one per platform: Linux agent, macOS agent, Windows agent)
 - **Endpoint** = A machine/server running an agent instance (many endpoints can run the same agent)
-- **Job Definition** = YAML manifest in Git (desired state)
-- **Job Instance** = Actual scheduled job on a specific endpoint (current state)
+- **Enrollment Token** = Long-lived token for remote agent deployment (replaces short-lived JWT)
+- **Machine ID** = Platform-specific unique identifier for deduplication on reinstallation
 
-**Goal**: Enable bidirectional sync between Git and schedulers, with automatic job discovery and callback injection.
+**Goal**: Enable secure, zero-configuration agent deployment with automatic endpoint deduplication.
 
-### 10.1 Terminology Refactor: Agent → Endpoint
+### 10.1 Enrollment Token System
 
-- [ ] Rename `Agent` model to `Endpoint` model
-  - Update `backend/crontopus_api/models/agent.py` → `endpoint.py`
-  - Update database table name: `agents` → `endpoints`
-  - Update all foreign key references
-  - Create Alembic migration for rename
-- [ ] Update all API routes from `/api/agents/*` to `/api/endpoints/*`
-  - `POST /api/endpoints/enroll` - Enroll new endpoint
-  - `GET /api/endpoints` - List all endpoints
-  - `GET /api/endpoints/{id}` - Get endpoint details
-  - `POST /api/endpoints/{id}/heartbeat` - Endpoint heartbeat
-  - `DELETE /api/endpoints/{id}` - Revoke endpoint
-- [ ] Update schemas and Pydantic models
-  - `AgentEnroll` → `EndpointEnroll`
-  - `Agent` → `Endpoint`
-  - `AgentStatus` → `EndpointStatus`
-- [ ] Update CLI commands
-  - `crontopus endpoints list` (was `agents list`)
-  - `crontopus endpoints show <id>`
-  - `crontopus endpoints revoke <id>`
-- [ ] Update frontend
-  - Rename Agents page to Endpoints page
-  - Update all API calls to use `/api/endpoints`
-  - Create new Agents page for binary downloads
+- [x] Create `EnrollmentToken` model with fields: id, tenant_id, token_hash, name, expires_at, created_at, used_count, max_uses, last_used_at
+- [x] Generate migration `e3f87db142ee_add_enrollment_tokens_table.py`
+- [x] Create enrollment token endpoints:
+  - `POST /api/enrollment-tokens` - Create new enrollment token
+  - `GET /api/enrollment-tokens` - List enrollment tokens
+  - `DELETE /api/enrollment-tokens/{id}` - Delete enrollment token
+- [x] Implement dual authentication system (JWT + enrollment tokens)
+  - Created `enrollment_auth.py` module with `get_user_for_enrollment()`
+  - Updated `/api/endpoints/enroll` to accept both token types
+  - Updated `/api/endpoints/install/script/{platform}` to validate enrollment tokens
+- [x] Frontend enrollment token management UI
+  - Token creation form with name and optional expiry/max_uses
+  - Token display (plaintext shown once, then hashed)
+  - Token list with usage statistics
+  - Download buttons enabled only when token exists
+- [x] Agent support for enrollment tokens
+  - Updated enrollment request to send git_repo_url and git_branch
+  - Token embedded in installer scripts
 
-**Deliverable**: Clear separation between Agent (software) and Endpoint (machine)
+**Deliverable**: ✅ Long-lived enrollment tokens replace short-lived JWT tokens for remote agent deployment
 
-**Note**: This is a breaking change. All existing agents must re-enroll after this migration.
+### 10.2 Machine ID-Based Deduplication
 
-### 10.2 Job Instance Tracking
+- [x] Add `machine_id` column to `endpoint` table
+  - Migration: `8572de0ee777_add_machine_id_to_endpoint.py`
+  - Indexed for fast lookups
+- [x] Create `agent/pkg/utils/machineid.go` with cross-platform machine ID collection
+  - macOS: IOPlatformUUID from ioreg
+  - Linux: /etc/machine-id or /var/lib/dbus/machine-id
+  - Windows: MachineGuid from registry
+  - SHA-256 hashing for privacy
+- [x] Update enrollment logic to check for existing endpoints
+  - Query by tenant_id + machine_id
+  - Reuse existing endpoint on reinstall (update token and metadata)
+  - Create new endpoint only if machine_id is new
+- [x] Agent v0.1.2 released with machine_id support
+  - GitHub Actions workflow successful
+  - Binaries available for all platforms
+
+**Deliverable**: ✅ Reinstalling agent on same machine reuses existing endpoint instead of creating duplicates
+
+### 10.3 Automatic Service Installation
+
+- [x] macOS: Automatic launchd service creation and loading
+  - Creates plist at ~/Library/LaunchAgents/com.crontopus.agent.plist
+  - Auto-restart on crash with ThrottleInterval
+  - Loads immediately with launchctl
+- [x] Linux: Automatic systemd service creation and start
+  - Creates unit at /etc/systemd/system/crontopus-agent.service
+  - Enables and starts service
+  - Restart policies configured
+- [x] Windows: Automatic scheduled task creation
+  - Creates task "CrontopusAgent" with auto-restart
+  - Runs at startup with highest privileges
+  - Starts immediately after creation
+
+**Deliverable**: ✅ Agent installs as system service automatically on all platforms
+
+**Implementation Status**: ✅ **COMPLETE** - Agent v0.1.2 deployed to production
+
+**Benefits**:
+- ✅ Secure remote agent deployment without exposing short-lived JWT tokens
+- ✅ Token usage tracking and revocation
+- ✅ No duplicate endpoints on reinstallation
+- ✅ Zero-configuration deployment with automatic startup
+- ✅ Platform-specific unique machine identification
+
+---
+
+## Phase 11: Job Discovery & Multi-Endpoint Tracking (Future)
+
+**Status**: Planned
+
+**Goal**: Enable bidirectional sync with job discovery and automatic callback injection.
+
+### 11.1 Job Instance Tracking
 
 - [ ] Create `JobInstance` model
   - Fields: id, job_name, endpoint_id, namespace, tenant_id, status, last_seen, source, original_command, created_at, updated_at
@@ -991,7 +1038,7 @@ iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/instal
 
 **Deliverable**: Database tracks which jobs are on which endpoints
 
-### 10.3 Job Discovery & Reporting
+### 11.2 Job Discovery & Reporting
 
 - [ ] Backend: Job discovery endpoint
   - `POST /api/endpoints/{endpoint_id}/discovered-jobs`
@@ -1023,7 +1070,7 @@ iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/instal
 5. Next sync: Agent pulls from Git (now includes discovered jobs)
 6. Agent reconciles and injects callbacks into all jobs
 
-### 10.4 Callback Injection
+### 11.3 Callback Injection
 
 - [ ] Agent: Implement callback wrapper logic
   - Wrap every job command with success/failure callbacks
@@ -1054,7 +1101,7 @@ curl -X POST https://crontopus.com/api/checkins \
   -d '{"job_name":"backup-db","endpoint_id":"123","status":"failure"}'
 ```
 
-### 10.5 Cross-Reference APIs
+### 11.4 Cross-Reference APIs
 
 - [ ] Backend: Job-to-Endpoints mapping
   - `GET /api/jobs/{namespace}/{job_name}/endpoints`
@@ -1071,7 +1118,7 @@ curl -X POST https://crontopus.com/api/checkins \
 
 **Deliverable**: API endpoints for many-to-many Job ↔ Endpoint relationships
 
-### 10.6 Frontend: Enhanced Jobs Page
+### 11.5 Frontend: Enhanced Jobs Page
 
 - [ ] Update Jobs list page
   - Show all jobs from Git (git-defined + discovered)
@@ -1108,7 +1155,7 @@ Jobs (75)  [+ New Job]  [Filter: All ▼]
 └─────────────────────────────────────────────────────┘
 ```
 
-### 10.7 Frontend: Enhanced Endpoints Page
+### 11.6 Frontend: Enhanced Endpoints Page
 
 - [ ] Rename "Agents" page to "Endpoints" page
 - [ ] Update page to show all endpoints
@@ -1146,7 +1193,7 @@ Endpoints (12)  [Search...]
 └─────────────────────────────────────────────────────┘
 ```
 
-### 10.8 Frontend: New Agents Page
+### 11.7 Frontend: New Agents Page
 
 - [ ] Create new "Agents" page for downloads
   - Moved from "Download Agent" to "Agents"
@@ -1159,7 +1206,7 @@ Endpoints (12)  [Search...]
 
 **Deliverable**: Clear separation in UI between Agents (downloads) and Endpoints (machines)
 
-### 10.9 Agent Configuration
+### 11.8 Agent Configuration
 
 - [ ] Add discovery settings to agent config
   - `discovery.enabled: true` - Enable discovery on enrollment
@@ -1171,7 +1218,7 @@ Endpoints (12)  [Search...]
 
 **Deliverable**: Configurable job discovery and callback injection
 
-### 10.10 Testing & Validation
+### 11.9 Testing & Validation
 
 - [ ] Backend tests
   - Test endpoint enrollment (renamed from agent)
