@@ -3,9 +3,12 @@ package sync
 import (
 	"fmt"
 	"log"
+	"strings"
 
+	"github.com/crontopus/agent/pkg/client"
 	"github.com/crontopus/agent/pkg/manifest"
 	"github.com/crontopus/agent/pkg/scheduler"
+	"github.com/crontopus/agent/pkg/wrapper"
 )
 
 // Reconciler manages synchronization between Git manifests and OS scheduler
@@ -64,10 +67,23 @@ func (r *Reconciler) Reconcile() (int, error) {
 
 	// Add or update jobs
 	for name, manifest := range desiredJobs {
+		command := manifest.GetFullCommand()
+		
+		// Wrap command with callback injection
+		if wrapper.ShouldWrap(command) && r.backendURL != "" {
+			// Infer namespace from job name or default to "production"
+			namespace := "production"
+			if strings.Contains(name, "staging") {
+				namespace = "staging"
+			}
+			command = wrapper.WrapCommand(command, r.backendURL, r.endpointToken, r.endpointID, manifest.Metadata.Name, namespace)
+			log.Printf("Wrapped command for job '%s' with callback injection", name)
+		}
+		
 		jobEntry := scheduler.JobEntry{
 			Name:     manifest.Metadata.Name,
 			Schedule: manifest.Spec.Schedule,
-			Command:  manifest.GetFullCommand(),
+			Command:  command,
 		}
 
 		if existing, exists := currentJobsMap[name]; exists {
@@ -183,4 +199,69 @@ func (r *Reconciler) DetectDrift() (bool, error) {
 
 	// No drift detected
 	return false, nil
+}
+
+// ReportJobInstances reports current job instances to the backend
+func (r *Reconciler) ReportJobInstances(apiClient *client.Client) error {
+	// Get all manifests to determine namespace and source
+	manifests, err := r.parser.ParseAll()
+	if err != nil {
+		return fmt.Errorf("failed to parse manifests: %w", err)
+	}
+	
+	// Build map of job names to manifests
+	manifestMap := make(map[string]*manifest.JobManifest)
+	for _, m := range manifests {
+		manifestMap[m.Metadata.Name] = m
+	}
+	
+	// Get currently scheduled jobs
+	currentJobs, err := r.scheduler.List()
+	if err != nil {
+		return fmt.Errorf("failed to list current jobs: %w", err)
+	}
+	
+	// Build job instances
+	instances := []client.JobInstance{}
+	for _, job := range currentJobs {
+		namespace := "default"
+		source := "git"
+		
+		// Check if job is from Git manifest
+		if _, exists := manifestMap[job.Name]; exists {
+			// Infer namespace from job name
+			if strings.Contains(job.Name, "staging") {
+				namespace = "staging"
+			} else {
+				namespace = "production"
+			}
+		} else {
+			// Job not in manifests = discovered
+			source = "discovered"
+			// Try to infer namespace from job name pattern
+			if strings.Contains(job.Name, "prod") || strings.Contains(job.Name, "production") {
+				namespace = "production"
+			} else if strings.Contains(job.Name, "stag") {
+				namespace = "staging"
+			}
+		}
+		
+		instances = append(instances, client.JobInstance{
+			JobName:   job.Name,
+			Namespace: namespace,
+			Status:    "scheduled", // Assume scheduled if in scheduler
+			Source:    source,
+			Command:   job.Command,
+		})
+	}
+	
+	// Report to backend
+	if len(instances) > 0 {
+		if err := apiClient.ReportJobInstances(r.endpointID, instances); err != nil {
+			return fmt.Errorf("failed to report job instances: %w", err)
+		}
+		log.Printf("Reported %d job instances to backend", len(instances))
+	}
+	
+	return nil
 }

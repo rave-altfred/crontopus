@@ -168,7 +168,7 @@ func main() {
 
 		// Initialize manifest parser and reconciler
 		parser := manifest.NewParser(cfg.Git.LocalPath)
-		reconciler := sync.NewReconciler(sch, parser)
+		reconciler := sync.NewReconciler(sch, parser, cfg.Backend.APIURL, tokenData.AgentID, tokenData.Token)
 
 		// Perform initial reconciliation
 		log.Println("Performing initial reconciliation...")
@@ -181,7 +181,7 @@ func main() {
 
 		// Start reconciliation loop
 		stopReconChan := make(chan struct{})
-		go reconciliationLoop(gitSyncer, reconciler, cfg, stopReconChan)
+		go reconciliationLoop(gitSyncer, reconciler, apiClient, cfg, stopReconChan)
 		defer close(stopReconChan)
 	}
 
@@ -234,7 +234,7 @@ func sendHeartbeat(apiClient *client.Client, endpointID int, cfg *config.Config)
 	}
 }
 
-func reconciliationLoop(gitSyncer *git.Syncer, reconciler *sync.Reconciler, cfg *config.Config, stopChan chan struct{}) {
+func reconciliationLoop(gitSyncer *git.Syncer, reconciler *sync.Reconciler, apiClient *client.Client, cfg *config.Config, stopChan chan struct{}) {
 	interval := time.Duration(cfg.Git.SyncInterval) * time.Second
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -268,6 +268,11 @@ func reconciliationLoop(gitSyncer *git.Syncer, reconciler *sync.Reconciler, cfg 
 				}
 			} else {
 				log.Println("No drift detected, scheduler state matches Git")
+			}
+			
+			// Report job instances to backend
+			if err := reconciler.ReportJobInstances(apiClient); err != nil {
+				log.Printf("Error reporting job instances: %v", err)
 			}
 
 		case <-stopChan:
