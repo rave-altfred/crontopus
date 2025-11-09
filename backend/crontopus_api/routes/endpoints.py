@@ -571,21 +571,114 @@ else
 fi
 
 echo ""
-echo "[4/4] Starting agent..."
+echo "[4/4] Installing as system service..."
 echo ""
 
-# Start agent in background
-nohup crontopus-agent --config ~/.crontopus/config.yaml > ~/.crontopus/agent.log 2>&1 &
-AGENT_PID=$!
-
-# Wait a moment and check if it's still running
-sleep 2
-if ps -p $AGENT_PID > /dev/null; then
-    echo "✓ Agent started successfully (PID: $AGENT_PID)"
-    echo "✓ Logs: ~/.crontopus/agent.log"
+if [ "$OS" = "darwin" ]; then
+    # macOS (launchd)
+    echo "Setting up launchd service..."
+    mkdir -p ~/Library/LaunchAgents
+    
+    # Create launchd plist
+    cat > ~/Library/LaunchAgents/com.crontopus.agent.plist << 'PLIST_EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.crontopus.agent</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/crontopus-agent</string>
+        <string>--config</string>
+        <string>${{HOME}}/.crontopus/config.yaml</string>
+    </array>
+    
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+        <key>Crashed</key>
+        <true/>
+    </dict>
+    
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    
+    <key>WorkingDirectory</key>
+    <string>${{HOME}}/.crontopus</string>
+    
+    <key>StandardOutPath</key>
+    <string>${{HOME}}/.crontopus/agent.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>${{HOME}}/.crontopus/agent.error.log</string>
+    
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>${{HOME}}</string>
+    </dict>
+</dict>
+</plist>
+PLIST_EOF
+    
+    # Load the service
+    launchctl unload ~/Library/LaunchAgents/com.crontopus.agent.plist 2>/dev/null || true
+    launchctl load ~/Library/LaunchAgents/com.crontopus.agent.plist
+    
+    echo "✓ Agent installed as launchd service"
+    echo "✓ Service will start automatically on login"
+    echo ""
+    echo "Service management:"
+    echo "  Start:   launchctl start com.crontopus.agent"
+    echo "  Stop:    launchctl stop com.crontopus.agent"
+    echo "  Restart: launchctl unload ~/Library/LaunchAgents/com.crontopus.agent.plist && launchctl load ~/Library/LaunchAgents/com.crontopus.agent.plist"
+    echo "  Logs:    tail -f ~/.crontopus/agent.log"
 else
-    echo "✗ Agent failed to start. Check logs at ~/.crontopus/agent.log"
-    exit 1
+    # Linux (systemd)
+    echo "Setting up systemd service..."
+    
+    # Create systemd unit file
+    cat > /tmp/crontopus-agent.service << SYSTEMD_EOF
+[Unit]
+Description=Crontopus Agent
+After=network.target
+
+[Service]
+Type=simple
+User=${{USER}}
+WorkingDirectory=${{HOME}}/.crontopus
+ExecStart=/usr/local/bin/crontopus-agent --config ${{HOME}}/.crontopus/config.yaml
+Restart=always
+RestartSec=30
+StandardOutput=append:${{HOME}}/.crontopus/agent.log
+StandardError=append:${{HOME}}/.crontopus/agent.error.log
+
+[Install]
+WantedBy=multi-user.target
+SYSTEMD_EOF
+    
+    # Install service
+    sudo mv /tmp/crontopus-agent.service /etc/systemd/system/crontopus-agent.service
+    sudo systemctl daemon-reload
+    sudo systemctl enable crontopus-agent
+    sudo systemctl start crontopus-agent
+    
+    echo "✓ Agent installed as systemd service"
+    echo "✓ Service enabled and started"
+    echo ""
+    echo "Service management:"
+    echo "  Status:  sudo systemctl status crontopus-agent"
+    echo "  Stop:    sudo systemctl stop crontopus-agent"
+    echo "  Restart: sudo systemctl restart crontopus-agent"
+    echo "  Logs:    sudo journalctl -u crontopus-agent -f"
 fi
 
 echo ""
@@ -593,25 +686,8 @@ echo "===================================================="
 echo "  Installation Complete!"
 echo "===================================================="
 echo ""
-echo "Agent Status:"
-echo "  PID: $AGENT_PID"
-echo "  Config: ~/.crontopus/config.yaml"
-echo "  Logs: ~/.crontopus/agent.log"
-echo ""
-echo "To stop the agent:"
-echo "  kill $AGENT_PID"
-echo ""
-echo "To install as a system service (recommended):"
-if [ "$OS" = "darwin" ]; then
-    echo "  # macOS (launchd)"
-    echo "  curl -fsSL https://raw.githubusercontent.com/rave-altfred/crontopus/main/agent/examples/com.crontopus.agent.plist -o ~/Library/LaunchAgents/com.crontopus.agent.plist"
-    echo "  launchctl load ~/Library/LaunchAgents/com.crontopus.agent.plist"
-else
-    echo "  # Linux (systemd)"
-    echo "  sudo curl -fsSL https://raw.githubusercontent.com/rave-altfred/crontopus/main/agent/examples/crontopus-agent.service -o /etc/systemd/system/crontopus-agent.service"
-    echo "  sudo systemctl daemon-reload"
-    echo "  sudo systemctl enable --now crontopus-agent"
-fi
+echo "Config: ~/.crontopus/config.yaml"
+echo "Logs:   ~/.crontopus/agent.log"
 echo ""
 echo "Documentation: https://github.com/rave-altfred/crontopus/blob/main/agent/README.md"
 echo ""
@@ -706,29 +782,67 @@ if (Get-Command crontopus-agent.exe -ErrorAction SilentlyContinue) {{
 }}
 
 Write-Host ""
-Write-Host "[4/4] Starting agent..." -ForegroundColor Yellow
+Write-Host "[4/4] Installing as scheduled task..." -ForegroundColor Yellow
 Write-Host ""
 
-# Start agent in background
+# Remove existing task if present
+$TaskName = "CrontopusAgent"
 try {{
-    $AgentProcess = Start-Process -FilePath "crontopus-agent.exe" `
-        -ArgumentList "--config", "C:\\ProgramData\\Crontopus\\config.yaml" `
-        -NoNewWindow `
-        -PassThru `
-        -RedirectStandardOutput "C:\\ProgramData\\Crontopus\\agent.log" `
-        -RedirectStandardError "C:\\ProgramData\\Crontopus\\agent-error.log"
+    Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
+}} catch {{}}
+
+# Create scheduled task action
+$Action = New-ScheduledTaskAction `
+    -Execute "C:\\Program Files\\Crontopus\\crontopus-agent.exe" `
+    -Argument "--config C:\\ProgramData\\Crontopus\\config.yaml" `
+    -WorkingDirectory "C:\\ProgramData\\Crontopus"
+
+# Create trigger (at system startup)
+$Trigger = New-ScheduledTaskTrigger -AtStartup
+
+# Create settings
+$Settings = New-ScheduledTaskSettingsSet `
+    -ExecutionTimeLimit (New-TimeSpan -Days 0) `
+    -RestartCount 3 `
+    -RestartInterval (New-TimeSpan -Minutes 1) `
+    -StartWhenAvailable `
+    -AllowStartIfOnBatteries `
+    -DontStopIfGoingOnBatteries
+
+# Create principal (run as current user)
+$Principal = New-ScheduledTaskPrincipal `
+    -UserId $env:USERNAME `
+    -LogonType S4U `
+    -RunLevel Highest
+
+# Register the task
+try {{
+    Register-ScheduledTask `
+        -TaskName $TaskName `
+        -Action $Action `
+        -Trigger $Trigger `
+        -Settings $Settings `
+        -Principal $Principal `
+        -Description "Crontopus Agent - Job scheduling and management" `
+        -Force | Out-Null
     
-    # Wait a moment and check if it's still running
+    # Start the task immediately
+    Start-ScheduledTask -TaskName $TaskName
+    
+    # Wait and verify
     Start-Sleep -Seconds 2
-    if ($AgentProcess.HasExited) {{
-        Write-Host "✗ Agent failed to start. Check logs at C:\\ProgramData\\Crontopus\\agent-error.log" -ForegroundColor Red
-        exit 1
+    $Task = Get-ScheduledTask -TaskName $TaskName
+    
+    if ($Task.State -eq "Running") {{
+        Write-Host "✓ Agent installed as scheduled task" -ForegroundColor Green
+        Write-Host "✓ Task started successfully" -ForegroundColor Green
+        Write-Host "✓ Service will start automatically on system boot" -ForegroundColor Green
     }} else {{
-        Write-Host "✓ Agent started successfully (PID: $($AgentProcess.Id))" -ForegroundColor Green
-        Write-Host "✓ Logs: C:\\ProgramData\\Crontopus\\agent.log" -ForegroundColor Green
+        Write-Host "✗ Task created but not running. Check Task Scheduler." -ForegroundColor Yellow
     }}
 }} catch {{
-    Write-Host "✗ Failed to start agent: $_" -ForegroundColor Red
+    Write-Host "✗ Failed to create scheduled task: $_" -ForegroundColor Red
+    Write-Host "You can manually create it using Task Scheduler" -ForegroundColor Yellow
     exit 1
 }}
 
@@ -737,16 +851,14 @@ Write-Host "====================================================" -ForegroundCol
 Write-Host "  Installation Complete!" -ForegroundColor Cyan
 Write-Host "====================================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Agent Status:"
-Write-Host "  PID: $($AgentProcess.Id)"
-Write-Host "  Config: C:\\ProgramData\\Crontopus\\config.yaml"
-Write-Host "  Logs: C:\\ProgramData\\Crontopus\\agent.log"
+Write-Host "Task management:"
+Write-Host "  Status:  Get-ScheduledTask -TaskName CrontopusAgent | Select State"
+Write-Host "  Start:   Start-ScheduledTask -TaskName CrontopusAgent"
+Write-Host "  Stop:    Stop-ScheduledTask -TaskName CrontopusAgent"
+Write-Host "  Remove:  Unregister-ScheduledTask -TaskName CrontopusAgent"
 Write-Host ""
-Write-Host "To stop the agent:"
-Write-Host "  Stop-Process -Id $($AgentProcess.Id)"
-Write-Host ""
-Write-Host "To install as a Windows Service (recommended):"
-Write-Host "  See: https://github.com/rave-altfred/crontopus/blob/main/agent/examples/crontopus-agent-task.xml"
+Write-Host "Config: C:\\ProgramData\\Crontopus\\config.yaml"
+Write-Host "Logs:   C:\\ProgramData\\Crontopus\\agent.log"
 Write-Host ""
 Write-Host "Documentation: https://github.com/rave-altfred/crontopus/blob/main/agent/README.md"
 Write-Host ""
