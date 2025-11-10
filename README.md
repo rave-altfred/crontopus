@@ -78,8 +78,8 @@ crontopus/
 - **Smart Deduplication** — Machine ID-based endpoint detection prevents duplicate entries on reinstallation. Reinstall on the same machine reuses existing endpoint.
 - **Secure Git Access** — Automatic Forgejo user and access token creation on registration. Agents authenticate using per-user tokens (follows industry standards).
 - **Bidirectional Sync** — Agent reconciles between Git (desired state) and scheduler (current state). Discovers existing cron jobs and imports them to Git automatically.
-- **Automatic Callback Injection** — Agent wraps all job commands with check-in callbacks. Jobs automatically report success/failure without manual instrumentation.
-- **Multi-Endpoint Management** — Track which jobs are running on which machines (endpoints). View job-to-endpoint and endpoint-to-job relationships in web UI.
+- **Automatic Callback Injection** — Agent wraps all job commands with check-in callbacks using an elegant helper script (`~/.crontopus/bin/checkin`). Jobs automatically report success/failure without manual instrumentation. Crontab entries remain clean and readable.
+- **Multi-Endpoint Management** — Track which jobs are running on which machines (endpoints). View job-to-endpoint and endpoint-to-job relationships in web UI. Database-level protection prevents duplicate job assignments on same endpoint.
 - **GitOps Integration** — Sync job manifests and policies from tenant-specific Git repositories in **Forgejo**.  
 - **API First Development** — UI and CLI both talk to the same REST endpoints.  
 - **Alerts & Metrics** — Slack/email/PagerDuty notifications and Prometheus metrics.  

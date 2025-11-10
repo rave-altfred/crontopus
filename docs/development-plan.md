@@ -1044,6 +1044,50 @@ iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/instal
 
 **Implementation Status**: ✅ **COMPLETE** - Agent v0.1.3 deployed to production
 
+### 10.5 Elegant Check-in Helper Script
+
+- [x] Create embedded shell script template (`agent/pkg/wrapper/templates/checkin.sh`)
+  - Reads config from `~/.crontopus/config.yaml` (backend URL, endpoint ID, token)
+  - Accepts job_name, namespace, status as arguments
+  - Makes check-in API call with curl
+- [x] Add `InstallCheckinScript()` function to wrapper package
+  - Installs script to `~/.crontopus/bin/checkin` on agent startup
+  - Sets executable permissions (0755)
+- [x] Update `wrapUnix()` to use helper script
+  - Changed from inline curl commands to `~/.crontopus/bin/checkin job ns status`
+  - Fallback to inline curl if helper script installation fails
+- [x] Agent v0.1.4 released with helper script support
+  - Tested locally on macOS
+  - Crontab entries now much cleaner and more readable
+
+**Before**:
+```bash
+sh -c '(ls -la) && curl -X POST -H "Authorization: Bearer TOKEN" -H "Content-Type: application/json" -d "{...}" "URL" || curl -X POST ...'
+```
+
+**After**:
+```bash
+sh -c '(ls -la) && ~/.crontopus/bin/checkin test2 production success || ~/.crontopus/bin/checkin test2 production failure'
+```
+
+**Deliverable**: ✅ Crontab entries are clean and readable with helper script abstraction
+
+### 10.6 Job Instance Unique Constraints
+
+- [x] Add unique constraint to JobInstance model
+  - UniqueConstraint on (tenant_id, endpoint_id, namespace, job_name)
+  - Prevents same endpoint from having duplicate job assignments
+- [x] Create database migration `ce60163757c5_add_unique_constraint_to_job_instances.py`
+  - PostgreSQL supports CREATE UNIQUE CONSTRAINT directly
+- [x] Update job assignment endpoint with IntegrityError handling
+  - Catches duplicate assignments at database level
+  - Returns 409 Conflict with clear error message
+- [x] Deploy backend with migration to production
+  - Migration successful: `Running upgrade efa1a3d79845 -> ce60163757c5`
+  - Constraint active in production database
+
+**Deliverable**: ✅ Database enforces uniqueness - prevents duplicate job instances on same endpoint
+
 **Benefits**:
 - ✅ Secure remote agent deployment without exposing short-lived JWT tokens
 - ✅ Token usage tracking and revocation
@@ -1053,6 +1097,8 @@ iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/instal
 - ✅ Secure Git repository access with per-user tokens
 - ✅ Follows industry standards (Docker, AWS CLI, GitLab Runner pattern)
 - ✅ File-based token storage with OS permissions (0600)
+- ✅ Clean, readable crontab entries with helper script
+- ✅ Database-level protection against duplicate job assignments
 
 ---
 

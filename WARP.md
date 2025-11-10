@@ -39,6 +39,7 @@ Crontopus is a **monorepo** for an API-first job scheduling and monitoring platf
    - Agent does NOT execute jobs, only manages scheduler entries
 3. **Automatic Callback Injection**: Agent wraps all job commands with check-in callbacks
    - Jobs automatically report success/failure to control plane
+   - Helper script at `~/.crontopus/bin/checkin` handles API calls (cleaner than inline curl)
    - No manual instrumentation required
 4. **Multi-Tenant**: Complete isolation with tenant-specific Git repositories
    - One tenant per user (`tenant_id = username`)
@@ -89,6 +90,8 @@ Key:
 - Phase 10.2: Machine ID-Based Deduplication ✅ Complete
 - Phase 10.3: Automatic Service Installation ✅ Complete
 - Phase 10.4: Git Authentication with Forgejo Access Tokens ✅ Complete
+- Phase 10.5: Elegant Check-in Helper Script ✅ Complete
+- Phase 10.6: Job Instance Unique Constraints ✅ Complete
 
 **Key Achievements**:
 - ✅ Long-lived enrollment tokens for secure remote agent deployment
@@ -96,9 +99,10 @@ Key:
 - ✅ Automatic system service installation on all platforms (launchd/systemd/Task Scheduler)
 - ✅ Git authentication with Forgejo access tokens (HTTP + token auth)
 - ✅ Automatic Forgejo user and access token creation on registration
-- ✅ Agent v0.1.3 released with Git authentication support
+- ✅ Agent v0.1.4 with elegant check-in helper script (cleaner crontab entries)
 - ✅ Frontend enrollment token management UI
 - ✅ Zero-configuration deployment with automatic startup and Git sync
+- ✅ Database unique constraint prevents duplicate job assignments on same endpoint
 
 **Previous Phases**:
 - Phase 9.1: Agent Documentation ✅ Complete
