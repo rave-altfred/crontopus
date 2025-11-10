@@ -13,6 +13,8 @@ import { Jobs } from './pages/Jobs';
 import { JobDetail } from './pages/JobDetail';
 import { JobNew } from './pages/JobNew';
 import { JobEdit } from './pages/JobEdit';
+import { AssignJobsToEndpoint } from './pages/AssignJobsToEndpoint';
+import { AssignEndpointsToJob } from './pages/AssignEndpointsToJob';
 
 function App() {
   return (
@@ -33,10 +35,12 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="agents" element={<AgentDownload />} />
             <Route path="endpoints" element={<Endpoints />} />
+            <Route path="endpoints/:endpointId/assign-jobs" element={<AssignJobsToEndpoint />} />
             <Route path="runs" element={<Runs />} />
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/new" element={<JobNew />} />
             <Route path="jobs/:namespace/:jobName/edit" element={<JobEdit />} />
+            <Route path="jobs/:namespace/:jobName/assign-endpoints" element={<AssignEndpointsToJob />} />
             <Route path="jobs/*" element={<JobDetail />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
