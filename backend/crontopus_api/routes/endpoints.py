@@ -494,6 +494,128 @@ async def get_endpoint_jobs(
     )
 
 
+@router.post("/{endpoint_id}/assign-job", status_code=status.HTTP_201_CREATED)
+async def assign_job_to_endpoint(
+    endpoint_id: int,
+    job_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Manually assign a job to an endpoint.
+    
+    Creates a JobInstance record to indicate this job should run on this endpoint.
+    The agent will pull this assignment and configure the OS scheduler accordingly.
+    
+    Request body:
+    {
+        "job_name": "backup-db",
+        "namespace": "production"
+    }
+    """
+    job_name = job_data.get("job_name")
+    namespace = job_data.get("namespace", "production")
+    
+    if not job_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="job_name is required"
+        )
+    
+    # Verify endpoint exists and belongs to tenant
+    endpoint = db.query(Endpoint).filter(
+        Endpoint.id == endpoint_id,
+        Endpoint.tenant_id == current_user.tenant_id
+    ).first()
+    
+    if not endpoint:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Endpoint not found"
+        )
+    
+    # Check if job instance already exists
+    existing = db.query(JobInstance).filter(
+        JobInstance.endpoint_id == endpoint_id,
+        JobInstance.job_name == job_name,
+        JobInstance.namespace == namespace
+    ).first()
+    
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Job is already assigned to this endpoint"
+        )
+    
+    # Create job instance
+    job_instance = JobInstance(
+        tenant_id=current_user.tenant_id,
+        job_name=job_name,
+        namespace=namespace,
+        endpoint_id=endpoint_id,
+        status=JobInstanceStatus.SCHEDULED,
+        source=JobInstanceSource.GIT
+    )
+    
+    db.add(job_instance)
+    db.commit()
+    db.refresh(job_instance)
+    
+    return {
+        "message": f"Job {namespace}/{job_name} assigned to endpoint {endpoint.name}",
+        "job_instance_id": job_instance.id,
+        "endpoint_id": endpoint_id
+    }
+
+
+@router.delete("/{endpoint_id}/jobs/{namespace}/{job_name}", status_code=status.HTTP_200_OK)
+async def unassign_job_from_endpoint(
+    endpoint_id: int,
+    namespace: str,
+    job_name: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Manually unassign a job from an endpoint.
+    
+    Removes the JobInstance record. The agent will detect this and remove
+    the job from the OS scheduler.
+    """
+    # Verify endpoint exists and belongs to tenant
+    endpoint = db.query(Endpoint).filter(
+        Endpoint.id == endpoint_id,
+        Endpoint.tenant_id == current_user.tenant_id
+    ).first()
+    
+    if not endpoint:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Endpoint not found"
+        )
+    
+    # Find job instance
+    job_instance = db.query(JobInstance).filter(
+        JobInstance.endpoint_id == endpoint_id,
+        JobInstance.job_name == job_name,
+        JobInstance.namespace == namespace
+    ).first()
+    
+    if not job_instance:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job instance not found"
+        )
+    
+    db.delete(job_instance)
+    db.commit()
+    
+    return {
+        "message": f"Job {namespace}/{job_name} unassigned from endpoint {endpoint.name}",
+        "endpoint_id": endpoint_id
+    }
+
+
 @router.get("/install/script/{platform}")
 async def get_install_script(
     platform: str,

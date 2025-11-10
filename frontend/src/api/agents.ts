@@ -44,4 +44,15 @@ export const agentsApi = {
     const response = await apiClient.get(`/endpoints/${endpointId}/jobs`);
     return response.data.jobs || [];
   },
+
+  assignJob: async (endpointId: string, jobName: string, namespace: string = 'production'): Promise<void> => {
+    await apiClient.post(`/endpoints/${endpointId}/assign-job`, {
+      job_name: jobName,
+      namespace: namespace
+    });
+  },
+
+  unassignJob: async (endpointId: string, namespace: string, jobName: string): Promise<void> => {
+    await apiClient.delete(`/endpoints/${endpointId}/jobs/${namespace}/${jobName}`);
+  },
 };

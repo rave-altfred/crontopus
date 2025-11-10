@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { jobsApi, type JobDetailResponse } from '../api/jobs';
+import { Plus, X } from 'lucide-react';
+import { jobsApi, type JobDetailResponse, type Agent } from '../api/jobs';
+import { agentsApi } from '../api/agents';
 import { runsApi, type JobRun } from '../api/runs';
 import { ManifestViewer } from '../components/ManifestViewer';
 
@@ -13,17 +15,33 @@ export const JobDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [endpoints, setEndpoints] = useState<Agent[]>([]);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [availableEndpoints, setAvailableEndpoints] = useState<Agent[]>([]);
+  const [selectedEndpoint, setSelectedEndpoint] = useState<string>('');
+  const [assigning, setAssigning] = useState(false);
 
   useEffect(() => {
     if (!jobPath) return;
 
+    const namespace = jobPath?.split('/')[0] || '';
+    const jobFileName = jobPath?.split('/').pop() || '';
+    const jobName = jobFileName.replace(/\.(yaml|yml)$/, '');
+
     // Fetch job details
     jobsApi.get(jobPath)
-      .then((jobData) => {
+      .then(async (jobData) => {
         setJob(jobData);
         
+        // Fetch endpoints running this job
+        try {
+          const endpointsData = await jobsApi.getEndpoints(namespace, jobName);
+          setEndpoints(endpointsData);
+        } catch (err) {
+          console.error('Failed to load endpoints:', err);
+        }
+        
         // Try to fetch runs, but don't fail if endpoint doesn't exist
-        const jobName = jobPath.replace(/\.(yaml|yml)$/, '').split('/').pop() || '';
         return runsApi.listByJob(jobName).catch(() => []);
       })
       .then((runsData) => {
@@ -74,6 +92,52 @@ export const JobDetail = () => {
       setShowDeleteModal(false);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleOpenAssignModal = async () => {
+    setShowAssignModal(true);
+    try {
+      const allEndpoints = await agentsApi.list();
+      setAvailableEndpoints(allEndpoints);
+    } catch (err) {
+      console.error('Failed to load endpoints:', err);
+    }
+  };
+
+  const handleAssignEndpoint = async () => {
+    if (!selectedEndpoint || !namespace || !jobName) return;
+
+    setAssigning(true);
+    try {
+      await jobsApi.assignToEndpoint(namespace, jobName, selectedEndpoint);
+      
+      // Reload endpoints for this job
+      const endpointsData = await jobsApi.getEndpoints(namespace, jobName);
+      setEndpoints(endpointsData);
+      
+      setShowAssignModal(false);
+      setSelectedEndpoint('');
+    } catch (err: any) {
+      console.error('Failed to assign endpoint:', err);
+      alert(err.response?.data?.detail || 'Failed to assign endpoint');
+    } finally {
+      setAssigning(false);
+    }
+  };
+
+  const handleUnassignEndpoint = async (endpointId: string) => {
+    if (!confirm('Unassign this endpoint from the job?')) return;
+
+    try {
+      await jobsApi.unassignFromEndpoint(namespace, jobName, endpointId);
+      
+      // Reload endpoints for this job
+      const endpointsData = await jobsApi.getEndpoints(namespace, jobName);
+      setEndpoints(endpointsData);
+    } catch (err: any) {
+      console.error('Failed to unassign endpoint:', err);
+      alert(err.response?.data?.detail || 'Failed to unassign endpoint');
     }
   };
 
@@ -169,7 +233,96 @@ export const JobDetail = () => {
 
       <ManifestViewer content={manifest._meta?.raw_content || ''} fileName={jobPath} />
 
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h3 className="text-sm font-medium text-gray-900 dark:text-white">Endpoints Running This Job</h3>
+          <button
+            onClick={handleOpenAssignModal}
+            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition"
+          >
+            <Plus className="w-3 h-3" />
+            Assign Endpoint
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Endpoint
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Hostname
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Platform
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Last Heartbeat
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {endpoints.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                    Not assigned to any endpoints
+                  </td>
+                </tr>
+              ) : (
+                endpoints.map((endpoint) => (
+                  <tr key={endpoint.endpoint_id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      {endpoint.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {endpoint.hostname}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {endpoint.platform}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          endpoint.status === 'active'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : endpoint.status === 'inactive'
+                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        }`}
+                      >
+                        {endpoint.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {endpoint.last_heartbeat
+                        ? new Date(endpoint.last_heartbeat).toLocaleString()
+                        : 'Never'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => handleUnassignEndpoint(String(endpoint.endpoint_id))}
+                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                        title="Unassign endpoint"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="px-4 py-3 border-b border-gray-200">
           <h3 className="text-sm font-medium text-gray-900">Recent Runs</h3>
         </div>
@@ -248,6 +401,53 @@ export const JobDetail = () => {
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
               >
                 {deleting ? 'Deleting...' : 'Delete Job'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Endpoint Modal */}
+      {showAssignModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Assign Endpoint to Job</h3>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Select Endpoint
+              </label>
+              <select
+                value={selectedEndpoint}
+                onChange={(e) => setSelectedEndpoint(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              >
+                <option value="">-- Select an endpoint --</option>
+                {availableEndpoints.map((endpoint) => (
+                  <option key={endpoint.id} value={endpoint.id}>
+                    {endpoint.name} ({endpoint.hostname})
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowAssignModal(false);
+                  setSelectedEndpoint('');
+                }}
+                disabled={assigning}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAssignEndpoint}
+                disabled={assigning || !selectedEndpoint}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {assigning ? 'Assigning...' : 'Assign Endpoint'}
               </button>
             </div>
           </div>

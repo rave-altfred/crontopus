@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Download, ChevronDown, ChevronRight } from 'lucide-react';
+import { Download, ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
 import { agentsApi, type Agent, type JobInstance } from '../api/agents';
+import { jobsApi, type JobListItem } from '../api/jobs';
 
 export const Endpoints = () => {
   const [endpoints, setEndpoints] = useState<Agent[]>([]);
@@ -9,6 +10,10 @@ export const Endpoints = () => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [jobsByEndpoint, setJobsByEndpoint] = useState<Record<string, JobInstance[]>>({});
   const [loadingJobs, setLoadingJobs] = useState<Record<string, boolean>>({});
+  const [showAssignModal, setShowAssignModal] = useState<string | null>(null);
+  const [availableJobs, setAvailableJobs] = useState<JobListItem[]>([]);
+  const [selectedJob, setSelectedJob] = useState<string>('');
+  const [assigning, setAssigning] = useState(false);
 
   useEffect(() => {
     agentsApi
@@ -17,6 +22,53 @@ export const Endpoints = () => {
       .catch((err) => console.error('Failed to load endpoints:', err))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleOpenAssignModal = async (endpointId: string) => {
+    setShowAssignModal(endpointId);
+    try {
+      const jobsData = await jobsApi.list();
+      setAvailableJobs(jobsData.jobs);
+    } catch (err) {
+      console.error('Failed to load jobs:', err);
+    }
+  };
+
+  const handleAssignJob = async () => {
+    if (!showAssignModal || !selectedJob) return;
+
+    setAssigning(true);
+    try {
+      const [namespace, jobName] = selectedJob.split('/');
+      await agentsApi.assignJob(showAssignModal, jobName.replace('.yaml', ''), namespace);
+      
+      // Reload jobs for this endpoint
+      const jobs = await agentsApi.getJobs(showAssignModal);
+      setJobsByEndpoint({ ...jobsByEndpoint, [showAssignModal]: jobs });
+      
+      setShowAssignModal(null);
+      setSelectedJob('');
+    } catch (err: any) {
+      console.error('Failed to assign job:', err);
+      alert(err.response?.data?.detail || 'Failed to assign job');
+    } finally {
+      setAssigning(false);
+    }
+  };
+
+  const handleUnassignJob = async (endpointId: string, namespace: string, jobName: string) => {
+    if (!confirm(`Unassign ${namespace}/${jobName} from this endpoint?`)) return;
+
+    try {
+      await agentsApi.unassignJob(endpointId, namespace, jobName);
+      
+      // Reload jobs for this endpoint
+      const jobs = await agentsApi.getJobs(endpointId);
+      setJobsByEndpoint({ ...jobsByEndpoint, [endpointId]: jobs });
+    } catch (err: any) {
+      console.error('Failed to unassign job:', err);
+      alert(err.response?.data?.detail || 'Failed to unassign job');
+    }
+  };
 
   if (loading) {
     return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
@@ -141,7 +193,19 @@ export const Endpoints = () => {
                           <div className="text-sm text-gray-500 dark:text-gray-400">Loading jobs...</div>
                         ) : (
                           <div className="space-y-2">
-                            <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">Jobs on this endpoint</div>
+                            <div className="flex justify-between items-center mb-2">
+                              <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">Jobs on this endpoint</div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenAssignModal(String(endpoint.id));
+                                }}
+                                className="inline-flex items-center gap-1 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition"
+                              >
+                                <Plus className="w-3 h-3" />
+                                Assign Job
+                              </button>
+                            </div>
                             <div className="overflow-x-auto">
                               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead className="bg-gray-100 dark:bg-gray-800">
@@ -151,6 +215,7 @@ export const Endpoints = () => {
                                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Source</th>
                                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Seen</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                                   </tr>
                                 </thead>
                                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -183,6 +248,18 @@ export const Endpoints = () => {
                                       <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
                                         {new Date(ji.last_seen).toLocaleString()}
                                       </td>
+                                      <td className="px-4 py-2 text-sm">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleUnassignJob(String(endpoint.id), ji.namespace, ji.job_name);
+                                          }}
+                                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                                          title="Unassign job"
+                                        >
+                                          <X className="w-4 h-4" />
+                                        </button>
+                                      </td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -199,6 +276,53 @@ export const Endpoints = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Assign Job Modal */}
+      {showAssignModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Assign Job to Endpoint</h3>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Select Job
+              </label>
+              <select
+                value={selectedJob}
+                onChange={(e) => setSelectedJob(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              >
+                <option value="">-- Select a job --</option>
+                {availableJobs.map((job) => (
+                  <option key={job.path} value={job.path}>
+                    {job.namespace}/{job.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowAssignModal(null);
+                  setSelectedJob('');
+                }}
+                disabled={assigning}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAssignJob}
+                disabled={assigning || !selectedJob}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {assigning ? 'Assigning...' : 'Assign Job'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
