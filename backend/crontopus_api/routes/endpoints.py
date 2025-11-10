@@ -289,6 +289,9 @@ async def report_discovered_jobs(
         token=settings.forgejo_token
     )
     
+    import logging
+    logger = logging.getLogger(__name__)
+    
     jobs_created = 0
     jobs_imported = 0
     
@@ -299,6 +302,20 @@ async def report_discovered_jobs(
             JobInstance.job_name == job.name,
             JobInstance.namespace == job.namespace
         ).first()
+        
+        # Check if job already exists in Git
+        file_path = f"{job.namespace}/{job.name}.yaml"
+        repo_name = f"job-manifests-{endpoint.tenant_id}"
+        
+        try:
+            existing_manifest = await forgejo.get_job_manifest(
+                owner="crontopus",
+                repo=repo_name,
+                file_path=file_path
+            )
+            job_exists_in_git = existing_manifest is not None
+        except Exception:
+            job_exists_in_git = False
         
         if not existing:
             # Create new job instance in database
@@ -313,9 +330,15 @@ async def report_discovered_jobs(
             )
             db.add(job_instance)
             jobs_created += 1
-            
-            # Create job manifest in Git
+        else:
+            # Update existing instance
+            existing.last_seen = datetime.now(timezone.utc)
+            existing.original_command = job.command
+        
+        # Import to Git if not already there (regardless of DB state)
+        if not job_exists_in_git:
             try:
+                logger.info(f"Importing discovered job {job.name} to Git at {file_path}")
                 manifest = {
                     "apiVersion": "crontopus.io/v1",
                     "kind": "Job",
@@ -336,8 +359,6 @@ async def report_discovered_jobs(
                 }
                 
                 yaml_content = yaml.dump(manifest, sort_keys=False, default_flow_style=False)
-                file_path = f"{job.namespace}/{job.name}.yaml"
-                repo_name = f"job-manifests-{endpoint.tenant_id}"
                 
                 await forgejo.create_or_update_file(
                     owner="crontopus",
@@ -349,13 +370,10 @@ async def report_discovered_jobs(
                     author_email=user.email or f"{user.username}@crontopus.io",
                 )
                 jobs_imported += 1
+                logger.info(f"Successfully imported {job.name} to Git")
             except Exception as e:
                 # Log error but don't fail the entire operation
-                print(f"Warning: Failed to import job {job.name} to Git: {e}")
-        else:
-            # Update existing instance
-            existing.last_seen = datetime.now(timezone.utc)
-            existing.original_command = job.command
+                logger.error(f"Failed to import job {job.name} to Git: {e}", exc_info=True)
     
     db.commit()
     
