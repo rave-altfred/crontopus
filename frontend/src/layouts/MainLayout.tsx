@@ -1,7 +1,7 @@
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ThemeSelector } from '../components/ThemeSelector';
-import { LayoutDashboard, FileText, Server, Activity, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FileText, Server, Activity, FolderOpen, ChevronRight } from 'lucide-react';
 
 export const MainLayout = () => {
   const { user, logout } = useAuth();
@@ -72,6 +72,20 @@ export const MainLayout = () => {
               </li>
 
               <li className="pt-4">
+                <Link
+                  to="/groups"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    isActive('/groups')
+                      ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  <FolderOpen size={20} />
+                  <span className="font-medium">Groups</span>
+                </Link>
+              </li>
+
+              <li>
                 <Link
                   to="/jobs"
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${

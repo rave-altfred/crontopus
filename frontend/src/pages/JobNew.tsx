@@ -1,15 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jobsApi } from '../api/jobs';
+import { namespacesApi, type Namespace } from '../api/namespaces';
 
 export const JobNew = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [namespaces, setNamespaces] = useState<Namespace[]>([]);
+  const [loadingNamespaces, setLoadingNamespaces] = useState(true);
   
   const [formData, setFormData] = useState({
     name: '',
-    namespace: 'production',
+    namespace: 'default',
     schedule: '',
     command: '',
     args: '',
@@ -19,6 +22,24 @@ export const JobNew = () => {
     timezone: '',
     labels: '',
   });
+
+  useEffect(() => {
+    loadNamespaces();
+  }, []);
+
+  const loadNamespaces = async () => {
+    try {
+      setLoadingNamespaces(true);
+      const data = await namespacesApi.list();
+      // Filter out discovered namespace (system-managed)
+      const userNamespaces = data.filter(ns => ns.name !== 'discovered');
+      setNamespaces(userNamespaces);
+    } catch (err) {
+      console.error('Failed to load namespaces:', err);
+    } finally {
+      setLoadingNamespaces(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,16 +143,34 @@ export const JobNew = () => {
           {/* Namespace */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Environment *
+              Group *
             </label>
-            <select
-              value={formData.namespace}
-              onChange={(e) => setFormData({ ...formData, namespace: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="production">Production</option>
-              <option value="staging">Staging</option>
-            </select>
+            <div className="flex gap-2">
+              <select
+                value={formData.namespace}
+                onChange={(e) => setFormData({ ...formData, namespace: e.target.value })}
+                disabled={loadingNamespaces}
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              >
+                {loadingNamespaces ? (
+                  <option>Loading...</option>
+                ) : (
+                  namespaces.map(ns => (
+                    <option key={ns.name} value={ns.name}>
+                      {ns.name}{ns.is_system ? ' (system)' : ''}
+                    </option>
+                  ))
+                )}
+              </select>
+              <button
+                type="button"
+                onClick={() => navigate('/groups')}
+                className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors whitespace-nowrap"
+              >
+                + New Group
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Select group or create a new one</p>
           </div>
         </div>
 

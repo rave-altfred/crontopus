@@ -15,6 +15,7 @@ import { JobNew } from './pages/JobNew';
 import { JobEdit } from './pages/JobEdit';
 import { AssignJobsToEndpoint } from './pages/AssignJobsToEndpoint';
 import { AssignEndpointsToJob } from './pages/AssignEndpointsToJob';
+import { Groups } from './pages/Groups';
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
             <Route path="endpoints" element={<Endpoints />} />
             <Route path="endpoints/:endpointId/assign-jobs" element={<AssignJobsToEndpoint />} />
             <Route path="runs" element={<Runs />} />
+            <Route path="groups" element={<Groups />} />
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/new" element={<JobNew />} />
             <Route path="jobs/:namespace/:jobName/edit" element={<JobEdit />} />
