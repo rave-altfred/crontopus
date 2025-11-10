@@ -51,20 +51,20 @@ export const MainLayout = () => {
 
               {/* Reports Section */}
               <li className="pt-4">
-                <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wider">
-                  Reports
+                <div className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wider">
+                  <ChevronRight size={14} />
+                  <span>Reports</span>
                 </div>
                 <ul className="space-y-1 mt-1">
                   <li>
                     <Link
                       to="/runs"
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ml-2 ${
                         isActive('/runs')
                           ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                       }`}
                     >
-                      <ChevronRight size={16} className="ml-1" />
                       <span className="font-medium">Job Runs</span>
                     </Link>
                   </li>
