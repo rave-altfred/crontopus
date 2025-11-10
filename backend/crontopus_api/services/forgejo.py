@@ -219,9 +219,18 @@ class ForgejoClient:
         # Check if file exists to get SHA (required for updates)
         sha = None
         try:
-            existing = await self.get_repository_tree(owner, repo, branch, file_path)
-            if existing and len(existing) > 0:
-                sha = existing[0].get('sha')
+            # Get file metadata from contents API
+            file_url = f'{self.base_url}/api/v1/repos/{owner}/{repo}/contents/{file_path}'
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    file_url,
+                    headers=self.headers,
+                    params={'ref': branch},
+                    timeout=10.0
+                )
+                if response.status_code == 200:
+                    file_data = response.json()
+                    sha = file_data.get('sha')
         except:
             pass  # File doesn't exist, that's ok for create
         
