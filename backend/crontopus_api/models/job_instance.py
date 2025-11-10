@@ -5,7 +5,7 @@ A JobInstance represents an actual scheduled job on a specific endpoint.
 This is the "current state" (what's actually scheduled), while job manifests
 in Git represent the "desired state" (what should be scheduled).
 """
-from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, Integer, ForeignKey, Text, func
+from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, Integer, ForeignKey, Text, func, UniqueConstraint
 import enum
 
 from crontopus_api.models.base import TenantScopedBase
@@ -64,6 +64,12 @@ class JobInstance(TenantScopedBase):
     
     # Timing
     last_seen = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    
+    # Unique constraint: one job per endpoint per namespace
+    __table_args__ = (
+        UniqueConstraint('tenant_id', 'endpoint_id', 'namespace', 'job_name', name='uq_job_instance_endpoint'),
+        {'extend_existing': True}
+    )
     
     def __repr__(self):
         return f"<JobInstance(id={self.id}, job={self.namespace}/{self.job_name}, endpoint_id={self.endpoint_id}, status={self.status.value})>"

@@ -10,10 +10,11 @@ Terminology:
 import secrets
 from datetime import datetime, timezone
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from fastapi.responses import Response
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.orm import Session
-
+from sqlalchemy.exc import IntegrityError
+from typing import List, Optional
+import logging
 from crontopus_api.config import get_db, get_settings
 from crontopus_api.models import Endpoint, EndpointStatus, User, JobInstance, JobInstanceStatus, JobInstanceSource
 from crontopus_api.schemas.agent import (
@@ -559,8 +560,15 @@ async def assign_job_to_endpoint(
     )
     
     db.add(job_instance)
-    db.commit()
-    db.refresh(job_instance)
+    try:
+        db.commit()
+        db.refresh(job_instance)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Job {namespace}/{job_name} is already assigned to this endpoint"
+        )
     
     return {
         "message": f"Job {namespace}/{job_name} assigned to endpoint {endpoint.name}",
