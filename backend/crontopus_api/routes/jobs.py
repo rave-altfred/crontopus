@@ -198,6 +198,9 @@ async def update_job(
         # Parse YAML
         manifest = manifest_data  # get_job_manifest already returns parsed manifest
         
+        # Remove _meta section (internal use only, shouldn't be written to Git)
+        manifest.pop('_meta', None)
+        
         # Update fields (only if provided)
         if updates.schedule is not None:
             manifest["spec"]["schedule"] = updates.schedule
