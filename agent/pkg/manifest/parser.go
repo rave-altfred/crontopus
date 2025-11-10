@@ -15,6 +15,9 @@ type JobManifest struct {
 	Kind       string   `yaml:"kind"`
 	Metadata   Metadata `yaml:"metadata"`
 	Spec       Spec     `yaml:"spec"`
+	
+	// Namespace is extracted from the directory structure (not from YAML)
+	Namespace string `yaml:"-"`
 }
 
 // Metadata contains job metadata
@@ -71,7 +74,7 @@ func NewParser(manifestDir string) *Parser {
 	}
 }
 
-// ParseFile parses a single YAML file
+// ParseFile parses a single YAML file and extracts namespace from directory
 func (p *Parser) ParseFile(filePath string) (*JobManifest, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
@@ -81,6 +84,22 @@ func (p *Parser) ParseFile(filePath string) (*JobManifest, error) {
 	var manifest JobManifest
 	if err := yaml.Unmarshal(data, &manifest); err != nil {
 		return nil, fmt.Errorf("failed to parse YAML in %s: %w", filePath, err)
+	}
+
+	// Extract namespace from directory structure
+	// Path format: /path/to/manifests/namespace/job.yaml
+	relPath, err := filepath.Rel(p.manifestDir, filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get relative path for %s: %w", filePath, err)
+	}
+	
+	// Get namespace from first directory component
+	parts := strings.Split(filepath.ToSlash(relPath), "/")
+	if len(parts) >= 2 {
+		manifest.Namespace = parts[0]
+	} else {
+		// File directly in manifest dir (shouldn't happen, but default to "default")
+		manifest.Namespace = "default"
 	}
 
 	// Validate manifest

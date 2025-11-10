@@ -224,24 +224,44 @@ func (s *CronScheduler) writeCrontab(entries []string) error {
 }
 
 // formatCronEntry formats a JobEntry as a cron line
+// Format: schedule command # CRONTOPUS:namespace:job-name
 func (s *CronScheduler) formatCronEntry(job JobEntry) string {
-	return fmt.Sprintf("%s %s %s%s", job.Schedule, job.Command, s.marker, job.Name)
+	namespace := job.Namespace
+	if namespace == "" {
+		namespace = "default"
+	}
+	return fmt.Sprintf("%s %s %s%s:%s", job.Schedule, job.Command, s.marker, namespace, job.Name)
 }
 
 // parseCronEntry parses a cron line into a JobEntry
+// Expected format: schedule command # CRONTOPUS:namespace:job-name
 func (s *CronScheduler) parseCronEntry(line string) *JobEntry {
 	// Only parse Crontopus-managed entries
 	if !strings.Contains(line, s.marker) {
 		return nil
 	}
 
-	// Extract job name from marker
+	// Extract identifier from marker
 	parts := strings.Split(line, s.marker)
 	if len(parts) != 2 {
 		return nil
 	}
 
-	name := strings.TrimSpace(parts[1])
+	// Parse namespace:job-name
+	identifier := strings.TrimSpace(parts[1])
+	identifierParts := strings.SplitN(identifier, ":", 2)
+	
+	var namespace, name string
+	if len(identifierParts) == 2 {
+		// New format: namespace:job-name
+		namespace = identifierParts[0]
+		name = identifierParts[1]
+	} else {
+		// Legacy format: just job-name (backward compatibility)
+		namespace = "default"
+		name = identifier
+	}
+	
 	cronPart := strings.TrimSpace(parts[0])
 
 	// Parse schedule and command
@@ -255,9 +275,10 @@ func (s *CronScheduler) parseCronEntry(line string) *JobEntry {
 	command := strings.Join(fields[5:], " ")
 
 	return &JobEntry{
-		Name:     name,
-		Schedule: schedule,
-		Command:  command,
+		Name:      name,
+		Namespace: namespace,
+		Schedule:  schedule,
+		Command:   command,
 	}
 }
 

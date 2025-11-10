@@ -39,8 +39,12 @@ func (s *TaskScheduler) Add(job JobEntry) error {
 	// Create task XML
 	taskXML := s.generateTaskXML(job.Name, job.Command, triggers)
 
-	// Create the task using schtasks
-	taskPath := s.folderPath + job.Name
+	// Build task path with namespace: \Crontopus\{namespace}\{job-name}
+	namespace := job.Namespace
+	if namespace == "" {
+		namespace = "default"
+	}
+	taskPath := s.folderPath + namespace + "\\" + job.Name
 	cmd := exec.Command("schtasks", "/Create", "/TN", taskPath, "/XML", "-")
 	cmd.Stdin = strings.NewReader(taskXML)
 	
@@ -61,19 +65,43 @@ func (s *TaskScheduler) Update(job JobEntry) error {
 }
 
 // Remove deletes a scheduled task
+// Note: name should include namespace for removal
 func (s *TaskScheduler) Remove(name string) error {
-	taskPath := s.folderPath + name
+	// Try to find task in any namespace folder (backward compatible)
+	taskPath := s.findTaskPath(name)
+	if taskPath == "" {
+		return fmt.Errorf("task %s not found", name)
+	}
 	cmd := exec.Command("schtasks", "/Delete", "/TN", taskPath, "/F")
 	
+	
+	cmd := exec.Command("schtasks", "/Delete", "/TN", taskPath, "/F")
 	if output, err := cmd.CombinedOutput(); err != nil {
-		// Check if error is because task doesn't exist
-		if strings.Contains(string(output), "cannot find") {
-			return fmt.Errorf("task %s not found", name)
-		}
 		return fmt.Errorf("failed to delete task: %w: %s", err, output)
 	}
 
 	return nil
+}
+
+// findTaskPath searches for a task by name across all namespace folders
+func (s *TaskScheduler) findTaskPath(name string) string {
+	// List all tasks in Crontopus folder
+	cmd := exec.Command("schtasks", "/Query", "/FO", "LIST")
+	output, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+	
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "TaskName:") {
+			taskPath := strings.TrimSpace(strings.TrimPrefix(line, "TaskName:"))
+			if strings.HasPrefix(taskPath, s.folderPath) && strings.HasSuffix(taskPath, "\\"+name) {
+				return taskPath
+			}
+		}
+	}
+	return ""
 }
 
 // List returns all Crontopus-managed scheduled tasks
@@ -181,7 +209,11 @@ func (s *TaskScheduler) ListAll() ([]JobEntry, error) {
 
 // Verify checks if a task exists
 func (s *TaskScheduler) Verify(name string) (bool, error) {
-	taskPath := s.folderPath + name
+	// Search for task (handles namespace folders)
+	taskPath := s.findTaskPath(name)
+	if taskPath == "" {
+		return false, nil
+	}
 	cmd := exec.Command("schtasks", "/Query", "/TN", taskPath)
 	
 	if err := cmd.Run(); err != nil {

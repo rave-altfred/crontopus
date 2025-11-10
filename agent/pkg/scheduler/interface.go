@@ -2,10 +2,11 @@ package scheduler
 
 // JobEntry represents a scheduled job
 type JobEntry struct {
-	Name     string // Job name from manifest
-	Schedule string // Cron expression
-	Command  string // Command to execute
-	User     string // User to run as (optional)
+	Name      string // Job name from manifest
+	Namespace string // Namespace/group (from directory structure)
+	Schedule  string // Cron expression
+	Command   string // Command to execute
+	User      string // User to run as (optional)
 }
 
 // Scheduler is the interface for managing scheduled jobs

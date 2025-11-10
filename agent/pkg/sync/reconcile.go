@@ -71,19 +71,20 @@ func (r *Reconciler) Reconcile() (int, error) {
 		
 		// Wrap command with callback injection
 		if wrapper.ShouldWrap(command) && r.backendURL != "" {
-			// Infer namespace from job name or default to "production"
-			namespace := "production"
-			if strings.Contains(name, "staging") {
-				namespace = "staging"
+			// Use namespace from manifest (extracted from directory structure)
+			namespace := manifest.Namespace
+			if namespace == "" {
+				namespace = "default"
 			}
 			command = wrapper.WrapCommand(command, r.backendURL, r.endpointToken, r.endpointID, manifest.Metadata.Name, namespace)
-			log.Printf("Wrapped command for job '%s' with callback injection", name)
+			log.Printf("Wrapped command for job '%s' in namespace '%s' with callback injection", name, namespace)
 		}
 		
 		jobEntry := scheduler.JobEntry{
-			Name:     manifest.Metadata.Name,
-			Schedule: manifest.Spec.Schedule,
-			Command:  command,
+			Name:      manifest.Metadata.Name,
+			Namespace: manifest.Namespace,
+			Schedule:  manifest.Spec.Schedule,
+			Command:   command,
 		}
 
 		if existing, exists := currentJobsMap[name]; exists {
@@ -175,9 +176,10 @@ func (r *Reconciler) DetectDrift() (bool, error) {
 	// 2. Check if any job needs update
 	for name, manifest := range desiredJobs {
 		jobEntry := scheduler.JobEntry{
-			Name:     manifest.Metadata.Name,
-			Schedule: manifest.Spec.Schedule,
-			Command:  manifest.GetFullCommand(),
+			Name:      manifest.Metadata.Name,
+			Namespace: manifest.Namespace,
+			Schedule:  manifest.Spec.Schedule,
+			Command:   manifest.GetFullCommand(),
 		}
 
 		if existing, exists := currentJobsMap[name]; exists {
@@ -228,22 +230,16 @@ func (r *Reconciler) ReportJobInstances(apiClient *client.Client) error {
 		source := "git"
 		
 		// Check if job is from Git manifest
-		if _, exists := manifestMap[job.Name]; exists {
-			// Infer namespace from job name
-			if strings.Contains(job.Name, "staging") {
-				namespace = "staging"
-			} else {
-				namespace = "production"
+		if manifest, exists := manifestMap[job.Name]; exists {
+			// Use namespace from manifest (extracted from directory structure)
+			namespace = manifest.Namespace
+			if namespace == "" {
+				namespace = "default"
 			}
 		} else {
 			// Job not in manifests = discovered
 			source = "discovered"
-			// Try to infer namespace from job name pattern
-			if strings.Contains(job.Name, "prod") || strings.Contains(job.Name, "production") {
-				namespace = "production"
-			} else if strings.Contains(job.Name, "stag") {
-				namespace = "staging"
-			}
+			namespace = "discovered"
 		}
 		
 		instances = append(instances, client.JobInstance{
