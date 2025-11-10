@@ -1,10 +1,36 @@
 package wrapper
 
 import (
+	_ "embed"
 	"fmt"
+	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
+
+//go:embed templates/checkin.sh
+var checkinScriptTemplate string
+
+// InstallCheckinScript installs the check-in helper script to ~/.crontopus/bin/checkin
+func InstallCheckinScript() error {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to get home directory: %w", err)
+	}
+
+	binDir := filepath.Join(homeDir, ".crontopus", "bin")
+	if err := os.MkdirAll(binDir, 0755); err != nil {
+		return fmt.Errorf("failed to create bin directory: %w", err)
+	}
+
+	scriptPath := filepath.Join(binDir, "checkin")
+	if err := os.WriteFile(scriptPath, []byte(checkinScriptTemplate), 0755); err != nil {
+		return fmt.Errorf("failed to write checkin script: %w", err)
+	}
+
+	return nil
+}
 
 // WrapCommand wraps a job command with check-in callbacks
 // The wrapped command will automatically report success/failure to the backend
@@ -18,6 +44,32 @@ func WrapCommand(originalCommand, backendURL, endpointToken string, endpointID i
 
 // wrapUnix wraps command for Unix-like systems (Linux, macOS)
 func wrapUnix(originalCommand, backendURL, endpointToken string, endpointID int, jobName, namespace string) string {
+	// Get home directory for checkin script path
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		// Fallback to inline curl if we can't get home dir
+		return wrapUnixInline(originalCommand, backendURL, endpointToken, endpointID, jobName, namespace)
+	}
+	
+	checkinScript := filepath.Join(homeDir, ".crontopus", "bin", "checkin")
+	
+	// Escape quotes in the original command
+	escapedCommand := strings.ReplaceAll(originalCommand, "'", "'\\''")
+	
+	// Build wrapper using helper script
+	// Format: (original_command) && checkin job namespace success || checkin job namespace failure
+	wrapper := fmt.Sprintf(
+		`sh -c '(%s) && %s %s %s success || %s %s %s failure'`,
+		escapedCommand,
+		checkinScript, jobName, namespace,
+		checkinScript, jobName, namespace,
+	)
+	
+	return wrapper
+}
+
+// wrapUnixInline wraps command with inline curl (fallback method)
+func wrapUnixInline(originalCommand, backendURL, endpointToken string, endpointID int, jobName, namespace string) string {
 	successURL := fmt.Sprintf("%s/api/runs/check-in", backendURL)
 	failureURL := fmt.Sprintf("%s/api/runs/check-in", backendURL)
 	

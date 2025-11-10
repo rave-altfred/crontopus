@@ -17,6 +17,7 @@ import (
 	"github.com/crontopus/agent/pkg/scheduler"
 	"github.com/crontopus/agent/pkg/sync"
 	"github.com/crontopus/agent/pkg/utils"
+	"github.com/crontopus/agent/pkg/wrapper"
 )
 
 // Version is set during build via ldflags
@@ -184,6 +185,15 @@ func main() {
 			log.Fatalf("Failed to sync Git repository: %v", err)
 		}
 		log.Printf("Git repository synced to: %s", cfg.Git.LocalPath)
+
+		// Install check-in helper script
+		log.Println("Installing check-in helper script...")
+		if err := wrapper.InstallCheckinScript(); err != nil {
+			log.Printf("Warning: Failed to install check-in script: %v", err)
+			log.Println("Will fall back to inline curl commands")
+		} else {
+			log.Println("Check-in helper script installed at ~/.crontopus/bin/checkin")
+		}
 
 		// Initialize manifest parser and reconciler
 		parser := manifest.NewParser(cfg.Git.LocalPath)
