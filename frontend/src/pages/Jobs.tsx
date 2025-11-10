@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { jobsApi, type JobListItem, type JobEndpoint } from '../api/jobs';
 
 export const Jobs = () => {
@@ -185,13 +185,23 @@ export const Jobs = () => {
                     {job.path}
                   </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link
-                          to={`/jobs/${job.path}`}
-                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          View
-                        </Link>
+                        <div className="flex items-center justify-end gap-3">
+                          <Link
+                            to={`/jobs/${job.namespace}/${job.name.replace(/\.(yaml|yml)$/, '')}/assign-endpoints`}
+                            className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Plus className="w-3 h-3" />
+                            Assign
+                          </Link>
+                          <Link
+                            to={`/jobs/${job.path}`}
+                            className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            View
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                     {expanded[jobKey] && (
