@@ -569,10 +569,10 @@ echo "[2/3] Creating configuration file..."
 # Create config directory
 mkdir -p ~/.crontopus
 
-# Delete old token to force re-enrollment
-if [ -f ~/.crontopus/agent-token ]; then
+# Delete old token files to force re-enrollment
+if [ -f ~/.crontopus/agent-token ] || [ -f ~/.crontopus/token ]; then
     echo "Removing old agent token to force re-enrollment..."
-    rm -f ~/.crontopus/agent-token
+    rm -f ~/.crontopus/agent-token ~/.crontopus/token
 fi
 
 # Auto-detect platform and version
@@ -801,11 +801,13 @@ if (-not (Test-Path $ConfigDir)) {{
     New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null
 }}
 
-# Delete old token to force re-enrollment
-$TokenFile = "$ConfigDir\\agent-token"
-if (Test-Path $TokenFile) {{
+# Delete old token files to force re-enrollment
+$TokenFile1 = "$ConfigDir\\agent-token"
+$TokenFile2 = "$ConfigDir\\token"
+if ((Test-Path $TokenFile1) -or (Test-Path $TokenFile2)) {{
     Write-Host "Removing old agent token to force re-enrollment..." -ForegroundColor Yellow
-    Remove-Item $TokenFile -Force
+    Remove-Item $TokenFile1 -Force -ErrorAction SilentlyContinue
+    Remove-Item $TokenFile2 -Force -ErrorAction SilentlyContinue
 }}
 
 # Detect agent version
