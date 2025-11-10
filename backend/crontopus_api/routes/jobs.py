@@ -113,11 +113,12 @@ async def create_job(
     try:
         # Build the manifest
         manifest = {
-            "apiVersion": "crontopus.io/v1",
+            "apiVersion": "v1",
             "kind": "Job",
             "metadata": {
                 "name": job.name,
                 "namespace": job.namespace,
+                "tenant": current_user.tenant_id,
             },
             "spec": {
                 "schedule": job.schedule,

@@ -340,11 +340,12 @@ async def report_discovered_jobs(
             try:
                 logger.info(f"Importing discovered job {job.name} to Git at {file_path}")
                 manifest = {
-                    "apiVersion": "crontopus.io/v1",
+                    "apiVersion": "v1",
                     "kind": "Job",
                     "metadata": {
                         "name": job.name,
                         "namespace": job.namespace,
+                        "tenant": endpoint.tenant_id,
                         "labels": {
                             "source": "discovered",
                             "endpoint_id": str(endpoint_id)
