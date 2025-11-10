@@ -1034,6 +1034,11 @@ iwr -useb https://raw.githubusercontent.com/YOUR_ORG/crontopus/main/agent/instal
 - [x] Migration table name fix deployed
   - Fixed from `'users'` to `'user'` (singular)
   - Deployment successful (version 20251109-205602)
+- [x] Fixed token path configuration issue
+  - Changed from `token_path: "~/.crontopus/agent-token"` (literal tilde) to `$HOME/.crontopus/agent-token`
+  - Added cleanup for legacy nested token paths in installer
+  - Fixed tenant transfer mechanism (endpoint switches tenant on re-enrollment)
+  - Deployment successful (version 20251110-103330)
 
 **Deliverable**: ✅ Agents authenticate to Git using Forgejo access tokens
 
