@@ -569,10 +569,10 @@ echo "[2/3] Creating configuration file..."
 # Create config directory
 mkdir -p ~/.crontopus
 
-# Delete old token files to force re-enrollment
-if [ -f ~/.crontopus/agent-token ] || [ -f ~/.crontopus/token ]; then
+# Delete old token files to force re-enrollment (including legacy nested paths)
+if [ -f ~/.crontopus/agent-token ] || [ -f ~/.crontopus/token ] || [ -f ~/.crontopus/~/.crontopus/agent-token ]; then
     echo "Removing old agent token to force re-enrollment..."
-    rm -f ~/.crontopus/agent-token ~/.crontopus/token
+    rm -f ~/.crontopus/agent-token ~/.crontopus/token ~/.crontopus/~/.crontopus/agent-token
 fi
 
 # Auto-detect platform and version
@@ -587,7 +587,7 @@ agent:
   hostname: "${{HOSTNAME}}"
   platform: "${{OS}}"
   version: "${{VERSION}}"
-  token_path: "~/.crontopus/agent-token"
+  token_path: "$HOME/.crontopus/agent-token"
 
 backend:
   api_url: "${{API_URL}}"
@@ -600,7 +600,7 @@ git:
   auth:
     type: "token"
     token: "${{GIT_TOKEN}}"
-  local_path: "~/.crontopus/job-manifests"
+  local_path: "$HOME/.crontopus/job-manifests"
 EOF
 
 echo "✓ Configuration created at ~/.crontopus/config.yaml"
