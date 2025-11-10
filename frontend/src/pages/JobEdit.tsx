@@ -122,17 +122,17 @@ export const JobEdit = () => {
   };
 
   if (loadingJob) {
-    return <div className="text-gray-600">Loading...</div>;
+    return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
   }
 
   if (error && !job) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <h3 className="text-red-800 font-medium">Error loading job</h3>
-        <p className="text-red-600 text-sm mt-1">{error}</p>
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <h3 className="text-red-800 dark:text-red-400 font-medium">Error loading job</h3>
+        <p className="text-red-600 dark:text-red-400 text-sm mt-1">{error}</p>
         <button
           onClick={() => navigate('/jobs')}
-          className="text-red-600 hover:text-red-800 text-sm mt-2 inline-block"
+          className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm mt-2 inline-block"
         >
           ← Back to jobs
         </button>
@@ -143,62 +143,62 @@ export const JobEdit = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           Edit Job: {job?.manifest.metadata.name}
         </h2>
         <button
           onClick={() => navigate(`/jobs/${namespace}/${jobName}.yaml`)}
-          className="text-sm text-gray-600 hover:text-gray-900"
+          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
         >
           ← Back to job
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
           {error}
         </div>
       )}
 
-      <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded">
         <p className="text-sm">
           💡 Editing will commit changes to Git repository. This action will be tracked in Git history.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-6">
         {/* Read-only info */}
-        <div className="grid grid-cols-2 gap-6 pb-4 border-b">
+        <div className="grid grid-cols-2 gap-6 pb-4 border-b border-gray-200 dark:border-gray-700">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Job Name
             </label>
             <input
               type="text"
               value={job?.manifest.metadata.name || ''}
               disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
             />
-            <p className="mt-1 text-xs text-gray-500">Cannot be changed</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Cannot be changed</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Environment
             </label>
             <input
               type="text"
               value={namespace || ''}
               disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
             />
-            <p className="mt-1 text-xs text-gray-500">Cannot be changed</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Cannot be changed</p>
           </div>
         </div>
 
         {/* Schedule */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Schedule (Cron Expression) *
           </label>
           <input
@@ -206,17 +206,17 @@ export const JobEdit = () => {
             required
             value={formData.schedule}
             onChange={(e) => setFormData({ ...formData, schedule: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="0 2 * * *"
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             Examples: <code>0 2 * * *</code> (daily at 2am), <code>*/5 * * * *</code> (every 5 minutes)
           </p>
         </div>
 
         {/* Command */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Command *
           </label>
           <input
@@ -224,34 +224,34 @@ export const JobEdit = () => {
             required
             value={formData.command}
             onChange={(e) => setFormData({ ...formData, command: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="/usr/local/bin/backup.sh"
           />
         </div>
 
         {/* Arguments */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Arguments (comma-separated)
           </label>
           <input
             type="text"
             value={formData.args}
             onChange={(e) => setFormData({ ...formData, args: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="--full, --compress"
           />
         </div>
 
         {/* Environment Variables */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Environment Variables (one per line)
           </label>
           <textarea
             value={formData.env}
             onChange={(e) => setFormData({ ...formData, env: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows={4}
             placeholder="DATABASE_URL=postgres://...&#10;AWS_REGION=us-east-1"
           />
@@ -259,28 +259,28 @@ export const JobEdit = () => {
 
         {/* Timezone */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Timezone
           </label>
           <input
             type="text"
             value={formData.timezone}
             onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="America/New_York"
           />
-          <p className="mt-1 text-xs text-gray-500">Optional. Defaults to UTC</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Optional. Defaults to UTC</p>
         </div>
 
         {/* Labels */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Labels (one per line)
           </label>
           <textarea
             value={formData.labels}
             onChange={(e) => setFormData({ ...formData, labels: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows={3}
             placeholder="team=backend&#10;priority=high"
           />
@@ -293,9 +293,9 @@ export const JobEdit = () => {
               type="checkbox"
               checked={formData.enabled}
               onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
-              className="mr-2"
+              className="mr-2 rounded border-gray-300 dark:border-gray-600"
             />
-            <span className="text-sm text-gray-700">Enabled</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">Enabled</span>
           </label>
           
           <label className="flex items-center">
@@ -303,18 +303,18 @@ export const JobEdit = () => {
               type="checkbox"
               checked={formData.paused}
               onChange={(e) => setFormData({ ...formData, paused: e.target.checked })}
-              className="mr-2"
+              className="mr-2 rounded border-gray-300 dark:border-gray-600"
             />
-            <span className="text-sm text-gray-700">Paused</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">Paused</span>
           </label>
         </div>
 
         {/* Submit */}
-        <div className="flex justify-end space-x-4 pt-4 border-t">
+        <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
             type="button"
             onClick={() => navigate(`/jobs/${namespace}/${jobName}.yaml`)}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Cancel
           </button>

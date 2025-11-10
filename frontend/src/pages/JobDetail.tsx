@@ -50,15 +50,15 @@ export const JobDetail = () => {
   }, [jobPath]);
 
   if (loading) {
-    return <div className="text-gray-600">Loading...</div>;
+    return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
   }
 
   if (error || !job) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <h3 className="text-red-800 font-medium">Error loading job</h3>
-        <p className="text-red-600 text-sm mt-1">{error || 'Job not found'}</p>
-        <Link to="/jobs" className="text-red-600 hover:text-red-800 text-sm mt-2 inline-block">
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <h3 className="text-red-800 dark:text-red-400 font-medium">Error loading job</h3>
+        <p className="text-red-600 dark:text-red-400 text-sm mt-1">{error || 'Job not found'}</p>
+        <Link to="/jobs" className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm mt-2 inline-block">
           ← Back to jobs
         </Link>
       </div>
@@ -109,11 +109,11 @@ export const JobDetail = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <Link to="/jobs" className="text-sm text-blue-600 hover:text-blue-800 mb-2 inline-block">
+          <Link to="/jobs" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mb-2 inline-block">
             ← Back to jobs
           </Link>
-          <h2 className="text-2xl font-bold text-gray-900">{manifest.metadata.name}</h2>
-          <p className="text-sm text-gray-500 mt-1">{jobPath}</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{manifest.metadata.name}</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{jobPath}</p>
         </div>
         <div className="flex space-x-3">
           <button
@@ -140,23 +140,23 @@ export const JobDetail = () => {
       </div>
 
       {!job.valid && job.error && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h4 className="text-yellow-800 font-medium text-sm">Validation Warning</h4>
-          <p className="text-yellow-700 text-sm mt-1">{job.error}</p>
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+          <h4 className="text-yellow-800 dark:text-yellow-400 font-medium text-sm">Validation Warning</h4>
+          <p className="text-yellow-700 dark:text-yellow-400 text-sm mt-1">{job.error}</p>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow p-4">
-          <h4 className="text-sm font-medium text-gray-500 mb-2">Schedule</h4>
-          <p className="text-lg font-mono text-gray-900">{manifest.spec.schedule}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Schedule</h4>
+          <p className="text-lg font-mono text-gray-900 dark:text-white">{manifest.spec.schedule}</p>
           {manifest.spec.timezone && (
-            <p className="text-xs text-gray-500 mt-1">{manifest.spec.timezone}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{manifest.spec.timezone}</p>
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
-          <h4 className="text-sm font-medium text-gray-500 mb-2">Status</h4>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Status</h4>
           <span
             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
               manifest.spec.enabled === false || manifest.spec.paused
@@ -168,8 +168,8 @@ export const JobDetail = () => {
           </span>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
-          <h4 className="text-sm font-medium text-gray-500 mb-2">Environment</h4>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Environment</h4>
           <span
             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
               manifest._meta?.namespace === 'production'
@@ -183,11 +183,11 @@ export const JobDetail = () => {
       </div>
 
       {manifest.metadata.labels && Object.keys(manifest.metadata.labels).length > 0 && (
-        <div className="bg-white rounded-lg shadow p-4">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Labels</h4>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Labels</h4>
           <div className="flex flex-wrap gap-2">
             {Object.entries(manifest.metadata.labels).map(([key, value]) => (
-              <span key={key} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+              <span key={key} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded">
                 {key}: {value}
               </span>
             ))}
@@ -287,28 +287,28 @@ export const JobDetail = () => {
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="px-4 py-3 border-b border-gray-200">
-          <h3 className="text-sm font-medium text-gray-900">Recent Runs</h3>
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-sm font-medium text-gray-900 dark:text-white">Recent Runs</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Started At
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Duration
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {runs.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500 text-sm">
+                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
                     No runs yet
                   </td>
                 </tr>
@@ -319,19 +319,19 @@ export const JobDetail = () => {
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           run.status === 'success'
-                            ? 'bg-green-100 text-green-800'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                             : run.status === 'failure'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-yellow-100 text-yellow-800'
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                         }`}
                       >
                         {run.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {new Date(run.started_at).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {run.duration_seconds ? `${run.duration_seconds}s` : '-'}
                     </td>
                   </tr>
@@ -345,9 +345,9 @@ export const JobDetail = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Job</h3>
-            <p className="text-gray-600 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Delete Job</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               Are you sure you want to delete <strong>{manifest.metadata.name}</strong>?
               This will remove the job from Git and cannot be undone.
             </p>
@@ -355,7 +355,7 @@ export const JobDetail = () => {
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={deleting}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
               >
                 Cancel
               </button>
