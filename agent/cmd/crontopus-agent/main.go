@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/crontopus/agent/pkg/auth"
@@ -218,14 +216,8 @@ func main() {
 	endpointID := tokenData.AgentID // AgentID field now stores EndpointID
 	go heartbeatLoop(apiClient, endpointID, cfg, stopChan)
 
-	// Setup signal handling
-	sigChan := make(chan os.Signal, 1)
-	discoverChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-	signal.Notify(discoverChan, syscall.SIGUSR1) // SIGUSR1 triggers manual discovery
-
-	log.Println("Agent running. Press Ctrl+C to stop.")
-	log.Println("Send SIGUSR1 to trigger job discovery: kill -USR1 <pid>")
+	// Setup signal handling (platform-specific)
+	sigChan, discoverChan := setupSignals(sch, apiClient, endpointID)
 
 	// Handle signals
 	for {
