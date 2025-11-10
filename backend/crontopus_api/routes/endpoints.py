@@ -260,9 +260,12 @@ async def report_discovered_jobs(
     cron jobs or scheduled tasks. These jobs are imported to Git
     under the 'discovered' namespace.
     
-    TODO: Actually create job manifests in Git for discovered jobs
     TODO: Add endpoint token authentication
     """
+    from ..services.forgejo import ForgejoClient
+    from ..config import settings
+    import yaml
+    
     # Verify endpoint exists
     endpoint = db.query(Endpoint).filter(Endpoint.id == endpoint_id).first()
     if not endpoint:
@@ -271,7 +274,23 @@ async def report_discovered_jobs(
             detail="Endpoint not found"
         )
     
+    # Get user for Git commits
+    user = db.query(User).filter(User.tenant_id == endpoint.tenant_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No user found for tenant"
+        )
+    
+    # Initialize Forgejo client
+    forgejo = ForgejoClient(
+        base_url=settings.forgejo_url,
+        username=settings.forgejo_username,
+        token=settings.forgejo_token
+    )
+    
     jobs_created = 0
+    jobs_imported = 0
     
     for job in discovered_jobs.jobs:
         # Check if job instance already exists for this endpoint
@@ -282,7 +301,7 @@ async def report_discovered_jobs(
         ).first()
         
         if not existing:
-            # Create new job instance
+            # Create new job instance in database
             job_instance = JobInstance(
                 tenant_id=endpoint.tenant_id,
                 job_name=job.name,
@@ -294,6 +313,45 @@ async def report_discovered_jobs(
             )
             db.add(job_instance)
             jobs_created += 1
+            
+            # Create job manifest in Git
+            try:
+                manifest = {
+                    "apiVersion": "crontopus.io/v1",
+                    "kind": "Job",
+                    "metadata": {
+                        "name": job.name,
+                        "namespace": job.namespace,
+                        "labels": {
+                            "source": "discovered",
+                            "endpoint_id": str(endpoint_id)
+                        }
+                    },
+                    "spec": {
+                        "schedule": job.schedule,
+                        "command": job.command,
+                        "enabled": True,
+                        "paused": False,
+                    }
+                }
+                
+                yaml_content = yaml.dump(manifest, sort_keys=False, default_flow_style=False)
+                file_path = f"{job.namespace}/{job.name}.yaml"
+                repo_name = f"job-manifests-{endpoint.tenant_id}"
+                
+                await forgejo.create_or_update_file(
+                    owner="crontopus",
+                    repo=repo_name,
+                    file_path=file_path,
+                    content=yaml_content,
+                    message=f"Import discovered job: {job.name} from endpoint {endpoint.name}",
+                    author_name=user.username,
+                    author_email=user.email or f"{user.username}@crontopus.io",
+                )
+                jobs_imported += 1
+            except Exception as e:
+                # Log error but don't fail the entire operation
+                print(f"Warning: Failed to import job {job.name} to Git: {e}")
         else:
             # Update existing instance
             existing.last_seen = datetime.now(timezone.utc)
@@ -301,14 +359,8 @@ async def report_discovered_jobs(
     
     db.commit()
     
-    # TODO: Create job manifests in Git for discovered jobs
-    # This would involve:
-    # 1. Generate YAML manifest from job data
-    # 2. Commit to tenant's Git repo under discovered/ namespace
-    # 3. Store Git commit hash for tracking
-    
     return DiscoveredJobsResponse(
-        message=f"Discovered {jobs_created} new jobs",
+        message=f"Discovered {jobs_created} new jobs ({jobs_imported} imported to Git)",
         jobs_created=jobs_created,
         endpoint_id=endpoint_id
     )
