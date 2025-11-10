@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { jobsApi, type JobListItem } from '../api/jobs';
-import type { Agent } from '../api/agents';
+import { jobsApi, type JobListItem, type JobEndpoint } from '../api/jobs';
 
 export const Jobs = () => {
   const [jobs, setJobs] = useState<JobListItem[]>([]);
@@ -11,7 +10,7 @@ export const Jobs = () => {
   const [filter, setFilter] = useState<'all' | 'production' | 'staging'>('all');
   const [repository, setRepository] = useState<string>('');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [endpointsByJob, setEndpointsByJob] = useState<Record<string, Agent[]>>({});
+  const [endpointsByJob, setEndpointsByJob] = useState<Record<string, JobEndpoint[]>>({});
   const [loadingEndpoints, setLoadingEndpoints] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -222,7 +221,7 @@ export const Jobs = () => {
                                       </tr>
                                     ) : (
                                       (endpointsByJob[jobKey] || []).map((ep) => (
-                                        <tr key={ep.id}>
+                                        <tr key={ep.endpoint_id}>
                                           <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{ep.name}</td>
                                           <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{ep.platform}</td>
                                           <td className="px-4 py-2 text-sm">
@@ -235,7 +234,7 @@ export const Jobs = () => {
                                             </span>
                                           </td>
                                           <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
-                                            {new Date(ep.last_heartbeat).toLocaleString()}
+                                            {ep.last_heartbeat ? new Date(ep.last_heartbeat).toLocaleString() : 'Never'}
                                           </td>
                                         </tr>
                                       ))

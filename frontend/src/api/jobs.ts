@@ -1,6 +1,9 @@
 import { apiClient } from './client';
 import type { Agent } from './agents';
 
+// Re-export Agent type for convenience
+export type { Agent };
+
 export interface JobManifest {
   apiVersion: string;
   kind: string;
@@ -77,6 +80,20 @@ export interface JobUpdatePayload {
   labels?: Record<string, string>;
 }
 
+export interface JobEndpoint {
+  endpoint_id: number;
+  name: string;
+  hostname: string;
+  platform: string;
+  status: string;
+  last_heartbeat: string | null;
+  job_instance: {
+    status: string;
+    source: string;
+    last_seen: string;
+  };
+}
+
 export const jobsApi = {
   list: async (namespace?: string): Promise<JobsListResponse> => {
     const params = namespace ? { namespace } : {};
@@ -109,7 +126,7 @@ export const jobsApi = {
     return response.data;
   },
 
-  getEndpoints: async (namespace: string, jobName: string): Promise<Agent[]> => {
+  getEndpoints: async (namespace: string, jobName: string): Promise<JobEndpoint[]> => {
     const response = await apiClient.get(`/jobs/${namespace}/${jobName}/endpoints`);
     return response.data.endpoints;
   },

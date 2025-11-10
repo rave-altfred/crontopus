@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Plus, X } from 'lucide-react';
-import { jobsApi, type JobDetailResponse, type Agent } from '../api/jobs';
-import { agentsApi } from '../api/agents';
+import { jobsApi, type JobDetailResponse, type JobEndpoint } from '../api/jobs';
+import { agentsApi, type Agent } from '../api/agents';
 import { runsApi, type JobRun } from '../api/runs';
 import { ManifestViewer } from '../components/ManifestViewer';
 
@@ -15,7 +15,7 @@ export const JobDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [endpoints, setEndpoints] = useState<Agent[]>([]);
+  const [endpoints, setEndpoints] = useState<JobEndpoint[]>([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [availableEndpoints, setAvailableEndpoints] = useState<Agent[]>([]);
   const [selectedEndpoint, setSelectedEndpoint] = useState<string>('');
