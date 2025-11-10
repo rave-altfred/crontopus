@@ -104,7 +104,7 @@ class ForgejoClient:
         manifests = []
         
         # If namespace specified, only scan that directory
-        paths_to_scan = [namespace] if namespace else ['production', 'staging']
+        paths_to_scan = [namespace] if namespace else ['production', 'staging', 'discovered']
         
         for path in paths_to_scan:
             try:
