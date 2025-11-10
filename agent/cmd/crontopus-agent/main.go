@@ -144,9 +144,10 @@ func main() {
 				for _, j := range allJobs {
 					if !managedNames[j.Name] {
 						discoveredJobs = append(discoveredJobs, client.DiscoveredJob{
-							Name:     j.Name,
-							Schedule: j.Schedule,
-							Command:  j.Command,
+							Name:      j.Name,
+							Schedule:  j.Schedule,
+							Command:   j.Command,
+							Namespace: "discovered",
 						})
 					}
 				}

@@ -34,6 +34,7 @@ class JobInstance(TenantScopedBase):
     - One job can run on multiple endpoints
     - One endpoint can run multiple jobs
     """
+    __tablename__ = "job_instances"
     
     # Job identification (references Git manifest)
     job_name = Column(String(255), nullable=False, index=True)

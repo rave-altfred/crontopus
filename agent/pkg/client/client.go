@@ -123,9 +123,10 @@ func (c *Client) Heartbeat(endpointID int, req HeartbeatRequest) error {
 
 // DiscoveredJob represents a job found in the OS scheduler
 type DiscoveredJob struct {
-	Name     string `json:"name"`
-	Schedule string `json:"schedule"`
-	Command  string `json:"command"`
+	Name      string `json:"name"`
+	Schedule  string `json:"schedule"`
+	Command   string `json:"command"`
+	Namespace string `json:"namespace,omitempty"`
 }
 
 // DiscoverJobsRequest represents discovered jobs to send to backend
