@@ -548,10 +548,17 @@ USERNAME="{username}"
 TENANT_ID="{tenant_id}"
 API_URL="{api_url}"
 
-echo "===================================================="
-echo "  Crontopus Agent Installer"
-echo "  User: {username}"
-echo "===================================================="
+echo ""
+echo "╭────────────────────╮"
+echo "│       ╭────╮     ○ │"
+echo "│    ╭──╯ [] ╰──╮○ ○ │"
+echo "│   ╰──╮ [][] ╭──╯   │"
+echo "│      ╰──╮╭──╯      │"
+echo "│        ╰╯╰╯        │"
+echo "│ C R O N T O P U S™ │"
+echo "╰────────────────────╯"
+echo ""
+echo "Agent Installer for: {username}"
 echo ""
 
 # Download and run generic installer
@@ -776,10 +783,17 @@ $Username = "{username}"
 $TenantId = "{tenant_id}"
 $ApiUrl = "{api_url}"
 
-Write-Host "====================================================" -ForegroundColor Cyan
-Write-Host "  Crontopus Agent Installer" -ForegroundColor Cyan
-Write-Host "  User: {username}" -ForegroundColor Cyan
-Write-Host "====================================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "╭────────────────────╮" -ForegroundColor Cyan
+Write-Host "│       ╭────╮     ○ │" -ForegroundColor Cyan
+Write-Host "│    ╭──╯ [] ╰──╮○ ○ │" -ForegroundColor Cyan
+Write-Host "│   ╰──╮ [][] ╭──╯   │" -ForegroundColor Cyan
+Write-Host "│      ╰──╮╭──╯      │" -ForegroundColor Cyan
+Write-Host "│        ╰╯╰╯        │" -ForegroundColor Cyan
+Write-Host "│ C R O N T O P U S™ │" -ForegroundColor Cyan
+Write-Host "╰────────────────────╯" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Agent Installer for: {username}" -ForegroundColor White
 Write-Host ""
 
 Write-Host "[1/3] Downloading and installing agent binary..." -ForegroundColor Yellow
