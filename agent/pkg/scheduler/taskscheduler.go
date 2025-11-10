@@ -72,8 +72,6 @@ func (s *TaskScheduler) Remove(name string) error {
 	if taskPath == "" {
 		return fmt.Errorf("task %s not found", name)
 	}
-	cmd := exec.Command("schtasks", "/Delete", "/TN", taskPath, "/F")
-	
 	
 	cmd := exec.Command("schtasks", "/Delete", "/TN", taskPath, "/F")
 	if output, err := cmd.CombinedOutput(); err != nil {
