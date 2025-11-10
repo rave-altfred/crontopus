@@ -161,7 +161,8 @@ func main() {
 		}
 	}
 
-	// Initialize Git syncer
+	// Initialize Git syncer and reconciliation loop
+	var stopReconChan chan struct{}
 	if cfg.Git.URL == "" {
 		log.Println("Warning: No Git repository configured. Agent will only manage existing jobs.")
 	} else {
@@ -198,9 +199,8 @@ func main() {
 		}
 
 		// Start reconciliation loop
-		stopReconChan := make(chan struct{})
-		go reconciliationLoop(gitSyncer, reconciler, apiClient, cfg, stopReconChan)
-		defer close(stopReconChan)
+		stopReconChan = make(chan struct{})
+		go reconciliationLoop(gitSyncer, reconciler, apiClient, cfg, sch, tokenData.AgentID, stopReconChan)
 	}
 
 	// Start heartbeat goroutine
@@ -208,16 +208,79 @@ func main() {
 	endpointID := tokenData.AgentID // AgentID field now stores EndpointID
 	go heartbeatLoop(apiClient, endpointID, cfg, stopChan)
 
-	// Wait for interrupt signal
+	// Setup signal handling
 	sigChan := make(chan os.Signal, 1)
+	discoverChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(discoverChan, syscall.SIGUSR1) // SIGUSR1 triggers manual discovery
 
 	log.Println("Agent running. Press Ctrl+C to stop.")
-	<-sigChan
+	log.Println("Send SIGUSR1 to trigger job discovery: kill -USR1 <pid>")
 
-	log.Println("Shutting down agent...")
-	close(stopChan)
-	time.Sleep(1 * time.Second) // Give heartbeat goroutine time to finish
+	// Handle signals
+	for {
+		select {
+		case <-sigChan:
+			log.Println("Shutting down agent...")
+			close(stopChan)
+			if stopReconChan != nil {
+				close(stopReconChan)
+			}
+			time.Sleep(1 * time.Second)
+			return
+		case <-discoverChan:
+			log.Println("Manual discovery triggered via SIGUSR1")
+			performDiscovery(sch, apiClient, tokenData.AgentID)
+		}
+	}
+}
+
+// performDiscovery scans for jobs and reports discovered ones to backend
+func performDiscovery(sch scheduler.Scheduler, apiClient *client.Client, endpointID int) {
+	allJobs, err := sch.ListAll()
+	if err != nil {
+		log.Printf("Failed to list all jobs: %v", err)
+		return
+	}
+	
+	managedJobs, err := sch.List()
+	if err != nil {
+		log.Printf("Failed to list managed jobs: %v", err)
+		return
+	}
+	
+	managedCount := len(managedJobs)
+	discoveredCount := len(allJobs) - managedCount
+	log.Printf("Discovery scan: %d total jobs (%d managed, %d discovered)", len(allJobs), managedCount, discoveredCount)
+	
+	if discoveredCount == 0 {
+		return
+	}
+	
+	// Build map of managed job names
+	managedNames := make(map[string]bool)
+	for _, j := range managedJobs {
+		managedNames[j.Name] = true
+	}
+	
+	// Find discovered jobs
+	discoveredJobs := []client.DiscoveredJob{}
+	for _, j := range allJobs {
+		if !managedNames[j.Name] {
+			discoveredJobs = append(discoveredJobs, client.DiscoveredJob{
+				Name:      j.Name,
+				Schedule:  j.Schedule,
+				Command:   j.Command,
+				Namespace: "discovered",
+			})
+		}
+	}
+	
+	if err := apiClient.DiscoverJobs(endpointID, discoveredJobs); err != nil {
+		log.Printf("Failed to report discovered jobs: %v", err)
+	} else {
+		log.Printf("Reported %d discovered jobs to backend", len(discoveredJobs))
+	}
 }
 
 func heartbeatLoop(apiClient *client.Client, endpointID int, cfg *config.Config, stopChan chan struct{}) {
@@ -252,12 +315,17 @@ func sendHeartbeat(apiClient *client.Client, endpointID int, cfg *config.Config)
 	}
 }
 
-func reconciliationLoop(gitSyncer *git.Syncer, reconciler *sync.Reconciler, apiClient *client.Client, cfg *config.Config, stopChan chan struct{}) {
+func reconciliationLoop(gitSyncer *git.Syncer, reconciler *sync.Reconciler, apiClient *client.Client, cfg *config.Config, sch scheduler.Scheduler, endpointID int, stopChan chan struct{}) {
 	interval := time.Duration(cfg.Git.SyncInterval) * time.Second
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
+	
+	// Discovery runs every 5 minutes
+	discoveryTicker := time.NewTicker(5 * time.Minute)
+	defer discoveryTicker.Stop()
 
 	log.Printf("Reconciliation loop started (interval: %s)", interval)
+	log.Printf("Discovery loop started (interval: 5m)")
 
 	for {
 		select {
@@ -292,6 +360,11 @@ func reconciliationLoop(gitSyncer *git.Syncer, reconciler *sync.Reconciler, apiC
 			if err := reconciler.ReportJobInstances(apiClient); err != nil {
 				log.Printf("Error reporting job instances: %v", err)
 			}
+			
+		case <-discoveryTicker.C:
+			// Periodic job discovery
+			log.Println("Running periodic job discovery...")
+			performDiscovery(sch, apiClient, endpointID)
 
 		case <-stopChan:
 			log.Println("Reconciliation loop stopping...")
