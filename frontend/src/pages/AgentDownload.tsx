@@ -14,7 +14,7 @@ export function AgentDownload() {
   const [maxUses, setMaxUses] = useState<number | undefined>(undefined);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const tokensPerPage = 10;
+  const tokensPerPage = 5;
 
   useEffect(() => {
     loadTokens();
@@ -110,7 +110,7 @@ export function AgentDownload() {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-2">Download Agent</h1>
+      <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Download Agent</h1>
       <p className="text-gray-600 dark:text-gray-300 mb-8">
         Generate an enrollment token below, then download a pre-configured agent for your platform
       </p>
@@ -153,7 +153,7 @@ export function AgentDownload() {
       {/* Platform Selection - MOVED TO TOP */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Choose Your Platform</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Choose Your Platform</h2>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
             className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition"
@@ -298,7 +298,7 @@ export function AgentDownload() {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
         <div className="flex items-center gap-2 mb-4">
           <Key className="w-5 h-5 text-blue-500" />
-          <h2 className="text-xl font-semibold">Enrollment Tokens</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Enrollment Tokens</h2>
         </div>
         
         {/* Tokens List */}
@@ -412,7 +412,7 @@ export function AgentDownload() {
       
       {/* Installation Commands */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">Installation Instructions</h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Installation Instructions</h2>
         
         <div className="space-y-4">
           {/* Linux/macOS */}
