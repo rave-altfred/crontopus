@@ -32,7 +32,7 @@ router = APIRouter(tags=["jobs"])
 class JobCreateRequest(BaseModel):
     """Request body for creating a job."""
     name: str = Field(..., description="Job name (will be used as filename)")
-    namespace: str = Field(..., description="Namespace (production or staging)")
+    namespace: str = Field(..., description="Namespace/group for organizing jobs")
     schedule: str = Field(..., description="Cron expression")
     command: str = Field(..., description="Command to execute")
     args: Optional[list[str]] = Field(None, description="Command arguments")
@@ -67,7 +67,7 @@ def get_forgejo_client() -> ForgejoClient:
 
 @router.get("/")
 async def list_jobs(
-    namespace: Optional[str] = Query(None, description="Filter by namespace (production, staging)"),
+    namespace: Optional[str] = Query(None, description="Filter by namespace/group"),
     current_user: User = Depends(get_current_user),
     forgejo: ForgejoClient = Depends(get_forgejo_client)
 ):

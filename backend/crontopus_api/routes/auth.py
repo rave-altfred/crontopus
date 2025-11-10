@@ -63,15 +63,17 @@ async def create_tenant_repository(tenant_id: str, username: str) -> bool:
                     token=settings.forgejo_token
                 )
                 
-                # Create .gitkeep files in production and staging directories
-                for namespace in ["production", "staging"]:
+                # Create .gitkeep files in system namespace directories
+                # discovered: Auto-populated by agent discovery
+                # default: Fallback for jobs without explicit namespace
+                for namespace in ["discovered", "default"]:
                     try:
                         await forgejo.create_or_update_file(
                             owner="crontopus",
                             repo=repo_name,
                             file_path=f"{namespace}/.gitkeep",
-                            content="# Directory for job manifests\n",
-                            message=f"Initialize {namespace} directory",
+                            content="# System-managed namespace\n" if namespace == "discovered" else "# Default namespace for jobs\n",
+                            message=f"Initialize {namespace} namespace",
                             author_name="Crontopus",
                             author_email="bot@crontopus.io"
                         )

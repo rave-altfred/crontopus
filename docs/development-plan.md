@@ -1102,13 +1102,198 @@ sh -c '(ls -la) && ~/.crontopus/bin/checkin test2 production success || ~/.cront
 
 ---
 
-## Phase 11: Job Discovery & Multi-Endpoint Tracking (Future)
+## Phase 11: Flexible Namespace System
+
+**Status**: Planned
+
+**Goal**: Replace hardcoded `production`/`staging` namespaces with flexible user-defined groups. Treat namespaces as organizational units that users can create and manage.
+
+**Motivation**:
+- Current system forces users into predefined `production`/`staging` categories
+- Enterprise users need flexible job organization (by team, service, customer, environment)
+- Namespace inference from job name (not directory) causes misclassification:
+  - Job named `backup-staging-db` in `production/` directory → misclassified as "staging"
+  - Job named `backup` in `staging/` directory → misclassified as "production"
+  - Breaks intended separation between environments
+
+### 11.1 Core Namespace Design
+
+**System-managed namespaces** (immutable, cannot be deleted):
+- `discovered` - Auto-populated by agent discovery (jobs found on endpoints)
+- `default` - Fallback for jobs without explicit namespace
+
+**User-managed namespaces**: Fully flexible, user creates as needed
+- Examples: `backup`, `monitoring`, `team-platform`, `customer-acme`
+- No predefined `production` or `staging` (users create if needed)
+- Namespace = Git directory name in job manifest repository
+
+**Implementation Approach**: Git-based (Option A - No Database Model)
+- Namespaces are Git directories in `job-manifests-{tenant}` repository
+- Backend reads namespaces dynamically from Git structure
+- No database table needed initially (can add later for metadata/RBAC)
+- Namespace metadata (description, color) can live in `namespace.yaml` if needed
+
+### 11.2 Repository Structure
+
+- [ ] Update repository initialization to create system namespaces
+  - Remove `production/` and `staging/` creation
+  - Create `discovered/.gitkeep` and `default/.gitkeep` on tenant registration
+  - Update `initialize_job_repository()` in auth routes
+- [ ] Document namespace naming rules
+  - Pattern: `^[a-z0-9]([-a-z0-9]*[a-z0-9])?$` (Kubernetes-style)
+  - Max 63 characters
+  - Reserved names: `discovered`, `default`, `system`
+
+**Git Structure**:
+```
+job-manifests-{username}/
+├── discovered/          # System namespace (agent-populated)
+│   └── .gitkeep
+├── default/             # System namespace (fallback)
+│   └── .gitkeep
+└── (user creates additional namespaces)
+```
+
+**Deliverable**: Clean repository structure with only system namespaces
+
+### 11.3 Backend Namespace API
+
+- [ ] Add namespace CRUD endpoints
+  - `GET /api/namespaces` - List namespaces from Git (directory listing)
+  - `POST /api/namespaces` - Create namespace (create Git directory with .gitkeep)
+  - `DELETE /api/namespaces/{name}` - Delete namespace (only if empty, not system)
+- [ ] Namespace listing implementation
+  - Read directory structure from Git via Forgejo API
+  - Count jobs per namespace (YAML files in directory)
+  - Return metadata: name, is_system, job_count
+- [ ] Namespace validation
+  - Validate naming rules on creation
+  - Prevent creation of system namespaces (`discovered`, `default`)
+  - Prevent deletion of system namespaces
+  - Prevent deletion of non-empty namespaces (must delete jobs first)
+- [ ] Update job CRUD endpoints
+  - Jobs must specify namespace (defaults to `default` if omitted)
+  - Validate namespace exists before creating job
+  - Allow jobs to be moved between namespaces (future enhancement)
+
+**Deliverable**: RESTful namespace management API backed by Git
+
+### 11.4 Agent Namespace Handling
+
+- [ ] Fix namespace inference bug
+  - **Current bug**: Agent infers namespace from job name pattern (e.g., `backup-staging-*` → "staging")
+  - **Fix**: Agent must read namespace from Git directory structure, not job name
+  - Update manifest parser to extract namespace from file path
+  - Store namespace in Job struct from directory name
+- [ ] Update reconciliation logic
+  - Scheduler entries must include namespace in marker
+  - Cron marker format: `# CRONTOPUS:namespace:job-name`
+  - Windows Task Scheduler: Task path `\Crontopus\{namespace}\{job-name}`
+- [ ] Discovery behavior
+  - All discovered jobs go to `discovered/` namespace
+  - Agent config: `discovery.target_namespace: discovered` (hardcoded)
+  - Backend creates manifests in `discovered/` directory
+- [ ] Agent syncs all namespace directories
+  - Recursively sync all directories from Git root
+  - Each namespace directory becomes scheduler entries
+  - Respect namespace isolation in reconciliation
+
+**Deliverable**: Agent correctly handles namespaces from directory structure
+
+### 11.5 Frontend Namespace Management
+
+- [ ] Create Namespaces/Groups management page
+  - List all namespaces with job counts
+  - Create new namespace button with validation
+  - Delete namespace (with confirmation, only if empty)
+  - Visual distinction for system namespaces (badge, icon)
+- [ ] Update Jobs page with namespace filter
+  - Dropdown to filter jobs by namespace: "All Groups", "discovered", "default", user namespaces
+  - Show namespace badge on each job card
+  - Display job count per namespace
+- [ ] Update job create/edit forms
+  - Namespace selector (dropdown of existing namespaces)
+  - "+ Create new group" button inline
+  - Default to `default` namespace
+  - Prevent selection of `discovered` (system-managed)
+- [ ] Navigation updates
+  - Add "Groups" or "Namespaces" to sidebar navigation
+  - Update breadcrumbs to show: Jobs > {namespace} > {job-name}
+
+**UI Mockup - Groups Page**:
+```
+Groups                           [+ Create Group]
+
+┌─────────────────────────────────────────────────┐
+│ 📂 discovered                            3 jobs │
+│ System-managed (agent discovery)       [System] │
+├─────────────────────────────────────────────────┤
+│ 📂 default                               2 jobs │
+│ Default namespace for new jobs         [System] │
+├─────────────────────────────────────────────────┤
+│ 📁 backup                                8 jobs │
+│                                   [Edit][Delete]│
+└─────────────────────────────────────────────────┘
+```
+
+**Deliverable**: Complete namespace management UI
+
+### 11.6 Migration for Existing Tenants
+
+- [ ] Create migration script for production tenants
+  - Create `discovered/` and `default/` directories in existing repositories
+  - Optionally migrate jobs from `production/` → `default/` or keep as custom namespace
+  - Optionally migrate jobs from `staging/` → `default/` or keep as custom namespace
+  - Document migration strategy for users
+- [ ] Update documentation
+  - Remove references to hardcoded `production`/`staging`
+  - Document flexible namespace system
+  - Add namespace best practices guide
+  - Update job manifest examples with various namespaces
+
+**Deliverable**: Smooth migration path for existing deployments
+
+### 11.7 Testing & Validation
+
+- [ ] Backend tests
+  - Test namespace CRUD operations
+  - Test namespace validation (naming rules, system namespace protection)
+  - Test namespace listing with job counts
+  - Test job creation with namespace validation
+- [ ] Agent tests
+  - Test namespace inference from directory structure (not job name)
+  - Test reconciliation with namespace isolation
+  - Test cron marker format includes namespace
+  - Test discovered jobs go to correct namespace
+- [ ] Frontend tests
+  - Test namespace management page (create, list, delete)
+  - Test job filtering by namespace
+  - Test job creation with namespace selector
+- [ ] Integration tests
+  - End-to-end: Create namespace → Create job in namespace → Agent syncs → Scheduler entry created
+  - Test namespace deletion (empty vs non-empty)
+  - Test system namespace protection
+
+**Deliverable**: Comprehensive test coverage for flexible namespace system
+
+**Benefits**:
+- ✅ Flexible job organization (team, service, environment, customer)
+- ✅ No forced `production`/`staging` structure
+- ✅ Correct namespace inference from Git directory (not job name)
+- ✅ System namespaces protected from user modification
+- ✅ Scalable for enterprise users with many logical groupings
+- ✅ Clean Git repository structure
+- ✅ No database model needed initially (pure Git-based)
+
+---
+
+## Phase 12: Job Discovery & Multi-Endpoint Tracking (Future)
 
 **Status**: Planned
 
 **Goal**: Enable bidirectional sync with job discovery and automatic callback injection.
 
-### 11.1 Job Instance Tracking
+### 12.1 Job Instance Tracking
 
 - [ ] Create `JobInstance` model
   - Fields: id, job_name, endpoint_id, namespace, tenant_id, status, last_seen, source, original_command, created_at, updated_at
@@ -1120,7 +1305,7 @@ sh -c '(ls -la) && ~/.crontopus/bin/checkin test2 production success || ~/.cront
 
 **Deliverable**: Database tracks which jobs are on which endpoints
 
-### 11.2 Job Discovery & Reporting
+### 12.2 Job Discovery & Reporting
 
 - [ ] Backend: Job discovery endpoint
   - `POST /api/endpoints/{endpoint_id}/discovered-jobs`
@@ -1152,7 +1337,7 @@ sh -c '(ls -la) && ~/.crontopus/bin/checkin test2 production success || ~/.cront
 5. Next sync: Agent pulls from Git (now includes discovered jobs)
 6. Agent reconciles and injects callbacks into all jobs
 
-### 11.3 Callback Injection
+### 12.3 Callback Injection
 
 - [ ] Agent: Implement callback wrapper logic
   - Wrap every job command with success/failure callbacks
@@ -1183,7 +1368,7 @@ curl -X POST https://crontopus.com/api/checkins \
   -d '{"job_name":"backup-db","endpoint_id":"123","status":"failure"}'
 ```
 
-### 11.4 Cross-Reference APIs
+### 12.4 Cross-Reference APIs
 
 - [ ] Backend: Job-to-Endpoints mapping
   - `GET /api/jobs/{namespace}/{job_name}/endpoints`
@@ -1200,7 +1385,7 @@ curl -X POST https://crontopus.com/api/checkins \
 
 **Deliverable**: API endpoints for many-to-many Job ↔ Endpoint relationships
 
-### 11.5 Frontend: Enhanced Jobs Page
+### 12.5 Frontend: Enhanced Jobs Page
 
 - [ ] Update Jobs list page
   - Show all jobs from Git (git-defined + discovered)
@@ -1237,7 +1422,7 @@ Jobs (75)  [+ New Job]  [Filter: All ▼]
 └─────────────────────────────────────────────────────┘
 ```
 
-### 11.6 Frontend: Enhanced Endpoints Page
+### 12.6 Frontend: Enhanced Endpoints Page
 
 - [ ] Rename "Agents" page to "Endpoints" page
 - [ ] Update page to show all endpoints
@@ -1275,7 +1460,7 @@ Endpoints (12)  [Search...]
 └─────────────────────────────────────────────────────┘
 ```
 
-### 11.7 Frontend: New Agents Page
+### 12.7 Frontend: New Agents Page
 
 - [ ] Create new "Agents" page for downloads
   - Moved from "Download Agent" to "Agents"
@@ -1288,7 +1473,7 @@ Endpoints (12)  [Search...]
 
 **Deliverable**: Clear separation in UI between Agents (downloads) and Endpoints (machines)
 
-### 11.8 Agent Configuration
+### 12.8 Agent Configuration
 
 - [ ] Add discovery settings to agent config
   - `discovery.enabled: true` - Enable discovery on enrollment
@@ -1300,7 +1485,7 @@ Endpoints (12)  [Search...]
 
 **Deliverable**: Configurable job discovery and callback injection
 
-### 11.9 Testing & Validation
+### 12.9 Testing & Validation
 
 - [ ] Backend tests
   - Test endpoint enrollment (renamed from agent)
