@@ -3,7 +3,6 @@ package sync
 import (
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/crontopus/agent/pkg/client"
 	"github.com/crontopus/agent/pkg/manifest"
