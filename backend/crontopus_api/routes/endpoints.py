@@ -183,6 +183,37 @@ async def get_endpoint(
     return endpoint
 
 
+@router.patch("/{endpoint_id}", response_model=AgentResponse)
+async def update_endpoint(
+    endpoint_id: int,
+    name: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update endpoint name.
+    
+    Enforces tenant isolation.
+    """
+    endpoint = db.query(Endpoint).filter(
+        Endpoint.id == endpoint_id,
+        Endpoint.tenant_id == current_user.tenant_id
+    ).first()
+    
+    if not endpoint:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Endpoint not found"
+        )
+    
+    # Update name
+    endpoint.name = name
+    db.commit()
+    db.refresh(endpoint)
+    
+    return endpoint
+
+
 @router.post("/{endpoint_id}/heartbeat", status_code=status.HTTP_200_OK)
 async def endpoint_heartbeat(
     endpoint_id: int,
@@ -792,7 +823,7 @@ VERSION=$(crontopus-agent --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9
 # Generate config file with pre-configured values
 cat > ~/.crontopus/config.yaml << EOF
 agent:
-  name: "${{HOSTNAME}}-agent"
+  name: "${{HOSTNAME}}"
   hostname: "${{HOSTNAME}}"
   platform: "${{OS}}"
   version: "${{VERSION}}"
@@ -1038,7 +1069,7 @@ try {{
 # Generate config file with pre-configured values
 $ConfigContent = @"
 agent:
-  name: "$($env:COMPUTERNAME)-agent"
+  name: "$($env:COMPUTERNAME)"
   hostname: "$($env:COMPUTERNAME)"
   platform: "windows"
   version: "$AgentVersion"

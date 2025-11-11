@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Download, ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
+import { Download, ChevronDown, ChevronRight, Plus, X, Edit2, Check } from 'lucide-react';
 import { agentsApi, type Agent, type JobInstance } from '../api/agents';
 
 export const Endpoints = () => {
@@ -9,6 +9,8 @@ export const Endpoints = () => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [jobsByEndpoint, setJobsByEndpoint] = useState<Record<string, JobInstance[]>>({});
   const [loadingJobs, setLoadingJobs] = useState<Record<string, boolean>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
 
   useEffect(() => {
     agentsApi
@@ -31,6 +33,29 @@ export const Endpoints = () => {
       console.error('Failed to unassign job:', err);
       alert(err.response?.data?.detail || 'Failed to unassign job');
     }
+  };
+
+  const handleStartEdit = (endpoint: Agent) => {
+    setEditingId(String(endpoint.id));
+    setEditName(endpoint.name);
+  };
+
+  const handleSaveEdit = async (endpointId: string) => {
+    if (!editName.trim()) return;
+    
+    try {
+      const updated = await agentsApi.rename(endpointId, editName);
+      setEndpoints(endpoints.map(e => e.id === endpointId ? updated : e));
+      setEditingId(null);
+    } catch (err: any) {
+      console.error('Failed to rename endpoint:', err);
+      alert(err.response?.data?.detail || 'Failed to rename endpoint');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditName('');
   };
 
   if (loading) {
@@ -112,7 +137,49 @@ export const Endpoints = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">{endpoint.name}</div>
+                      {editingId === String(endpoint.id) ? (
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveEdit(String(endpoint.id));
+                              if (e.key === 'Escape') handleCancelEdit();
+                            }}
+                            className="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => handleSaveEdit(String(endpoint.id))}
+                            className="text-green-600 hover:text-green-800 dark:text-green-400"
+                            title="Save"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="text-gray-600 hover:text-gray-800 dark:text-gray-400"
+                            title="Cancel"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{endpoint.name}</div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStartEdit(endpoint);
+                            }}
+                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            title="Rename endpoint"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500 dark:text-gray-400">{endpoint.hostname}</div>

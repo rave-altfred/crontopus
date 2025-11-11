@@ -40,6 +40,11 @@ export const agentsApi = {
     await apiClient.delete(`/agents/${id}`);
   },
 
+  rename: async (id: string, name: string): Promise<Agent> => {
+    const response = await apiClient.patch(`/endpoints/${id}?name=${encodeURIComponent(name)}`);
+    return response.data;
+  },
+
   getJobs: async (endpointId: string): Promise<JobInstance[]> => {
     const response = await apiClient.get(`/endpoints/${endpointId}/jobs`);
     return response.data.jobs || [];
