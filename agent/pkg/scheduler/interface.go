@@ -2,7 +2,8 @@ package scheduler
 
 // JobEntry represents a scheduled job
 type JobEntry struct {
-	Name      string // Job name from manifest
+	ID        string // UUID from manifest (primary identifier)
+	Name      string // Job name from manifest (human-readable)
 	Namespace string // Namespace/group (from directory structure)
 	Schedule  string // Cron expression
 	Command   string // Command to execute

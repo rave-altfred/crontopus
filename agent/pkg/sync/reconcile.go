@@ -50,22 +50,30 @@ func (r *Reconciler) Reconcile() (int, error) {
 	log.Printf("Reconciliation: Found %d jobs in scheduler", len(currentJobs))
 
 	// Build maps for easier comparison
+	// Use UUID as key for precise matching
 	desiredJobs := make(map[string]*manifest.JobManifest)
 	for _, m := range manifests {
 		if m.ShouldSchedule() {
-			desiredJobs[m.Metadata.Name] = m
+			desiredJobs[m.Metadata.ID] = m
 		}
 	}
 
+	// Map current jobs by UUID (new format) or fallback to name (legacy)
 	currentJobsMap := make(map[string]scheduler.JobEntry)
 	for _, job := range currentJobs {
-		currentJobsMap[job.Name] = job
+		if job.ID != "" {
+			// UUID-based job (new format)
+			currentJobsMap[job.ID] = job
+		} else {
+			// Legacy format - use name as key (for backward compatibility)
+			currentJobsMap[job.Name] = job
+		}
 	}
 
 	changeCount := 0
 
 	// Add or update jobs
-	for name, manifest := range desiredJobs {
+	for jobID, manifest := range desiredJobs {
 		command := manifest.GetFullCommand()
 		
 		// Wrap command with callback injection
@@ -76,33 +84,34 @@ func (r *Reconciler) Reconcile() (int, error) {
 				namespace = "default"
 			}
 			command = wrapper.WrapCommand(command, r.backendURL, r.endpointToken, r.endpointID, manifest.Metadata.Name, namespace)
-			log.Printf("Wrapped command for job '%s' in namespace '%s' with callback injection", name, namespace)
+			log.Printf("Wrapped command for job '%s' (ID: %s) in namespace '%s' with callback injection", manifest.Metadata.Name, jobID, namespace)
 		}
 		
 		jobEntry := scheduler.JobEntry{
+			ID:        manifest.Metadata.ID,
 			Name:      manifest.Metadata.Name,
 			Namespace: manifest.Namespace,
 			Schedule:  manifest.Spec.Schedule,
 			Command:   command,
 		}
 
-		if existing, exists := currentJobsMap[name]; exists {
-			// Job exists, check if it needs update
+		if existing, exists := currentJobsMap[jobID]; exists {
+			// Job exists (matched by UUID), check if it needs update
 			if r.needsUpdate(existing, jobEntry) {
-				log.Printf("Reconciliation: Updating job '%s'", name)
+				log.Printf("Reconciliation: Updating job '%s' (ID: %s)", manifest.Metadata.Name, jobID)
 				if err := r.scheduler.Update(jobEntry); err != nil {
-					log.Printf("Error updating job '%s': %v", name, err)
+					log.Printf("Error updating job '%s': %v", manifest.Metadata.Name, err)
 					continue
 				}
 				changeCount++
 			} else {
-				log.Printf("Reconciliation: Job '%s' is up-to-date", name)
+				log.Printf("Reconciliation: Job '%s' (ID: %s) is up-to-date", manifest.Metadata.Name, jobID)
 			}
 		} else {
 			// Job doesn't exist, add it
-			log.Printf("Reconciliation: Adding new job '%s'", name)
+			log.Printf("Reconciliation: Adding new job '%s' (ID: %s)", manifest.Metadata.Name, jobID)
 			if err := r.scheduler.Add(jobEntry); err != nil {
-				log.Printf("Error adding job '%s': %v", name, err)
+				log.Printf("Error adding job '%s': %v", manifest.Metadata.Name, err)
 				continue
 			}
 			changeCount++
@@ -110,14 +119,21 @@ func (r *Reconciler) Reconcile() (int, error) {
 	}
 
 	// Remove jobs that are no longer in Git
-	for name := range currentJobsMap {
-		if _, exists := desiredJobs[name]; !exists {
-			log.Printf("Reconciliation: Removing job '%s' (no longer in Git)", name)
-			if err := r.scheduler.Remove(name); err != nil {
-				log.Printf("Error removing job '%s': %v", name, err)
-				continue
+	for key, job := range currentJobsMap {
+		if _, exists := desiredJobs[key]; !exists {
+			// Only remove Crontopus-managed jobs (with markers)
+			if job.ID != "" || job.Name != "" {
+				displayName := job.Name
+				if displayName == "" {
+					displayName = job.ID
+				}
+				log.Printf("Reconciliation: Removing job '%s' (no longer in Git)", displayName)
+				if err := r.scheduler.Remove(job.Name); err != nil {
+					log.Printf("Error removing job '%s': %v", displayName, err)
+					continue
+				}
+				changeCount++
 			}
-			changeCount++
 		}
 	}
 

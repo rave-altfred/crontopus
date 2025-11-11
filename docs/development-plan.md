@@ -1287,6 +1287,203 @@ Groups                           [+ Create Group]
 
 ---
 
+## Phase 13: UUID-Based Job Identification (Critical Fix)
+
+**Status**: In Progress
+
+**Goal**: Replace name-based job identification with UUIDs to fix fundamental identity and reconciliation issues.
+
+### Problems with Current Name-Based Approach:
+1. ❌ Name collisions: job1 from Git vs job1 discovered locally
+2. ❌ Can't rename jobs: name is the identifier
+3. ❌ Generated names like `discovered-job-0` are meaningless
+4. ❌ Reconciliation can't match unmarked jobs to Git jobs
+5. ❌ Cross-tenant job tracking broken (jobs from ravemen12 appear as ravemen13's)
+6. ❌ Installer stripping markers causes duplicates on reconciliation
+
+### 13.1 Manifest Schema Update
+
+- [ ] Update job manifest specification (`docs/job-manifest-spec.md`)
+  - Add `metadata.id` field (UUID v4)
+  - Keep `metadata.name` as human-readable, non-unique label
+  - ID is immutable, name can be changed
+- [ ] Update manifest parser in agent
+  - Read `metadata.id` field
+  - Generate UUID if missing (backward compatibility)
+  - Validate UUID format
+- [ ] Update manifest examples
+  - Add ID to all example manifests
+  - Document ID generation strategy
+
+**Example Manifest**:
+```yaml
+apiVersion: v1
+kind: Job
+metadata:
+  id: "550e8400-e29b-41d4-a716-446655440000"  # UUID - immutable identifier
+  name: backup-database  # Human-readable - can be renamed
+  namespace: production
+  tenant: ravemen15
+spec:
+  schedule: "0 2 * * *"
+  command: /opt/scripts/backup.sh
+```
+
+**Deliverable**: Job manifests support UUID-based identification
+
+### 13.2 Crontab Marker Update
+
+- [ ] Change marker format from name-based to UUID-based
+  - Old: `# CRONTOPUS:namespace:job-name`
+  - New: `# CRONTOPUS:550e8400-e29b-41d4-a716-446655440000`
+- [ ] Update cron scheduler to read/write UUID markers
+  - `formatCronEntry()` uses UUID instead of namespace:name
+  - `parseCronEntry()` extracts UUID from marker
+  - `extractJobID()` replaces `extractJobName()`
+- [ ] Add backward compatibility
+  - Detect old format markers: `# CRONTOPUS:namespace:name`
+  - Generate UUID and update marker on next reconciliation
+  - Log migration for visibility
+
+**Deliverable**: Crontab entries identified by UUID, not name
+
+### 13.3 Discovery Update
+
+- [ ] Generate UUIDs for discovered jobs
+  - Use `google/uuid` package in Go
+  - Each discovered job gets unique UUID immediately
+  - Try to extract real name from checkin command
+- [ ] Extract job name from wrapped commands
+  - Parse checkin helper call: `/checkin job-name namespace`
+  - Use extracted name instead of `discovered-job-N`
+  - Fall back to schedule-based naming if can't extract
+- [ ] Update discovery payload
+  - Include UUID in `DiscoveredJob` struct
+  - Backend uses UUID as primary key
+  - Import to Git with UUID in metadata
+
+**Example**:
+```go
+// Before: discovered-job-0, discovered-job-1
+// After: Extract from checkin command
+discoveredJob := DiscoveredJob{
+    ID:        uuid.New().String(),
+    Name:      extractNameFromCheckin(job.Command),  // "test1", "test2"
+    Schedule:  job.Schedule,
+    Command:   job.Command,
+    Namespace: "discovered",
+}
+```
+
+**Deliverable**: Discovered jobs have meaningful names and unique UUIDs
+
+### 13.4 Reconciliation Logic Update
+
+- [ ] Update reconciler to match by UUID
+  - Build map of Git jobs by UUID (not name)
+  - Build map of scheduler jobs by UUID (from marker)
+  - Match: Git UUID == Scheduler UUID
+- [ ] Handle unmarked jobs in scheduler
+  - Jobs without markers are treated as "unmanaged"
+  - Never match by schedule+command (too error-prone)
+  - Either discover them or ignore them (configurable)
+- [ ] Update comparison logic
+  - Compare by UUID first
+  - If match: check if schedule/command changed → update
+  - If no match: job missing from scheduler → add
+- [ ] Remove name-based matching
+  - Delete `extractJobName()` usage
+  - Delete `currentJobsMap[name]` patterns
+  - Use `currentJobsMap[uuid]` instead
+
+**Deliverable**: Reconciliation uses UUIDs, no more duplicates or name collisions
+
+### 13.5 Backend API Updates
+
+- [ ] Update job CRUD endpoints to use UUIDs
+  - `POST /api/jobs` generates UUID if not provided
+  - `GET /api/jobs/{uuid}` lookup by UUID (keep namespace/name for compat)
+  - `PUT /api/jobs/{uuid}` update by UUID
+  - `DELETE /api/jobs/{uuid}` delete by UUID
+- [ ] Update JobInstance model
+  - Add `job_id` column (UUID)
+  - Keep `job_name` for display purposes
+  - Unique constraint: (endpoint_id, job_id)
+- [ ] Update discovery endpoint
+  - Accept UUID in discovered jobs payload
+  - Store UUID in JobInstance
+  - Import to Git with UUID in manifest
+- [ ] Create migration
+  - Add `job_id` column to job_instances
+  - Generate UUIDs for existing records
+  - Backfill from Git manifests where possible
+
+**Deliverable**: Backend tracks jobs by UUID
+
+### 13.6 Frontend Updates
+
+- [ ] Update Jobs page
+  - Display job name (keep it user-friendly)
+  - Use UUID for API calls and routing
+  - Allow renaming jobs without breaking references
+- [ ] Update job detail page
+  - Show UUID in metadata section
+  - Use UUID for edit/delete operations
+- [ ] Update job-endpoint pairing
+  - Match by UUID instead of namespace/name
+  - Display name for UX, use UUID for logic
+
+**Deliverable**: Frontend uses UUIDs for job operations
+
+### 13.7 Migration Strategy
+
+- [ ] Generate UUIDs for existing jobs in Git
+  - Script to scan all tenant repositories
+  - Add `metadata.id` to manifests without it
+  - Commit changes with message "Add UUID to job manifest"
+- [ ] Update markers in production crontabs
+  - Agent detects old-format markers on sync
+  - Looks up UUID from Git manifest
+  - Updates marker to UUID format
+  - Gradual migration, no downtime
+- [ ] Database migration
+  - Add job_id column
+  - Generate UUIDs for existing JobInstance records
+  - Link to Git manifests where possible
+
+**Deliverable**: Smooth migration from name-based to UUID-based system
+
+### 13.8 Testing
+
+- [ ] Agent tests
+  - Test UUID marker format
+  - Test reconciliation with UUID matching
+  - Test backward compatibility with old markers
+  - Test discovery with name extraction
+- [ ] Backend tests
+  - Test job CRUD with UUIDs
+  - Test discovery endpoint with UUIDs
+  - Test JobInstance uniqueness by UUID
+- [ ] Integration tests
+  - Create job → sync → verify UUID in crontab
+  - Discover job → verify UUID generated → verify import to Git
+  - Rename job → verify reconciliation still works
+  - Cross-tenant: verify no job leakage
+
+**Deliverable**: Comprehensive test coverage for UUID system
+
+### Benefits:
+- ✅ Jobs can be renamed without breaking sync
+- ✅ No name collisions (job1 from Git vs job1 discovered)
+- ✅ Clear reconciliation logic (UUID match = same job)
+- ✅ Discovered jobs get meaningful names from checkin commands
+- ✅ No more `discovered-job-0` generic names
+- ✅ Installer stripping markers works correctly (UUIDs prevent duplicates)
+- ✅ Cross-tenant job tracking fixed
+- ✅ Foundation for future features (job templates, job history)
+
+---
+
 ## Phase 12: Job Discovery & Multi-Endpoint Tracking (Future)
 
 **Status**: Planned

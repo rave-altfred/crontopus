@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/google/uuid"
 	"gopkg.in/yaml.v3"
 )
 
@@ -22,6 +23,7 @@ type JobManifest struct {
 
 // Metadata contains job metadata
 type Metadata struct {
+	ID          string            `yaml:"id,omitempty"` // UUID - generated if not present
 	Name        string            `yaml:"name"`
 	Tenant      string            `yaml:"tenant"`
 	Labels      map[string]string `yaml:"labels,omitempty"`
@@ -101,6 +103,11 @@ func (p *Parser) ParseFile(filePath string) (*JobManifest, error) {
 		// File directly in manifest dir (shouldn't happen, but default to "default")
 		manifest.Namespace = "default"
 	}
+	
+	// Generate UUID if not present (for backward compatibility)
+	if manifest.Metadata.ID == "" {
+		manifest.Metadata.ID = uuid.New().String()
+	}
 
 	// Validate manifest
 	if err := p.validate(&manifest); err != nil {
@@ -169,6 +176,13 @@ func (p *Parser) validate(m *JobManifest) error {
 	}
 	if m.Metadata.Tenant == "" {
 		return fmt.Errorf("metadata.tenant is required")
+	}
+	
+	// Validate UUID format if present
+	if m.Metadata.ID != "" {
+		if _, err := uuid.Parse(m.Metadata.ID); err != nil {
+			return fmt.Errorf("metadata.id must be a valid UUID: %w", err)
+		}
 	}
 
 	// Validate job name format (alphanumeric and hyphens, max 63 chars)

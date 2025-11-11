@@ -29,10 +29,18 @@ func (s *CronScheduler) Add(job JobEntry) error {
 		return fmt.Errorf("failed to read crontab: %w", err)
 	}
 
-	// Check if job already exists
+	// Check if job already exists (by UUID or name)
 	for _, entry := range entries {
-		if s.extractJobName(entry) == job.Name {
-			return fmt.Errorf("job %s already exists", job.Name)
+		existingJob := s.parseCronEntry(entry)
+		if existingJob != nil {
+			// Match by UUID if both have UUIDs
+			if job.ID != "" && existingJob.ID != "" && existingJob.ID == job.ID {
+				return fmt.Errorf("job with ID %s already exists", job.ID)
+			}
+			// Fall back to name matching for legacy jobs
+			if existingJob.Name == job.Name {
+				return fmt.Errorf("job %s already exists", job.Name)
+			}
 		}
 	}
 
@@ -52,13 +60,24 @@ func (s *CronScheduler) Update(job JobEntry) error {
 		return fmt.Errorf("failed to read crontab: %w", err)
 	}
 
-	// Find and replace the entry
+	// Find and replace the entry (match by UUID if available, else by name)
 	found := false
 	for i, entry := range entries {
-		if s.extractJobName(entry) == job.Name {
-			entries[i] = s.formatCronEntry(job)
-			found = true
-			break
+		existingJob := s.parseCronEntry(entry)
+		if existingJob != nil {
+			// Match by UUID if both have UUIDs
+			if job.ID != "" && existingJob.ID != "" {
+				if existingJob.ID == job.ID {
+					entries[i] = s.formatCronEntry(job)
+					found = true
+					break
+				}
+			} else if existingJob.Name == job.Name {
+				// Fall back to name matching for legacy jobs
+				entries[i] = s.formatCronEntry(job)
+				found = true
+				break
+			}
 		}
 	}
 
@@ -70,33 +89,38 @@ func (s *CronScheduler) Update(job JobEntry) error {
 	return s.writeCrontab(entries)
 }
 
-// Remove deletes a cron job
-func (s *CronScheduler) Remove(name string) error {
+// Remove deletes a cron job by name (supports both UUID and name-based lookups)
+func (s *CronScheduler) Remove(identifier string) error {
 	// Get current crontab
 	entries, err := s.readCrontab()
 	if err != nil {
 		return fmt.Errorf("failed to read crontab: %w", err)
 	}
 
-	// Filter out the job
+	// Filter out the job (match by UUID or name)
 	newEntries := []string{}
 	found := false
 	for _, entry := range entries {
-		if s.extractJobName(entry) == name {
-			found = true
-			continue // Skip this entry
+		existingJob := s.parseCronEntry(entry)
+		if existingJob != nil {
+			// Match by UUID first, then by name
+			if (existingJob.ID != "" && existingJob.ID == identifier) || existingJob.Name == identifier {
+				found = true
+				continue // Skip this entry
+			}
 		}
 		newEntries = append(newEntries, entry)
 	}
 
 	if !found {
-		return fmt.Errorf("job %s not found", name)
+		return fmt.Errorf("job %s not found", identifier)
 	}
 
 	// Write back to crontab
 	return s.writeCrontab(newEntries)
 }
 
+// List returns all Crontopus-managed cron jobs
 // List returns all Crontopus-managed cron jobs
 func (s *CronScheduler) List() ([]JobEntry, error) {
 	entries, err := s.readCrontab()
@@ -144,13 +168,25 @@ func (s *CronScheduler) ListAll() ([]JobEntry, error) {
 		schedule := strings.Join(fields[0:5], " ")
 		command := strings.Join(fields[5:], " ")
 
-		// Generate a unique name for discovered jobs
-		name := fmt.Sprintf("discovered-job-%d", i)
+		// Try to extract job name from checkin command
+		// Checkin format: /path/to/checkin job-name namespace ...
+		name := extractJobNameFromCheckin(command)
+		if name == "" {
+			// Fallback: generate unique name if we can't extract it
+			name = fmt.Sprintf("discovered-job-%d", i)
+		}
+		
+		// Try to extract namespace from checkin command
+		namespace := extractNamespaceFromCheckin(command)
+		if namespace == "" {
+			namespace = "discovered"
+		}
 
 		jobs = append(jobs, JobEntry{
-			Name:     name,
-			Schedule: schedule,
-			Command:  command,
+			Name:      name,
+			Namespace: namespace,
+			Schedule:  schedule,
+			Command:   command,
 		})
 	}
 
@@ -224,8 +260,14 @@ func (s *CronScheduler) writeCrontab(entries []string) error {
 }
 
 // formatCronEntry formats a JobEntry as a cron line
-// Format: schedule command # CRONTOPUS:namespace:job-name
+// Format: schedule command # CRONTOPUS:job-uuid (new) or # CRONTOPUS:namespace:job-name (legacy)
 func (s *CronScheduler) formatCronEntry(job JobEntry) string {
+	// Use UUID-based marker (new format)
+	if job.ID != "" {
+		return fmt.Sprintf("%s %s %s%s", job.Schedule, job.Command, s.marker, job.ID)
+	}
+	
+	// Fallback to old format (backward compatibility during migration)
 	namespace := job.Namespace
 	if namespace == "" {
 		namespace = "default"
@@ -234,7 +276,7 @@ func (s *CronScheduler) formatCronEntry(job JobEntry) string {
 }
 
 // parseCronEntry parses a cron line into a JobEntry
-// Expected format: schedule command # CRONTOPUS:namespace:job-name
+// Expected format: schedule command # CRONTOPUS:job-uuid (new) or # CRONTOPUS:namespace:job-name (legacy)
 func (s *CronScheduler) parseCronEntry(line string) *JobEntry {
 	// Only parse Crontopus-managed entries
 	if !strings.Contains(line, s.marker) {
@@ -247,19 +289,19 @@ func (s *CronScheduler) parseCronEntry(line string) *JobEntry {
 		return nil
 	}
 
-	// Parse namespace:job-name
+	// Parse identifier (could be UUID or namespace:job-name)
 	identifier := strings.TrimSpace(parts[1])
 	identifierParts := strings.SplitN(identifier, ":", 2)
 	
-	var namespace, name string
-	if len(identifierParts) == 2 {
-		// New format: namespace:job-name
+	var id, namespace, name string
+	if len(identifierParts) == 1 {
+		// New format: UUID only
+		id = identifier
+		// Name and namespace will be extracted from command or left empty
+	} else if len(identifierParts) == 2 {
+		// Legacy format: namespace:job-name
 		namespace = identifierParts[0]
 		name = identifierParts[1]
-	} else {
-		// Legacy format: just job-name (backward compatibility)
-		namespace = "default"
-		name = identifier
 	}
 	
 	cronPart := strings.TrimSpace(parts[0])
@@ -275,6 +317,7 @@ func (s *CronScheduler) parseCronEntry(line string) *JobEntry {
 	command := strings.Join(fields[5:], " ")
 
 	return &JobEntry{
+		ID:        id,
 		Name:      name,
 		Namespace: namespace,
 		Schedule:  schedule,
@@ -287,5 +330,61 @@ func (s *CronScheduler) extractJobName(line string) string {
 	if job := s.parseCronEntry(line); job != nil {
 		return job.Name
 	}
+	return ""
+}
+
+// extractJobID extracts the job UUID from a cron entry
+func (s *CronScheduler) extractJobID(line string) string {
+	if job := s.parseCronEntry(line); job != nil {
+		return job.ID
+	}
+	return ""
+}
+
+// extractJobNameFromCheckin extracts the job name from a checkin command
+// Checkin format: sh -c '... /path/to/checkin job-name namespace ...'
+func extractJobNameFromCheckin(command string) string {
+	// Look for checkin command pattern
+	if !strings.Contains(command, "checkin") {
+		return ""
+	}
+	
+	// Pattern: checkin job-name namespace
+	// Find "checkin" and extract the next two tokens
+	parts := strings.Fields(command)
+	for i, part := range parts {
+		if strings.HasSuffix(part, "checkin") && i+1 < len(parts) {
+			// Next token is job name
+			jobName := parts[i+1]
+			// Clean up any quotes or special chars
+			jobName = strings.Trim(jobName, "'\"")
+			return jobName
+		}
+	}
+	
+	return ""
+}
+
+// extractNamespaceFromCheckin extracts the namespace from a checkin command
+// Checkin format: sh -c '... /path/to/checkin job-name namespace ...'
+func extractNamespaceFromCheckin(command string) string {
+	// Look for checkin command pattern
+	if !strings.Contains(command, "checkin") {
+		return ""
+	}
+	
+	// Pattern: checkin job-name namespace
+	// Find "checkin" and extract the namespace (3rd token after checkin)
+	parts := strings.Fields(command)
+	for i, part := range parts {
+		if strings.HasSuffix(part, "checkin") && i+2 < len(parts) {
+			// Token after job name is namespace
+			namespace := parts[i+2]
+			// Clean up any quotes or special chars
+			namespace = strings.Trim(namespace, "'\"")
+			return namespace
+		}
+	}
+	
 	return ""
 }
