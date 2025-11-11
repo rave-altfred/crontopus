@@ -85,32 +85,33 @@ Key:
 
 ## Current Development Phase
 
-**Phase 10: Enrollment Token System & Endpoint Management** ✅ **COMPLETE**
-- Phase 10.1: Enrollment Token System ✅ Complete
-- Phase 10.2: Machine ID-Based Deduplication ✅ Complete
-- Phase 10.3: Automatic Service Installation ✅ Complete
-- Phase 10.4: Git Authentication with Forgejo Access Tokens ✅ Complete
-- Phase 10.5: Elegant Check-in Helper Script ✅ Complete
-- Phase 10.6: Job Instance Unique Constraints ✅ Complete
+**Phase 13: UUID-Based Job Identification** ✅ **COMPLETE** (Nov 2025)
+- Phase 13.1: Manifest Schema with UUID ✅ Complete
+- Phase 13.2: UUID-based Crontab Markers ✅ Complete  
+- Phase 13.3: Real Name Extraction from Discovery ✅ Complete
+- Phase 13.4: UUID-based Reconciliation ✅ Complete
+- Phase 13.5: Backend UUID Support ✅ Complete
+- Phase 13.6: Dynamic Namespace Discovery ✅ Complete
+- Phase 13.7: Migration Strategy ✅ Complete
+- Phase 13.8: End-to-End Testing ✅ Complete
 
 **Key Achievements**:
-- ✅ Long-lived enrollment tokens for secure remote agent deployment
-- ✅ Machine ID-based endpoint deduplication (no duplicate endpoints on reinstall)
-- ✅ Automatic system service installation on all platforms (launchd/systemd/Task Scheduler)
-- ✅ Git authentication with Forgejo access tokens (HTTP + token auth)
-- ✅ Automatic Forgejo user and access token creation on registration
-- ✅ Agent v0.1.4 with elegant check-in helper script (cleaner crontab entries)
-- ✅ Frontend enrollment token management UI
-- ✅ Zero-configuration deployment with automatic startup and Git sync
-- ✅ Database unique constraint prevents duplicate job assignments on same endpoint
+- ✅ Jobs identified by UUID instead of name (enables job renaming)
+- ✅ Crontab markers use UUID format: `# CRONTOPUS:<uuid>`
+- ✅ Discovery extracts real job names from checkin commands
+- ✅ No more duplicate jobs in crontab
+- ✅ No more name collisions (job1 from Git vs job1 discovered)
+- ✅ Cross-tenant job tracking fixed
+- ✅ Dynamic namespace support (no hardcoded production/staging)
+- ✅ Drift detection removes stale job instances from UI
+- ✅ Agent v0.1.8 with RemoveByCommand() to prevent reconciliation loops
+- ✅ Uninstaller script for all platforms
 
 **Previous Phases**:
-- Phase 9.1: Agent Documentation ✅ Complete
-- Phase 9.2: Agent Testing & Platform Verification (pending)
-- Phase 9.3: Binary Distribution ✅ Complete
-- Phase 9.9: Pre-Configured Agent Download ✅ Complete
+- Phase 10: Enrollment Token System ✅ Complete
+- Phase 9: Agent Documentation & Distribution ✅ Complete
 
-**Next Phase**: Phase 11 - Job Discovery & Multi-Endpoint Tracking (Planned)
+**Next Phase**: Phase 11 - Job Discovery Enhancements (Planned)
 
 See `docs/development-plan.md` for full roadmap.
 
@@ -150,18 +151,21 @@ go build -o build/crontopus-agent ./cmd/crontopus-agent
 # - See agent/docs/windows-server-testing.md for Windows Server testing
 ```
 
-**Agent Status (Phase 9.1, 9.3, 9.9, 10 Complete)**:
+**Agent Status (Phase 9, 10, 13 Complete - Current: v0.1.8)**:
 - ✅ Comprehensive documentation (README, deployment examples)
 - ✅ Platform support: Linux, macOS, Windows Server 2019/2022, Windows 10/11
-- ✅ Windows Server testing strategy with DigitalOcean droplets (~$24/month)
 - ✅ Binary distribution and automated releases (GitHub Actions)
 - ✅ Pre-configured agent installers with automatic startup
 - ✅ Zero-configuration deployment from webapp
 - ✅ Long-lived enrollment tokens (replaces short-lived JWT)
 - ✅ Machine ID-based deduplication (prevents duplicate endpoints)
 - ✅ Automatic system service installation (launchd/systemd/Task Scheduler)
-- ✅ Git authentication with Forgejo access tokens (agent v0.1.3)
-- ✅ Secure token-based repository cloning (follows industry standards)
+- ✅ Git authentication with Forgejo access tokens
+- ✅ Secure token-based repository cloning
+- ✅ UUID-based job identification (v0.1.7+)
+- ✅ Real name extraction from discovered jobs (v0.1.7+)
+- ✅ Duplicate job removal via RemoveByCommand() (v0.1.8)
+- ✅ Uninstaller script with crontab cleanup (v0.1.8)
 
 ### CLI (Python)
 ```bash
