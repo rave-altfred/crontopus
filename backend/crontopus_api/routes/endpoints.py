@@ -588,7 +588,7 @@ async def assign_job_to_endpoint(
         namespace=namespace,
         endpoint_id=endpoint_id,
         status=JobInstanceStatus.SCHEDULED,
-        source=JobInstanceSource.GIT
+        source=JobInstanceSource.CRONTOPUS
     )
     
     db.add(job_instance)

@@ -21,8 +21,8 @@ class JobInstanceStatus(enum.Enum):
 
 class JobInstanceSource(enum.Enum):
     """Source of job instance."""
-    GIT = "git"              # Job defined in Git manifest
-    DISCOVERED = "discovered"  # Job discovered on endpoint
+    CRONTOPUS = "crontopus"      # Job defined in Crontopus (Git manifest)
+    DISCOVERED = "discovered"    # Job discovered on endpoint
 
 
 class JobInstance(TenantScopedBase):
@@ -55,7 +55,7 @@ class JobInstance(TenantScopedBase):
     source = Column(
         SQLEnum(JobInstanceSource),
         nullable=False,
-        default=JobInstanceSource.GIT,
+        default=JobInstanceSource.CRONTOPUS,
         index=True
     )
     
