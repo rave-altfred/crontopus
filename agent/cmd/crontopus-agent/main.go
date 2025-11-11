@@ -111,54 +111,8 @@ func main() {
 	}
 	log.Printf("Scheduler initialized for platform: %s", cfg.Agent.Platform)
 
-	// List all jobs (including discovered jobs)
-	allJobs, err := sch.ListAll()
-	if err != nil {
-		log.Printf("Warning: Failed to list all jobs: %v", err)
-	} else {
-		log.Printf("Found %d total jobs on this endpoint", len(allJobs))
-		
-		// Filter Crontopus-managed vs discovered jobs
-		managedJobs, err := sch.List()
-		if err != nil {
-			log.Printf("Warning: Failed to list managed jobs: %v", err)
-		} else {
-			managedCount := len(managedJobs)
-			discoveredCount := len(allJobs) - managedCount
-			log.Printf("  - %d Crontopus-managed jobs", managedCount)
-			log.Printf("  - %d discovered jobs", discoveredCount)
-			
-			// Send discovered jobs to backend
-			if discoveredCount > 0 {
-				log.Println("Reporting discovered jobs to backend...")
-				discoveredJobs := []client.DiscoveredJob{}
-				
-				// Build map of managed job names for fast lookup
-				managedNames := make(map[string]bool)
-				for _, j := range managedJobs {
-					managedNames[j.Name] = true
-				}
-				
-				// Find jobs that aren't managed
-				for _, j := range allJobs {
-					if !managedNames[j.Name] {
-						discoveredJobs = append(discoveredJobs, client.DiscoveredJob{
-							Name:      j.Name,
-							Schedule:  j.Schedule,
-							Command:   j.Command,
-							Namespace: "discovered",
-						})
-					}
-				}
-				
-				if err := apiClient.DiscoverJobs(tokenData.AgentID, discoveredJobs); err != nil {
-					log.Printf("Warning: Failed to report discovered jobs: %v", err)
-				} else {
-					log.Printf("Reported %d discovered jobs to backend", len(discoveredJobs))
-				}
-			}
-		}
-	}
+	// Note: Discovery moved to after Git sync
+	// We need to compare scheduler state against THIS tenant's Git repository
 
 	// Initialize Git syncer and reconciliation loop
 	var stopReconChan chan struct{}
@@ -205,6 +159,11 @@ func main() {
 		} else {
 			log.Printf("Initial reconciliation complete: %d changes applied", changes)
 		}
+
+		// Discover jobs AFTER Git sync and reconciliation
+		// This ensures we compare against THIS tenant's Git repository
+		log.Println("Checking for discovered jobs...")
+		performDiscovery(sch, apiClient, tokenData.AgentID)
 
 		// Start reconciliation loop
 		stopReconChan = make(chan struct{})
