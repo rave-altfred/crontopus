@@ -104,7 +104,19 @@ class ForgejoClient:
         manifests = []
         
         # If namespace specified, only scan that directory
-        paths_to_scan = [namespace] if namespace else ['production', 'staging', 'discovered']
+        if namespace:
+            paths_to_scan = [namespace]
+        else:
+            # Dynamically discover all namespace directories
+            try:
+                root_contents = await self.get_repository_tree(owner, repo, branch, '')
+                paths_to_scan = [
+                    item['name'] for item in root_contents 
+                    if item['type'] == 'dir' and not item['name'].startswith('.')
+                ]
+            except httpx.HTTPStatusError:
+                # If root scan fails, return empty
+                paths_to_scan = []
         
         for path in paths_to_scan:
             try:

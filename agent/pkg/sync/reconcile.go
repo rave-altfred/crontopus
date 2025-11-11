@@ -115,6 +115,20 @@ func (r *Reconciler) Reconcile() (int, error) {
 				continue
 			}
 			changeCount++
+			
+			// If this is a discovered job, remove any unmarked duplicate with same original command
+			if manifest.Namespace == "discovered" {
+				// Try to remove unmarked job with original command
+				if originalCmd := manifest.Spec.Command; originalCmd != "" {
+					if cronScheduler, ok := r.scheduler.(*scheduler.CronScheduler); ok {
+						if err := cronScheduler.RemoveByCommand(originalCmd); err != nil {
+							log.Printf("Warning: Failed to remove unmarked duplicate: %v", err)
+						} else {
+							log.Printf("Removed unmarked duplicate job for '%s'", manifest.Metadata.Name)
+						}
+					}
+				}
+			}
 		}
 	}
 

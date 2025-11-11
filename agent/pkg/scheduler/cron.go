@@ -193,6 +193,46 @@ func (s *CronScheduler) ListAll() ([]JobEntry, error) {
 	return jobs, nil
 }
 
+// RemoveByCommand removes a cron job by matching command (for unmarked jobs)
+func (s *CronScheduler) RemoveByCommand(command string) error {
+	// Get current crontab
+	entries, err := s.readCrontab()
+	if err != nil {
+		return fmt.Errorf("failed to read crontab: %w", err)
+	}
+
+	// Filter out jobs matching the command
+	newEntries := []string{}
+	found := false
+	for _, entry := range entries {
+		// Skip empty lines
+		if strings.TrimSpace(entry) == "" {
+			continue
+		}
+		
+		// Check if this is an unmarked job matching the command
+		if !strings.Contains(entry, s.marker) {
+			// Extract command from cron entry
+			fields := strings.Fields(entry)
+			if len(fields) >= 6 {
+				entryCommand := strings.Join(fields[5:], " ")
+				if entryCommand == command {
+					found = true
+					continue // Skip this entry
+				}
+			}
+		}
+		newEntries = append(newEntries, entry)
+	}
+
+	if !found {
+		return nil // Not an error if not found
+	}
+
+	// Write back to crontab
+	return s.writeCrontab(newEntries)
+}
+
 // Verify checks if a job exists
 func (s *CronScheduler) Verify(name string) (bool, error) {
 	entries, err := s.readCrontab()
