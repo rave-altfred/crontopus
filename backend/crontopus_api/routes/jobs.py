@@ -111,11 +111,14 @@ async def create_job(
     The job will be created in the specified namespace directory.
     """
     try:
+        import uuid
+        
         # Build the manifest
         manifest = {
             "apiVersion": "v1",
             "kind": "Job",
             "metadata": {
+                "id": str(uuid.uuid4()),
                 "name": job.name,
                 "namespace": job.namespace,
                 "tenant": current_user.tenant_id,

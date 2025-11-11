@@ -371,11 +371,13 @@ async def report_discovered_jobs(
         # Import to Git if not already there (regardless of DB state)
         if not job_exists_in_git:
             try:
+                import uuid
                 logger.info(f"Importing discovered job {job.name} to Git at {file_path}")
                 manifest = {
                     "apiVersion": "v1",
                     "kind": "Job",
                     "metadata": {
+                        "id": str(uuid.uuid4()),
                         "name": job.name,
                         "namespace": job.namespace,
                         "tenant": endpoint.tenant_id,
