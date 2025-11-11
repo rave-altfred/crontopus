@@ -857,7 +857,39 @@ else
 fi
 
 echo ""
-echo "[4/4] Installing as system service..."
+echo "[4/4] Cleaning crontab for fresh discovery..."
+echo ""
+
+# Strip CRONTOPUS markers from crontab to allow fresh discovery/reconciliation
+# This handles both scenarios:
+# - Same user reinstall: Jobs will be reconciled from Git (markers re-added)
+# - Different user: Jobs will be discovered and imported to new user's Git
+if crontab -l >/dev/null 2>&1; then
+    # Count jobs with CRONTOPUS markers
+    MARKED_COUNT=$(crontab -l | grep -c '# CRONTOPUS:' || echo 0)
+    
+    if [ "$MARKED_COUNT" -gt 0 ]; then
+        echo "Found $MARKED_COUNT Crontopus-managed jobs"
+        echo "Stripping markers to allow fresh discovery/reconciliation..."
+        
+        # Create temp file - remove CRONTOPUS markers from end of lines
+        crontab -l | sed 's/ *# CRONTOPUS:.*$//' > /tmp/crontab.clean
+        
+        # Install cleaned crontab
+        crontab /tmp/crontab.clean
+        rm -f /tmp/crontab.clean
+        
+        echo "✓ Stripped $MARKED_COUNT Crontopus markers"
+        echo "  → Jobs preserved and will be discovered by agent"
+    else
+        echo "No Crontopus-managed jobs found"
+    fi
+else
+    echo "No existing crontab"
+fi
+
+echo ""
+echo "[5/5] Installing as system service..."
 echo ""
 
 if [ "$OS" = "darwin" ]; then
