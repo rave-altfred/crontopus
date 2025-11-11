@@ -38,6 +38,7 @@ class JobInstance(TenantScopedBase):
     __tablename__ = "job_instances"
     
     # Job identification (references Git manifest)
+    job_id = Column(String(36), nullable=True, index=True)  # UUID from manifest (new, nullable for migration)
     job_name = Column(String(255), nullable=False, index=True)
     namespace = Column(String(255), nullable=False, default="production", index=True)
     
