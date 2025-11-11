@@ -476,12 +476,21 @@ async def report_job_instances(
         
         instances_updated += 1
     
-    # Mark jobs not reported as potentially removed (optional drift detection)
-    # This could be enabled via configuration
-    # db.query(JobInstance).filter(
-    #     JobInstance.endpoint_id == endpoint_id,
-    #     JobInstance.id.notin_(reported_job_ids)
-    # ).update({"status": JobInstanceStatus.ERROR})
+    # Delete jobs not reported (drift detection)
+    # Remove job instances that are no longer on the endpoint
+    if reported_job_ids:
+        stale_instances = db.query(JobInstance).filter(
+            JobInstance.endpoint_id == endpoint_id,
+            JobInstance.id.notin_(reported_job_ids)
+        ).all()
+    else:
+        # If no jobs reported, remove all instances for this endpoint
+        stale_instances = db.query(JobInstance).filter(
+            JobInstance.endpoint_id == endpoint_id
+        ).all()
+    
+    for stale in stale_instances:
+        db.delete(stale)
     
     db.commit()
     
