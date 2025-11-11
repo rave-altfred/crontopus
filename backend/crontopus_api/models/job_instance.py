@@ -22,6 +22,7 @@ class JobInstanceStatus(enum.Enum):
 class JobInstanceSource(enum.Enum):
     """Source of job instance."""
     CRONTOPUS = "crontopus"      # Job defined in Crontopus (Git manifest)
+    GIT = "git"                  # DEPRECATED: Old name for CRONTOPUS (for migration compatibility)
     DISCOVERED = "discovered"    # Job discovered on endpoint
 
 

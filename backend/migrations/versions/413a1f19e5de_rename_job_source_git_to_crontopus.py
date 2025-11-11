@@ -19,14 +19,42 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Update existing 'git' source values to 'crontopus'
-    op.execute(
-        "UPDATE job_instances SET source = 'crontopus' WHERE source = 'git'"
-    )
+    # Step 1: Add 'crontopus' to enum (if not exists)
+    op.execute("ALTER TYPE jobinstancesource ADD VALUE IF NOT EXISTS 'crontopus'")
+    
+    # Step 2: Update existing 'git' values to 'crontopus'
+    op.execute("UPDATE job_instances SET source = 'crontopus' WHERE source = 'git'")
+    
+    # Step 3: Remove 'git' from enum by recreating it
+    # Create new enum without 'git'
+    op.execute("CREATE TYPE jobinstancesource_new AS ENUM ('crontopus', 'discovered')")
+    
+    # Alter column to use new type
+    op.execute("""
+        ALTER TABLE job_instances 
+        ALTER COLUMN source TYPE jobinstancesource_new 
+        USING source::text::jobinstancesource_new
+    """)
+    
+    # Drop old enum and rename new one
+    op.execute("DROP TYPE jobinstancesource")
+    op.execute("ALTER TYPE jobinstancesource_new RENAME TO jobinstancesource")
 
 
 def downgrade() -> None:
-    # Revert 'crontopus' back to 'git'
-    op.execute(
-        "UPDATE job_instances SET source = 'git' WHERE source = 'crontopus'"
-    )
+    # Recreate enum with 'git'
+    op.execute("CREATE TYPE jobinstancesource_old AS ENUM ('git', 'discovered')")
+    
+    # Alter column to use old type
+    op.execute("""
+        ALTER TABLE job_instances 
+        ALTER COLUMN source TYPE jobinstancesource_old 
+        USING CASE 
+            WHEN source::text = 'crontopus' THEN 'git'::jobinstancesource_old 
+            ELSE source::text::jobinstancesource_old 
+        END
+    """)
+    
+    # Drop new enum and rename old one
+    op.execute("DROP TYPE jobinstancesource")
+    op.execute("ALTER TYPE jobinstancesource_old RENAME TO jobinstancesource")
