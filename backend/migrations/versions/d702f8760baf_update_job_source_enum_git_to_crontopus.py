@@ -9,6 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import text
 
 
 # revision identifiers, used by Alembic.
@@ -20,11 +21,11 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     # Check if enum already has only crontopus/discovered (migration already ran)
-    result = op.get_bind().execute("""
+    result = op.get_bind().execute(text("""
         SELECT enumlabel FROM pg_enum 
         WHERE enumtypid = 'jobinstancesource'::regtype 
         ORDER BY enumlabel
-    """).fetchall()
+    """)).fetchall()
     
     enum_values = [row[0] for row in result]
     
