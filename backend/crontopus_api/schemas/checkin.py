@@ -8,6 +8,33 @@ from pydantic import BaseModel, Field
 from crontopus_api.models.job_run import JobStatus
 
 
+class AgentCheckinRequest(BaseModel):
+    """
+    Simplified schema for agent callback check-ins.
+    
+    This is what the agent's wrapper script sends:
+    - endpoint_id: Which endpoint ran the job
+    - job_name: Name of the job from manifest
+    - namespace: Namespace/group (e.g., production, staging, discovered)
+    - status: success or failure
+    """
+    endpoint_id: int = Field(..., description="Endpoint that executed the job")
+    job_name: str = Field(..., description="Job name from Git manifest")
+    namespace: str = Field(..., description="Job namespace/group")
+    status: str = Field(..., description="Execution status: success or failure")
+    
+    def to_job_status(self) -> JobStatus:
+        """Convert string status to JobStatus enum."""
+        status_map = {
+            "success": JobStatus.SUCCESS,
+            "failure": JobStatus.FAILURE,
+            "running": JobStatus.RUNNING,
+            "timeout": JobStatus.TIMEOUT,
+            "cancelled": JobStatus.CANCELLED,
+        }
+        return status_map.get(self.status.lower(), JobStatus.FAILURE)
+
+
 class CheckinRequest(BaseModel):
     """
     Schema for job check-in request.

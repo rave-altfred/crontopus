@@ -14,11 +14,55 @@ from crontopus_api.schemas.checkin import (
     CheckinRequest,
     CheckinResponse,
     JobRunResponse,
-    JobRunListResponse
+    JobRunListResponse,
+    AgentCheckinRequest
 )
 from crontopus_api.security.dependencies import get_current_user
 
 router = APIRouter(tags=["checkins", "runs"])
+
+
+@router.post("/runs/check-in", response_model=CheckinResponse, status_code=status.HTTP_201_CREATED)
+async def agent_checkin(
+    checkin_data: AgentCheckinRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Simplified check-in endpoint for agent callback scripts.
+    
+    This endpoint is called by jobs wrapped with check-in callbacks.
+    Accepts minimal data: endpoint_id, job_name, namespace, status.
+    
+    No authentication required - endpoint_id serves as authentication.
+    """
+    from datetime import datetime, timezone
+    from crontopus_api.models import Endpoint
+    
+    # Verify endpoint exists and get tenant_id
+    endpoint = db.query(Endpoint).filter(Endpoint.id == checkin_data.endpoint_id).first()
+    if not endpoint:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Endpoint not found"
+        )
+    
+    # Create job run record with minimal data
+    now = datetime.now(timezone.utc)
+    job_run = JobRun(
+        tenant_id=endpoint.tenant_id,
+        job_name=checkin_data.job_name,
+        namespace=checkin_data.namespace,
+        status=checkin_data.to_job_status(),  # Convert string to enum
+        started_at=now,
+        finished_at=now,
+        endpoint_id=checkin_data.endpoint_id
+    )
+    
+    db.add(job_run)
+    db.commit()
+    db.refresh(job_run)
+    
+    return CheckinResponse(run_id=job_run.id)
 
 
 @router.post("/checkins", response_model=CheckinResponse, status_code=status.HTTP_201_CREATED)
@@ -27,7 +71,7 @@ async def create_checkin(
     db: Session = Depends(get_db)
 ):
     """
-    Record a job check-in.
+    Record a job check-in (legacy endpoint).
     
     Jobs call this endpoint to report execution results.
     Authentication is handled via tenant validation.

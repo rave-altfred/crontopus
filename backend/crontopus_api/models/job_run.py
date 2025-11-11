@@ -31,6 +31,7 @@ class JobRun(TenantScopedBase):
     
     # Job identification (from Git manifest)
     job_name = Column(String(255), nullable=False, index=True)
+    namespace = Column(String(255), nullable=True, index=True)  # Job namespace/group
     
     # Execution details
     status = Column(
@@ -51,6 +52,7 @@ class JobRun(TenantScopedBase):
     
     # Agent that executed the job (optional)
     agent_id = Column(String(255), nullable=True, index=True)
+    endpoint_id = Column(Integer, nullable=True, index=True)  # Endpoint that executed the job
     
     # Check-in metadata
     checkin_secret_hash = Column(String(255), nullable=True)  # for verification
