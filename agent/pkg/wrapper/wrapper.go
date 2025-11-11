@@ -43,6 +43,7 @@ func WrapCommand(originalCommand, backendURL, endpointToken string, endpointID i
 }
 
 // wrapUnix wraps command for Unix-like systems (Linux, macOS)
+// Captures output, exit code, and timing information
 func wrapUnix(originalCommand, backendURL, endpointToken string, endpointID int, jobName, namespace string) string {
 	// Get home directory for checkin script path
 	homeDir, err := os.UserHomeDir()
@@ -56,12 +57,16 @@ func wrapUnix(originalCommand, backendURL, endpointToken string, endpointID int,
 	// Escape quotes in the original command
 	escapedCommand := strings.ReplaceAll(originalCommand, "'", "'\\''")
 	
-	// Build wrapper using helper script
-	// Format: (original_command) && checkin job namespace success || checkin job namespace failure
+	// Build wrapper with output capture
+	// Creates a wrapper script that:
+	// 1. Records start time
+	// 2. Captures stdout/stderr to temp file
+	// 3. Records exit code
+	// 4. Calculates duration
+	// 5. Sends all data to checkin script
 	wrapper := fmt.Sprintf(
-		`sh -c '(%s) && %s %s %s success || %s %s %s failure'`,
+		`sh -c 'LOGFILE=$(mktemp); START=$(date +%%s); { %s; } > "$LOGFILE" 2>&1; EXIT_CODE=$?; END=$(date +%%s); DURATION=$((END - START)); %s %s %s "$EXIT_CODE" "$DURATION" "$LOGFILE"; rm -f "$LOGFILE"; exit $EXIT_CODE'`,
 		escapedCommand,
-		checkinScript, jobName, namespace,
 		checkinScript, jobName, namespace,
 	)
 	

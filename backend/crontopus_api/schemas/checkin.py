@@ -17,11 +17,19 @@ class AgentCheckinRequest(BaseModel):
     - job_name: Name of the job from manifest
     - namespace: Namespace/group (e.g., production, staging, discovered)
     - status: success or failure
+    - exit_code: Process exit code (0 = success)
+    - duration: Execution time in seconds
+    - output: Captured stdout/stderr (max 10,000 chars)
+    - error_message: Last part of output if failed
     """
     endpoint_id: int = Field(..., description="Endpoint that executed the job")
     job_name: str = Field(..., description="Job name from Git manifest")
     namespace: str = Field(..., description="Job namespace/group")
     status: str = Field(..., description="Execution status: success or failure")
+    exit_code: Optional[int] = Field(None, description="Process exit code")
+    duration: Optional[int] = Field(None, description="Execution duration in seconds")
+    output: Optional[str] = Field(None, max_length=10000, description="Job output (stdout/stderr)")
+    error_message: Optional[str] = Field(None, description="Error details if failed")
     
     def to_job_status(self) -> JobStatus:
         """Convert string status to JobStatus enum."""

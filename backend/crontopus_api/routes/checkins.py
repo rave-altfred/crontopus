@@ -46,7 +46,7 @@ async def agent_checkin(
             detail="Endpoint not found"
         )
     
-    # Create job run record with minimal data
+    # Create job run record with captured data
     now = datetime.now(timezone.utc)
     job_run = JobRun(
         tenant_id=endpoint.tenant_id,
@@ -55,7 +55,11 @@ async def agent_checkin(
         status=checkin_data.to_job_status(),  # Convert string to enum
         started_at=now,
         finished_at=now,
-        endpoint_id=checkin_data.endpoint_id
+        endpoint_id=checkin_data.endpoint_id,
+        exit_code=checkin_data.exit_code,
+        duration=checkin_data.duration,
+        output=checkin_data.output,
+        error_message=checkin_data.error_message
     )
     
     db.add(job_run)
