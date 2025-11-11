@@ -870,16 +870,16 @@ if crontab -l >/dev/null 2>&1; then
     
     if [ "$MARKED_COUNT" -gt 0 ]; then
         echo "Found $MARKED_COUNT Crontopus-managed jobs"
-        echo "Stripping markers to allow fresh discovery/reconciliation..."
+        echo "Stripping markers and removing duplicates..."
         
-        # Create temp file - remove CRONTOPUS markers from end of lines
-        crontab -l | sed 's/ *# CRONTOPUS:.*$//' > /tmp/crontab.clean
+        # Strip CRONTOPUS markers and remove duplicate lines (keep first occurrence)
+        crontab -l | sed 's/ *# CRONTOPUS:.*$//' | awk '!seen[$0]++' > /tmp/crontab.clean
         
         # Install cleaned crontab
         crontab /tmp/crontab.clean
         rm -f /tmp/crontab.clean
         
-        echo "✓ Stripped $MARKED_COUNT Crontopus markers"
+        echo "✓ Stripped $MARKED_COUNT Crontopus markers and removed duplicates"
         echo "  → Jobs preserved and will be discovered by agent"
     else
         echo "No Crontopus-managed jobs found"
