@@ -19,27 +19,40 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Step 1: Add new enum value 'crontopus' to existing type
-    op.execute("ALTER TYPE jobinstancesource ADD VALUE IF NOT EXISTS 'crontopus'")
+    # Check if enum already has only crontopus/discovered (migration already ran)
+    result = op.get_bind().execute("""
+        SELECT enumlabel FROM pg_enum 
+        WHERE enumtypid = 'jobinstancesource'::regtype 
+        ORDER BY enumlabel
+    """).fetchall()
+    
+    enum_values = [row[0] for row in result]
+    
+    # If enum already correct, skip
+    if enum_values == ['crontopus', 'discovered']:
+        return
+    
+    # Step 1: Add 'crontopus' if not exists
+    if 'crontopus' not in enum_values:
+        op.execute("ALTER TYPE jobinstancesource ADD VALUE 'crontopus'")
     
     # Step 2: Update all existing 'git' values to 'crontopus'
     op.execute("UPDATE job_instances SET source = 'crontopus' WHERE source = 'git'")
     
     # Step 3: Create new enum type without 'git'
-    op.execute("""
-        CREATE TYPE jobinstancesource_new AS ENUM ('crontopus', 'discovered');
-    """)
+    op.execute("DROP TYPE IF EXISTS jobinstancesource_new CASCADE")
+    op.execute("CREATE TYPE jobinstancesource_new AS ENUM ('crontopus', 'discovered')")
     
     # Step 4: Alter column to use new type
     op.execute("""
         ALTER TABLE job_instances 
         ALTER COLUMN source TYPE jobinstancesource_new 
-        USING source::text::jobinstancesource_new;
+        USING source::text::jobinstancesource_new
     """)
     
     # Step 5: Drop old enum type and rename new one
-    op.execute("DROP TYPE jobinstancesource;")
-    op.execute("ALTER TYPE jobinstancesource_new RENAME TO jobinstancesource;")
+    op.execute("DROP TYPE IF EXISTS jobinstancesource CASCADE")
+    op.execute("ALTER TYPE jobinstancesource_new RENAME TO jobinstancesource")
 
 
 def downgrade() -> None:
