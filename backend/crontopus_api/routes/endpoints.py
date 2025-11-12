@@ -558,11 +558,11 @@ async def assign_job_to_endpoint(
     Request body:
     {
         "job_name": "backup-db",
-        "namespace": "production"
+        "namespace": "default"
     }
     """
     job_name = job_data.get("job_name")
-    namespace = job_data.get("namespace", "production")
+    namespace = job_data.get("namespace", "default")
     
     if not job_name:
         raise HTTPException(
