@@ -337,7 +337,7 @@ func (s *CronScheduler) parseCronEntry(line string) *JobEntry {
 	if len(identifierParts) == 1 {
 		// New format: UUID only
 		id = identifier
-		// Name and namespace will be extracted from command or left empty
+		// Name and namespace will be extracted from command
 	} else if len(identifierParts) == 2 {
 		// Legacy format: namespace:job-name
 		namespace = identifierParts[0]
@@ -355,6 +355,15 @@ func (s *CronScheduler) parseCronEntry(line string) *JobEntry {
 
 	schedule := strings.Join(fields[0:5], " ")
 	command := strings.Join(fields[5:], " ")
+	
+	// For UUID-based jobs, extract name and namespace from checkin command
+	if id != "" && name == "" {
+		name = extractJobNameFromCheckin(command)
+		namespace = extractNamespaceFromCheckin(command)
+		if namespace == "" {
+			namespace = "default"
+		}
+	}
 
 	return &JobEntry{
 		ID:        id,
