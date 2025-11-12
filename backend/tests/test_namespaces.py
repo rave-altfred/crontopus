@@ -296,15 +296,15 @@ class TestNamespaceAuth:
         """Test namespace endpoints require authentication."""
         # List
         response = client.get("/api/namespaces/")
-        assert response.status_code == 401
+        assert response.status_code == 403  # FastAPI returns 403 for missing auth
         
         # Create
         response = client.post("/api/namespaces/", json={"name": "test"})
-        assert response.status_code == 401
+        assert response.status_code == 403
         
         # Delete
         response = client.delete("/api/namespaces/test")
-        assert response.status_code == 401
+        assert response.status_code == 403
     
     @pytest.mark.asyncio
     async def test_namespace_tenant_isolation(self, client, test_user, test_tenant, db):
