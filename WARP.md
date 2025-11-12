@@ -85,6 +85,22 @@ Key:
 
 ## Current Development Phase
 
+**Phase 15: Aggregated Run Reports** ✅ **COMPLETE** (Nov 2025)
+- Phase 15.1: Backend Aggregation APIs ✅ Complete
+- Phase 15.2: Run by Job Page ✅ Complete
+- Phase 15.3: Run by Endpoint Page ✅ Complete
+- Phase 15.4: Enhanced Job Run Log ✅ Complete
+
+**Key Achievements**:
+- ✅ `/api/runs/by-job` endpoint for job-level aggregation
+- ✅ `/api/runs/by-endpoint` endpoint for endpoint-level aggregation
+- ✅ Health calculation: healthy (95%+), degraded (70-95%), warning (<70%)
+- ✅ Run by Job page with filters (time, job name, namespace, status)
+- ✅ Run by Endpoint page with filters (time, name, hostname, platform, machine ID)
+- ✅ Job Run Log with enhanced filters (limit, job name, namespace, status, time window)
+- ✅ Three report pages in navigation menu
+- ✅ Color-coded health badges (green/yellow/red)
+
 **Phase 14: Discovered Jobs Management** ✅ **COMPLETE** (Nov 2025)
 - Phase 14.1: Agent No-Wrap Mode ✅ Complete
 - Phase 14.2: Backend Job Adoption System ✅ Complete
@@ -168,7 +184,7 @@ go build -o build/crontopus-agent ./cmd/crontopus-agent
 # - See agent/docs/windows-server-testing.md for Windows Server testing
 ```
 
-**Agent Status (Phase 9, 10, 13, 14 Complete - Current: v0.1.11)**:
+**Agent Status (Phase 9, 10, 13, 14 Complete - Current: v0.1.14)**:
 - ✅ Comprehensive documentation (README, deployment examples)
 - ✅ Platform support: Linux, macOS, Windows Server 2019/2022, Windows 10/11
 - ✅ Binary distribution and automated releases (GitHub Actions)
@@ -185,6 +201,8 @@ go build -o build/crontopus-agent ./cmd/crontopus-agent
 - ✅ Uninstaller script with crontab cleanup (v0.1.8)
 - ✅ Discovered job protection - no wrapping (v0.1.9)
 - ✅ Job instance reporting with drift detection (v0.1.10-v0.1.11)
+- ✅ Elegant crontab format with external job configs (v0.1.13)
+- ✅ Simplified crontab: `~/.crontopus/bin/run-job CRONTOPUS:<uuid>` (v0.1.14)
 
 ### CLI (Python)
 ```bash
@@ -282,7 +300,9 @@ When adding new endpoints to backend:
 ```
 GET    /api/auth/me
 POST   /api/auth/login
-GET    /api/runs                                      ← Returns {runs: [], total, page, page_size}
+GET    /api/runs                                      ← Returns {runs: [], total, page, page_size} (with filters: limit, namespace, endpoint_id, status, days)
+GET    /api/runs/by-job                               ← Aggregated job statistics (filters: days, job_name, namespace, endpoint_id, status)
+GET    /api/runs/by-endpoint                          ← Aggregated endpoint statistics (filters: days, name, hostname, platform, machine_id)
 GET    /api/agents                                    ← Returns {agents: [], total, page, page_size}
 GET    /api/endpoints                                 ← Returns {agents: [], total, page, page_size} (backward compat)
 POST   /api/endpoints/enroll                          ← Enroll endpoint (accepts JWT or enrollment token)

@@ -1584,6 +1584,112 @@ When Crontopus discovers and wraps external cron jobs:
 
 ---
 
+## Phase 15: Aggregated Run Reports
+
+**Status**: ✅ **COMPLETE** (Nov 2025)
+
+**Goal**: Provide aggregated views of job run statistics with health indicators for better monitoring and troubleshooting.
+
+### 15.1 Backend Aggregation APIs
+
+- [x] Create `/api/runs/by-job` endpoint
+  - Aggregate run statistics grouped by job (name + namespace)
+  - Calculate: endpoint_count, run_count, success_count, failure_count
+  - Health calculation: healthy (≥95%), degraded (70-95%), warning (<70%)
+  - Filters: time window (days), job name, namespace, endpoint_id, status
+  - SQL aggregation using CASE statements for PostgreSQL compatibility
+- [x] Create `/api/runs/by-endpoint` endpoint
+  - Aggregate run statistics grouped by endpoint
+  - Calculate: run_count, success_count, failure_count, health status
+  - Include endpoint metadata: name, hostname, platform, machine_id, version
+  - Filters: time window (days), name, hostname, platform, machine_id
+- [x] Enhance `/api/runs` endpoint
+  - Add filters: limit (default 100), namespace, endpoint_id, days
+  - Replace pagination with simple limit-based approach
+  - Support time window filtering
+- [x] Fix FastAPI route ordering
+  - Moved specific routes (`/runs/by-job`, `/runs/by-endpoint`) before parametrized route (`/runs/{run_id}`)
+  - Prevents 422 route matching errors
+
+**Deliverable**: ✅ Backend provides aggregated run statistics with health metrics
+
+### 15.2 Run by Job Page
+
+- [x] Create `RunsByJob.tsx` component
+  - Display job-level aggregation table
+  - Columns: Job Name, Namespace, Endpoints, Total Runs, Success, Failures, Health
+  - Color-coded health badges (green/yellow/red)
+- [x] Add filters
+  - Time Window: Last 24h, 7d, 30d, 90d (default: 7 days)
+  - Job Name: Text filter with fuzzy search
+  - Namespace: Text filter
+  - Status: All/Success/Failure
+- [x] API integration
+  - Call `/api/runs/by-job` with filter parameters
+  - Handle loading and error states
+  - Display empty state when no runs found
+
+**Deliverable**: ✅ Users can view aggregated statistics by job with health indicators
+
+### 15.3 Run by Endpoint Page
+
+- [x] Create `RunsByEndpoint.tsx` component
+  - Display endpoint-level aggregation table
+  - Columns: Name, Hostname, Platform, Machine ID, Version, Total Runs, Success, Failures, Health
+  - Color-coded health badges
+- [x] Add filters
+  - Time Window: Last 24h, 7d, 30d, 90d (default: 7 days)
+  - Name: Text filter
+  - Hostname: Text filter
+  - Platform: Text filter
+  - Machine ID: Text filter
+- [x] API integration
+  - Call `/api/runs/by-endpoint` with filter parameters
+  - Sort by run count descending
+  - Truncate long machine IDs for display
+
+**Deliverable**: ✅ Users can view aggregated statistics by endpoint with health indicators
+
+### 15.4 Enhanced Job Run Log
+
+- [x] Rename "Job Runs" to "Job Run Log"
+- [x] Add comprehensive filters
+  - Limit: Default 100, max 1000 (line limit control)
+  - Job Name: Fuzzy search
+  - Namespace: Exact match
+  - Status: All/Success/Failure
+  - Time Window: All time, Last 24h, 7d, 30d, 90d
+- [x] Update navigation
+  - Reports section now contains 3 pages:
+    - Run by Job
+    - Run by Endpoint
+    - Job Run Log
+  - Clear visual hierarchy with indentation
+- [x] Fix Dashboard API compatibility
+  - Updated from `page/page_size` to `limit` parameter
+  - Maintains backward compatibility
+
+**Deliverable**: ✅ Job Run Log provides flexible filtering for detailed troubleshooting
+
+### Benefits:
+- ✅ Quick identification of unhealthy jobs/endpoints
+- ✅ Health trends visible at a glance (color-coded badges)
+- ✅ Flexible filtering for specific time windows
+- ✅ Aggregated views reduce cognitive load
+- ✅ Clear separation between overview (aggregated) and detail (run log)
+- ✅ Time-based analysis (7-day default shows recent trends)
+- ✅ Endpoint-level visibility helps identify problematic machines
+- ✅ Line limit prevents overwhelming users with too much data
+
+### Technical Notes:
+- SQL aggregation uses `func.sum(case(...))` for cross-database compatibility
+- Route ordering critical in FastAPI (specific before parametrized)
+- Health thresholds: 95% (healthy), 70% (degraded), <70% (warning)
+- Frontend components share health badge styling for consistency
+- Default time window (7 days) balances recency with meaningful data
+
+---
+
 ## Phase 12: Job Discovery & Multi-Endpoint Tracking (Future)
 
 **Status**: Planned
