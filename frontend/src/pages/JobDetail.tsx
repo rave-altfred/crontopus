@@ -332,7 +332,7 @@ export const JobDetail = () => {
                       {new Date(run.started_at).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {run.duration_seconds ? `${run.duration_seconds}s` : '-'}
+                      {run.duration ? `${run.duration}s` : '-'}
                     </td>
                   </tr>
                 ))

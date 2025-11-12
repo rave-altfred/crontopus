@@ -1,14 +1,17 @@
 import { apiClient } from './client';
 
 export interface JobRun {
-  id: string;
+  id: number;
   job_name: string;
-  status: 'success' | 'failure' | 'timeout';
+  namespace: string | null;
+  status: 'success' | 'failure' | 'timeout' | 'running' | 'cancelled';
   output: string | null;
-  error: string | null;
+  error_message: string | null;
   started_at: string;
   finished_at: string;
-  duration_seconds: number | null;
+  duration: number | null;
+  exit_code: number | null;
+  endpoint_id: number | null;
   agent_id: string | null;
 }
 
