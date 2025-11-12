@@ -90,7 +90,7 @@ export const JobDetail = () => {
     }
   };
 
-  const handleUnassignEndpoint = async (endpointId: string) => {
+  const handleUnassignEndpoint = async (endpointId: number) => {
     if (!confirm('Unassign this endpoint from the job?')) return;
 
     try {
@@ -271,7 +271,7 @@ export const JobDetail = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <button
-                        onClick={() => handleUnassignEndpoint(String(endpoint.endpoint_id))}
+                        onClick={() => handleUnassignEndpoint(endpoint.endpoint_id)}
                         className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                         title="Unassign endpoint"
                       >

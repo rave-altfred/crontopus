@@ -10,7 +10,7 @@ export const AssignEndpointsToJob = () => {
   
   const [assignedEndpoints, setAssignedEndpoints] = useState<JobEndpoint[]>([]);
   const [availableEndpoints, setAvailableEndpoints] = useState<Agent[]>([]);
-  const [selectedEndpoints, setSelectedEndpoints] = useState<Set<string>>(new Set());
+  const [selectedEndpoints, setSelectedEndpoints] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
   
@@ -33,8 +33,8 @@ export const AssignEndpointsToJob = () => {
         setAssignedEndpoints(assigned);
         
         // Filter out already assigned endpoints
-        const assignedIds = new Set(assigned.map(e => String(e.endpoint_id)));
-        const available = endpoints.filter(e => !assignedIds.has(String(e.id)));
+        const assignedIds = new Set(assigned.map(e => e.endpoint_id));
+        const available = endpoints.filter(e => !assignedIds.has(e.id));
         setAvailableEndpoints(available);
       } catch (err) {
         console.error('Failed to load data:', err);
@@ -62,7 +62,7 @@ export const AssignEndpointsToJob = () => {
   // Get unique platforms for filter
   const platforms = Array.from(new Set(availableEndpoints.map(e => e.platform).filter(Boolean)));
 
-  const toggleEndpoint = (endpointId: string) => {
+  const toggleEndpoint = (endpointId: number) => {
     const newSelected = new Set(selectedEndpoints);
     if (newSelected.has(endpointId)) {
       newSelected.delete(endpointId);

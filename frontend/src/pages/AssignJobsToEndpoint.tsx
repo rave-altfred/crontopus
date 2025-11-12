@@ -5,8 +5,9 @@ import { agentsApi, type JobInstance } from '../api/agents';
 import { jobsApi, type JobListItem } from '../api/jobs';
 
 export const AssignJobsToEndpoint = () => {
-  const { endpointId } = useParams<{ endpointId: string }>();
+  const { endpointId: endpointIdStr } = useParams<{ endpointId: string }>();
   const navigate = useNavigate();
+  const endpointId = endpointIdStr ? Number(endpointIdStr) : null;
   
   const [endpoint, setEndpoint] = useState<any>(null);
   const [assignedJobs, setAssignedJobs] = useState<JobInstance[]>([]);

@@ -4,7 +4,7 @@ import { agentsApi, type Agent } from '../api/agents';
 
 export const Runs = () => {
   const [runs, setRuns] = useState<JobRun[]>([]);
-  const [endpoints, setEndpoints] = useState<Map<string, Agent>>(new Map());
+  const [endpoints, setEndpoints] = useState<Map<number, Agent>>(new Map());
   const [loading, setLoading] = useState(true);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
@@ -84,7 +84,7 @@ export const Runs = () => {
             ) : (
               runs.map((run) => {
                 const isExpanded = expandedRows.has(run.id);
-                const endpoint = run.endpoint_id ? endpoints.get(String(run.endpoint_id)) : null;
+                const endpoint = run.endpoint_id ? endpoints.get(run.endpoint_id) : null;
                 return (
                   <>
                     <tr key={run.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">

@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 
 export interface Agent {
-  id: string;
+  id: number;
   name: string;
   hostname: string;
   platform: string;
@@ -31,33 +31,33 @@ export const agentsApi = {
     return response.data.agents || [];
   },
 
-  get: async (id: string): Promise<Agent> => {
+  get: async (id: number): Promise<Agent> => {
     const response = await apiClient.get(`/agents/${id}`);
     return response.data;
   },
 
-  revoke: async (id: string): Promise<void> => {
+  revoke: async (id: number): Promise<void> => {
     await apiClient.delete(`/agents/${id}`);
   },
 
-  rename: async (id: string, name: string): Promise<Agent> => {
+  rename: async (id: number, name: string): Promise<Agent> => {
     const response = await apiClient.patch(`/endpoints/${id}?name=${encodeURIComponent(name)}`);
     return response.data;
   },
 
-  getJobs: async (endpointId: string): Promise<JobInstance[]> => {
+  getJobs: async (endpointId: number | string): Promise<JobInstance[]> => {
     const response = await apiClient.get(`/endpoints/${endpointId}/jobs`);
     return response.data.jobs || [];
   },
 
-  assignJob: async (endpointId: string, jobName: string, namespace: string = 'production'): Promise<void> => {
+  assignJob: async (endpointId: number | string, jobName: string, namespace: string = 'production'): Promise<void> => {
     await apiClient.post(`/endpoints/${endpointId}/assign-job`, {
       job_name: jobName,
       namespace: namespace
     });
   },
 
-  unassignJob: async (endpointId: string, namespace: string, jobName: string): Promise<void> => {
+  unassignJob: async (endpointId: number | string, namespace: string, jobName: string): Promise<void> => {
     await apiClient.delete(`/endpoints/${endpointId}/jobs/${namespace}/${jobName}`);
   },
 };

@@ -131,14 +131,14 @@ export const jobsApi = {
     return response.data.endpoints;
   },
 
-  assignToEndpoint: async (namespace: string, jobName: string, endpointId: string): Promise<void> => {
+  assignToEndpoint: async (namespace: string, jobName: string, endpointId: number): Promise<void> => {
     await apiClient.post(`/endpoints/${endpointId}/assign-job`, {
       job_name: jobName,
       namespace: namespace
     });
   },
 
-  unassignFromEndpoint: async (namespace: string, jobName: string, endpointId: string): Promise<void> => {
+  unassignFromEndpoint: async (namespace: string, jobName: string, endpointId: number): Promise<void> => {
     await apiClient.delete(`/endpoints/${endpointId}/jobs/${namespace}/${jobName}`);
   },
 };

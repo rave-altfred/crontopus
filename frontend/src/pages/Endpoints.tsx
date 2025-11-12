@@ -6,10 +6,10 @@ import { agentsApi, type Agent, type JobInstance } from '../api/agents';
 export const Endpoints = () => {
   const [endpoints, setEndpoints] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [jobsByEndpoint, setJobsByEndpoint] = useState<Record<string, JobInstance[]>>({});
-  const [loadingJobs, setLoadingJobs] = useState<Record<string, boolean>>({});
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Record<number, boolean>>({});
+  const [jobsByEndpoint, setJobsByEndpoint] = useState<Record<number, JobInstance[]>>({});
+  const [loadingJobs, setLoadingJobs] = useState<Record<number, boolean>>({});
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export const Endpoints = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleUnassignJob = async (endpointId: string, namespace: string, jobName: string) => {
+  const handleUnassignJob = async (endpointId: number, namespace: string, jobName: string) => {
     if (!confirm(`Unassign ${namespace}/${jobName} from this endpoint?`)) return;
 
     try {
@@ -36,11 +36,11 @@ export const Endpoints = () => {
   };
 
   const handleStartEdit = (endpoint: Agent) => {
-    setEditingId(String(endpoint.id));
+    setEditingId(endpoint.id);
     setEditName(endpoint.name);
   };
 
-  const handleSaveEdit = async (endpointId: string) => {
+  const handleSaveEdit = async (endpointId: number) => {
     if (!editName.trim()) return;
     
     try {
@@ -114,13 +114,13 @@ export const Endpoints = () => {
               endpoints.map((endpoint) => (
                 <>
                   <tr key={endpoint.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40 cursor-pointer" onClick={async () => {
-                    const id = String(endpoint.id);
+                    const id = endpoint.id;
                     const next = !expanded[id];
                     setExpanded({ ...expanded, [id]: next });
                     if (next && !jobsByEndpoint[id] && !loadingJobs[id]) {
                       setLoadingJobs({ ...loadingJobs, [id]: true });
                       try {
-                        const jobs = await agentsApi.getJobs(id);
+                        const jobs = await agentsApi.getJobs(String(id));
                         setJobsByEndpoint({ ...jobsByEndpoint, [id]: jobs });
                       } catch (e) {
                         console.error('Failed to load jobs for endpoint', id, e);
@@ -130,28 +130,28 @@ export const Endpoints = () => {
                     }
                   }}>
                     <td className="px-6 py-4 whitespace-nowrap w-8">
-                      {expanded[String(endpoint.id)] ? (
+                      {expanded[endpoint.id] ? (
                         <ChevronDown className="w-4 h-4 text-gray-500" />
                       ) : (
                         <ChevronRight className="w-4 h-4 text-gray-500" />
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {editingId === String(endpoint.id) ? (
+                      {editingId === endpoint.id ? (
                         <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                           <input
                             type="text"
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveEdit(String(endpoint.id));
+                              if (e.key === 'Enter') handleSaveEdit(endpoint.id);
                               if (e.key === 'Escape') handleCancelEdit();
                             }}
                             className="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                             autoFocus
                           />
                           <button
-                            onClick={() => handleSaveEdit(String(endpoint.id))}
+                            onClick={() => handleSaveEdit(endpoint.id)}
                             className="text-green-600 hover:text-green-800 dark:text-green-400"
                             title="Save"
                           >
@@ -216,10 +216,10 @@ export const Endpoints = () => {
                       : 'Never'}
                   </td>
                   </tr>
-                  {expanded[String(endpoint.id)] && (
+                  {expanded[endpoint.id] && (
                     <tr>
                       <td colSpan={8} className="px-6 py-3 bg-gray-50 dark:bg-gray-900">
-                        {loadingJobs[String(endpoint.id)] ? (
+                        {loadingJobs[endpoint.id] ? (
                           <div className="text-sm text-gray-500 dark:text-gray-400">Loading jobs...</div>
                         ) : (
                           <div className="space-y-2">
@@ -247,7 +247,7 @@ export const Endpoints = () => {
                                   </tr>
                                 </thead>
                                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                  {(jobsByEndpoint[String(endpoint.id)] || []).map((ji) => (
+                                  {(jobsByEndpoint[endpoint.id] || []).map((ji: JobInstance) => (
                                     <tr key={ji.id}>
                                       <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{ji.namespace}</td>
                                       <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{ji.job_name}</td>
@@ -280,7 +280,7 @@ export const Endpoints = () => {
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            handleUnassignJob(String(endpoint.id), ji.namespace, ji.job_name);
+                                            handleUnassignJob(endpoint.id, ji.namespace, ji.job_name);
                                           }}
                                           className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                                           title="Unassign job"
