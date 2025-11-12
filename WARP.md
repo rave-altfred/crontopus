@@ -85,6 +85,21 @@ Key:
 
 ## Current Development Phase
 
+**Phase 14: Discovered Jobs Management** ✅ **COMPLETE** (Nov 2025)
+- Phase 14.1: Agent No-Wrap Mode ✅ Complete
+- Phase 14.2: Backend Job Adoption System ✅ Complete
+- Phase 14.3: Frontend Discovered Job UI ✅ Partial (filter/badge complete, adopt modal future)
+- Phase 14.4: Testing & Validation ⏳ Pending
+
+**Key Achievements**:
+- ✅ Discovered jobs remain externally-managed (no wrapping)
+- ✅ External apps can remove their own cron entries
+- ✅ Agent won't recreate discovered jobs if removed
+- ✅ Job adoption API allows taking ownership
+- ✅ Deletion prevented for discovered jobs (must adopt or use external app)
+- ✅ Frontend: discovered namespace filter with purple badge
+- ✅ Agent v0.1.9 with discovered job protection
+
 **Phase 13: UUID-Based Job Identification** ✅ **COMPLETE** (Nov 2025)
 - Phase 13.1: Manifest Schema with UUID ✅ Complete
 - Phase 13.2: UUID-based Crontab Markers ✅ Complete  

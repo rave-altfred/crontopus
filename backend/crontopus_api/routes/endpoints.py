@@ -475,6 +475,8 @@ async def report_job_instances(
                 original_command=instance_report.original_command
             )
             db.add(job_instance)
+            db.flush()  # Ensure ID is generated
+            reported_job_ids.append(job_instance.id)
         
         instances_updated += 1
     

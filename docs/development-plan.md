@@ -1488,6 +1488,109 @@ discoveredJob := DiscoveredJob{
 
 ---
 
+## Phase 14: Discovered Jobs Management (Externally-Managed Jobs)
+
+**Status**: ✅ **COMPLETE**
+
+**Goal**: Prevent Crontopus from interfering with externally-managed cron jobs while still providing visibility.
+
+### Problem Statement:
+When Crontopus discovers and wraps external cron jobs:
+1. ❌ Original apps can't remove their own jobs (command changed)
+2. ❌ Agent recreates removed discovered jobs (wrong assumption)
+3. ❌ No way for users to take ownership of discovered jobs
+4. ❌ Uninstallers break when jobs are wrapped
+
+### 14.1 Agent: No-Wrap Mode for Discovered Jobs
+
+- [x] Skip wrapping for jobs with `source: discovered` label
+  - Agent checks `metadata.labels.source` before wrapping
+  - Discovered jobs keep original commands intact
+  - Only UUID marker added for tracking
+  - External apps can find and remove their own cron entries
+- [x] Read-only reconciliation for discovered jobs
+  - Agent won't recreate discovered jobs if removed
+  - Logs: "Discovered job not found - removed externally. Not recreating."
+  - Job will be cleaned up from Git in removal phase
+- [x] Agent v0.1.9 released with discovered job protection
+
+**Deliverable**: ✅ Discovered jobs remain externally-managed with original commands
+
+### 14.2 Backend: Job Adoption System
+
+- [x] Add adoption endpoint
+  - `POST /api/jobs/{namespace}/{job_name}/adopt` with `target_namespace` in body
+  - Moves job from `discovered/` to `production/` or `staging/`
+  - Removes `source: discovered` label (Crontopus takes ownership)
+  - Deletes old file, creates new file in Git
+  - On next sync: agent wraps job with callbacks (full management)
+- [x] Prevent deletion of discovered jobs
+  - `DELETE /api/jobs/{namespace}/{job_name}` checks for `source: discovered`
+  - Returns 403 Forbidden with message:
+    "Cannot delete discovered jobs. Remove using the application that created it, or adopt it first."
+  - Forces users to use external app uninstaller or adopt first
+
+**Deliverable**: ✅ Users can adopt discovered jobs to take full ownership
+
+### 14.3 Frontend: Discovered Job UI
+
+- [x] Add discovered namespace filter
+  - "🔍 Discovered" button on jobs page
+  - Purple badge with emoji for discovered jobs
+  - Distinct visual styling (purple background)
+- [x] Add adopt API method
+  - `jobsApi.adopt(namespace, jobName, targetNamespace)`
+  - POST to backend adoption endpoint
+- [ ] Add "Adopt Job" button to job detail page (Future)
+  - Button visible only for discovered jobs
+  - Modal to select target namespace (production/staging)
+  - Confirms adoption with explanation
+- [ ] Disable delete button for discovered jobs (Future)
+  - Hide or gray out delete button
+  - Tooltip: "Remove using external application, or adopt first"
+- [ ] Add explanatory banner (Future)
+  - "This job is managed by an external application"
+  - Link to documentation about adoption
+
+**Deliverable**: ✅ Discovered jobs visually distinguished with basic UI support
+
+### 14.4 Testing & Validation
+
+- [ ] Create external cron job for testing
+  - Use crontab -e to add test job manually
+  - Verify agent discovers without wrapping
+  - Check UUID marker added
+  - Verify original command unchanged
+- [ ] Test external removal
+  - Remove cron entry using crontab -e
+  - Verify agent doesn't recreate on next sync
+  - Verify job removed from Git
+- [ ] Test adoption flow
+  - Discover external job
+  - Adopt to production namespace
+  - Verify source label removed
+  - Verify agent wraps job on next sync
+  - Verify callbacks work
+- [ ] Test uninstaller scenarios
+  - Install external app with cron
+  - Crontopus discovers job
+  - Uninstall external app
+  - Verify app can remove its own job
+  - Verify Crontopus removes from Git
+
+**Deliverable**: End-to-end validation of discovered job lifecycle
+
+### Benefits:
+- ✅ External apps can manage their own cron jobs
+- ✅ Uninstallers work correctly (commands unchanged)
+- ✅ Users get visibility into external jobs
+- ✅ Users can adopt jobs to take full control
+- ✅ Clear UX about what's Crontopus-managed vs external
+- ✅ No interference with external job lifecycle
+- ✅ Solves fundamental conflict with external applications
+
+---
+
 ## Phase 12: Job Discovery & Multi-Endpoint Tracking (Future)
 
 **Status**: Planned
