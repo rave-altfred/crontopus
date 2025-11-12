@@ -57,6 +57,10 @@ func wrapUnix(originalCommand, backendURL, endpointToken string, endpointID int,
 	// Escape quotes in the original command
 	escapedCommand := strings.ReplaceAll(originalCommand, "'", "'\\''")
 	
+	// Escape job name and namespace for shell (they may contain spaces)
+	escapedJobName := strings.ReplaceAll(jobName, "'", "'\\''")
+	escapedNamespace := strings.ReplaceAll(namespace, "'", "'\\''")
+	
 	// Build wrapper with output capture
 	// Creates a wrapper script that:
 	// 1. Records start time
@@ -65,9 +69,9 @@ func wrapUnix(originalCommand, backendURL, endpointToken string, endpointID int,
 	// 4. Calculates duration
 	// 5. Sends all data to checkin script
 	wrapper := fmt.Sprintf(
-		`sh -c 'LOGFILE=$(mktemp); START=$(date +%%s); { %s; } > "$LOGFILE" 2>&1; EXIT_CODE=$?; END=$(date +%%s); DURATION=$((END - START)); %s %s %s "$EXIT_CODE" "$DURATION" "$LOGFILE"; rm -f "$LOGFILE"; exit $EXIT_CODE'`,
+		`sh -c 'LOGFILE=$(mktemp); START=$(date +%%s); { %s; } > "$LOGFILE" 2>&1; EXIT_CODE=$?; END=$(date +%%s); DURATION=$((END - START)); %s "%s" "%s" "$EXIT_CODE" "$DURATION" "$LOGFILE"; rm -f "$LOGFILE"; exit $EXIT_CODE'`,
 		escapedCommand,
-		checkinScript, jobName, namespace,
+		checkinScript, escapedJobName, escapedNamespace,
 	)
 	
 	return wrapper

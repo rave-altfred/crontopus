@@ -22,6 +22,7 @@ func NewCronScheduler() (*CronScheduler, error) {
 }
 
 // Add creates a new cron job
+// Automatically removes any discovered (unmarked) jobs with the same name to avoid duplicates
 func (s *CronScheduler) Add(job JobEntry) error {
 	// Get current crontab
 	entries, err := s.readCrontab()
@@ -29,27 +30,53 @@ func (s *CronScheduler) Add(job JobEntry) error {
 		return fmt.Errorf("failed to read crontab: %w", err)
 	}
 
-	// Check if job already exists (by UUID or name)
+	// Build list of new entries, removing both:
+	// 1. Existing Crontopus-managed jobs with same ID/name (error case)
+	// 2. Discovered (unmarked) jobs with matching command (deduplication)
+	newEntries := []string{}
 	for _, entry := range entries {
+		// Skip empty lines and comments
+		if strings.TrimSpace(entry) == "" || (strings.HasPrefix(strings.TrimSpace(entry), "#") && !strings.Contains(entry, s.marker)) {
+			newEntries = append(newEntries, entry)
+			continue
+		}
+		
+		// Check for existing Crontopus-managed job
 		existingJob := s.parseCronEntry(entry)
 		if existingJob != nil {
-			// Match by UUID if both have UUIDs
+			// Only check UUID collision - UUID is the unique identifier
+			// Multiple jobs can have the same name (even in same namespace)
 			if job.ID != "" && existingJob.ID != "" && existingJob.ID == job.ID {
 				return fmt.Errorf("job with ID %s already exists", job.ID)
 			}
-			// Fall back to name matching for legacy jobs
-			if existingJob.Name == job.Name {
-				return fmt.Errorf("job %s already exists", job.Name)
+			newEntries = append(newEntries, entry)
+			continue
+		}
+		
+		// Check for discovered job with identical command content
+		// Discovered jobs are unmarked, but may have same command as job we're adding
+		if !strings.Contains(entry, s.marker) {
+			fields := strings.Fields(entry)
+			if len(fields) >= 6 {
+				discoveredCommand := strings.Join(fields[5:], " ")
+				
+				// Remove discovered job if command exactly matches
+				// This prevents duplicates when taking over a discovered job
+				if discoveredCommand == job.Command {
+					continue // Skip - we're replacing it with UUID-tracked version
+				}
 			}
 		}
+		
+		newEntries = append(newEntries, entry)
 	}
 
 	// Add new entry
 	newEntry := s.formatCronEntry(job)
-	entries = append(entries, newEntry)
+	newEntries = append(newEntries, newEntry)
 
 	// Write back to crontab
-	return s.writeCrontab(entries)
+	return s.writeCrontab(newEntries)
 }
 
 // Update modifies an existing cron job
@@ -391,23 +418,32 @@ func (s *CronScheduler) extractJobID(line string) string {
 }
 
 // extractJobNameFromCheckin extracts the job name from a checkin command
-// Checkin format: sh -c '... /path/to/checkin job-name namespace ...'
+// Checkin format: sh -c '... /path/to/checkin "job-name" "namespace" ...'
 func extractJobNameFromCheckin(command string) string {
 	// Look for checkin command pattern
 	if !strings.Contains(command, "checkin") {
 		return ""
 	}
 	
-	// Pattern: checkin job-name namespace
-	// Find "checkin" and extract the next two tokens
+	// Pattern: checkin "job-name" "namespace"
+	// Find "checkin" and extract the next quoted or unquoted token
 	parts := strings.Fields(command)
 	for i, part := range parts {
-		if strings.HasSuffix(part, "checkin") && i+1 < len(parts) {
-			// Next token is job name
-			jobName := parts[i+1]
-			// Clean up any quotes or special chars
-			jobName = strings.Trim(jobName, "'\"")
-			return jobName
+		if strings.HasSuffix(part, "checkin") {
+			// Job name is either:
+			// 1. Next token if quoted (may span multiple fields)
+			// 2. Next single field if unquoted
+			
+			// Look for quoted string starting after checkin
+			rest := strings.Join(parts[i+1:], " ")
+			if jobName := extractQuotedString(rest); jobName != "" {
+				return jobName
+			}
+			
+			// Fallback: unquoted single field
+			if i+1 < len(parts) {
+				return strings.Trim(parts[i+1], "'\"")
+			}
 		}
 	}
 	
@@ -415,23 +451,56 @@ func extractJobNameFromCheckin(command string) string {
 }
 
 // extractNamespaceFromCheckin extracts the namespace from a checkin command
-// Checkin format: sh -c '... /path/to/checkin job-name namespace ...'
+// Checkin format: sh -c '... /path/to/checkin "job-name" "namespace" ...'
 func extractNamespaceFromCheckin(command string) string {
 	// Look for checkin command pattern
 	if !strings.Contains(command, "checkin") {
 		return ""
 	}
 	
-	// Pattern: checkin job-name namespace
-	// Find "checkin" and extract the namespace (3rd token after checkin)
+	// Pattern: checkin "job-name" "namespace"
+	// Find "checkin", skip job name, extract namespace
 	parts := strings.Fields(command)
 	for i, part := range parts {
-		if strings.HasSuffix(part, "checkin") && i+2 < len(parts) {
-			// Token after job name is namespace
-			namespace := parts[i+2]
-			// Clean up any quotes or special chars
-			namespace = strings.Trim(namespace, "'\"")
-			return namespace
+		if strings.HasSuffix(part, "checkin") {
+			// Skip job name and extract namespace
+			rest := strings.Join(parts[i+1:], " ")
+			
+			// Extract first quoted string (job name)
+			if jobName := extractQuotedString(rest); jobName != "" {
+				// Remove job name from rest and extract namespace
+				after := strings.TrimSpace(strings.TrimPrefix(rest, fmt.Sprintf("\"%s\"", jobName)))
+				if namespace := extractQuotedString(after); namespace != "" {
+					return namespace
+				}
+			}
+			
+			// Fallback: unquoted, namespace is 2 fields after checkin
+			if i+2 < len(parts) {
+				return strings.Trim(parts[i+2], "'\"")
+			}
+		}
+	}
+	
+	return ""
+}
+
+// extractQuotedString extracts the first quoted string from input
+// Handles both single and double quotes
+func extractQuotedString(s string) string {
+	s = strings.TrimSpace(s)
+	
+	// Check for double quotes
+	if strings.HasPrefix(s, "\"") {
+		if end := strings.Index(s[1:], "\""); end != -1 {
+			return s[1 : end+1]
+		}
+	}
+	
+	// Check for single quotes
+	if strings.HasPrefix(s, "'") {
+		if end := strings.Index(s[1:], "'"); end != -1 {
+			return s[1 : end+1]
 		}
 	}
 	
