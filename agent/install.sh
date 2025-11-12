@@ -66,7 +66,8 @@ detect_platform() {
 get_latest_version() {
     if [ "$VERSION" = "latest" ]; then
         log_info "Fetching latest version..."
-        VERSION=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"agent-v([^"]+)".*/\1/')
+        # Fetch latest release tag (handles both "v" and "agent-v" prefixes)
+        VERSION=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"(agent-)?v([^"]+)".*/\2/')
         if [ -z "$VERSION" ]; then
             log_error "Failed to fetch latest version"
             exit 1
@@ -77,7 +78,8 @@ get_latest_version() {
 
 download_binary() {
     local binary_name="crontopus-agent-${PLATFORM}"
-    local download_url="https://github.com/$REPO/releases/download/agent-v${VERSION}/${binary_name}"
+    # Try v-prefixed tag first (new format), fallback to agent-v prefix (old format)
+    local download_url="https://github.com/$REPO/releases/download/v${VERSION}/${binary_name}"
     local checksum_url="${download_url}.sha256"
     
     log_info "Downloading from: $download_url"
