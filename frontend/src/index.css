@@ -1,3 +1,20 @@
 @import "tailwindcss";
 
 @variant dark (&:where(.dark, .dark *));
+
+/* Crontopus PCB-inspired color palette */
+@theme {
+  --color-brand-50: #f0f9f3;
+  --color-brand-100: #dcf0e3;
+  --color-brand-200: #bae1ca;
+  --color-brand-300: #8dcba9;
+  --color-brand-400: #5fb97d;
+  --color-brand-500: #3d7250;
+  --color-brand-600: #2d5a3d;
+  --color-brand-700: #254832;
+  --color-brand-800: #1f3a29;
+  --color-brand-900: #1a3023;
+  
+  --color-gold: #d4af37;
+  --color-gold-dark: #a88328;
+}
