@@ -58,6 +58,30 @@ export const MainLayout = () => {
                 <ul className="space-y-1 mt-1">
                   <li>
                     <Link
+                      to="/runs/by-job"
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ml-2 ${
+                        isActive('/runs/by-job')
+                          ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      <span className="font-medium">Run by Job</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/runs/by-endpoint"
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ml-2 ${
+                        isActive('/runs/by-endpoint')
+                          ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      <span className="font-medium">Run by Endpoint</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
                       to="/runs"
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ml-2 ${
                         isActive('/runs')
@@ -65,7 +89,7 @@ export const MainLayout = () => {
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                       }`}
                     >
-                      <span className="font-medium">Job Runs</span>
+                      <span className="font-medium">Job Run Log</span>
                     </Link>
                   </li>
                 </ul>

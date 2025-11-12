@@ -15,8 +15,38 @@ export interface JobRun {
   agent_id: string | null;
 }
 
+export interface JobAggregation {
+  job_name: string;
+  namespace: string;
+  endpoint_count: number;
+  run_count: number;
+  success_count: number;
+  failure_count: number;
+  health: 'healthy' | 'degraded' | 'warning';
+}
+
+export interface EndpointAggregation {
+  id: number;
+  name: string;
+  hostname: string | null;
+  platform: string;
+  machine_id: string;
+  version: string;
+  run_count: number;
+  success_count: number;
+  failure_count: number;
+  health: 'healthy' | 'degraded' | 'warning';
+}
+
 export const runsApi = {
-  list: async (params?: { job_name?: string; page?: number; page_size?: number }): Promise<JobRun[]> => {
+  list: async (params?: {
+    limit?: number;
+    job_name?: string;
+    namespace?: string;
+    endpoint_id?: number;
+    status?: string;
+    days?: number;
+  }): Promise<JobRun[]> => {
     const response = await apiClient.get('/runs', { params });
     return response.data.runs || [];
   },
@@ -29,5 +59,27 @@ export const runsApi = {
   listByJob: async (jobName: string): Promise<JobRun[]> => {
     const response = await apiClient.get(`/runs/job/${jobName}`);
     return response.data;
+  },
+
+  aggregatedByJob: async (params?: {
+    days?: number;
+    job_name?: string;
+    namespace?: string;
+    endpoint_id?: number;
+    status?: string;
+  }): Promise<JobAggregation[]> => {
+    const response = await apiClient.get('/runs/by-job', { params });
+    return response.data.jobs || [];
+  },
+
+  aggregatedByEndpoint: async (params?: {
+    days?: number;
+    name?: string;
+    hostname?: string;
+    platform?: string;
+    machine_id?: string;
+  }): Promise<EndpointAggregation[]> => {
+    const response = await apiClient.get('/runs/by-endpoint', { params });
+    return response.data.endpoints || [];
   },
 };

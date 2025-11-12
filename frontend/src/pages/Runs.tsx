@@ -8,9 +8,23 @@ export const Runs = () => {
   const [loading, setLoading] = useState(true);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
-  useEffect(() => {
+  // Filters
+  const [limit, setLimit] = useState(100);
+  const [jobNameFilter, setJobNameFilter] = useState('');
+  const [namespaceFilter, setNamespaceFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [days, setDays] = useState<number | undefined>(undefined);
+
+  const loadData = () => {
+    setLoading(true);
     Promise.all([
-      runsApi.list(),
+      runsApi.list({
+        limit,
+        job_name: jobNameFilter || undefined,
+        namespace: namespaceFilter || undefined,
+        status: statusFilter || undefined,
+        days: days || undefined
+      }),
       agentsApi.list()
     ])
       .then(([runsData, agentsData]) => {
@@ -22,7 +36,11 @@ export const Runs = () => {
       })
       .catch((err) => console.error('Failed to load data:', err))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [limit, jobNameFilter, namespaceFilter, statusFilter, days]);
 
   const toggleRow = (runId: number) => {
     setExpandedRows(prev => {
@@ -42,7 +60,84 @@ export const Runs = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Job Runs</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Job Run Log</h2>
+
+      {/* Filters */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Limit
+            </label>
+            <input
+              type="number"
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              min={1}
+              max={1000}
+              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Job Name
+            </label>
+            <input
+              type="text"
+              value={jobNameFilter}
+              onChange={(e) => setJobNameFilter(e.target.value)}
+              placeholder="Filter by job name..."
+              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Namespace
+            </label>
+            <input
+              type="text"
+              value={namespaceFilter}
+              onChange={(e) => setNamespaceFilter(e.target.value)}
+              placeholder="Filter by namespace..."
+              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Status
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              <option value="">All statuses</option>
+              <option value="success">Success</option>
+              <option value="failure">Failure</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Time Window
+            </label>
+            <select
+              value={days || ''}
+              onChange={(e) => setDays(e.target.value ? Number(e.target.value) : undefined)}
+              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              <option value="">All time</option>
+              <option value={1}>Last 24 hours</option>
+              <option value={7}>Last 7 days</option>
+              <option value={30}>Last 30 days</option>
+              <option value={90}>Last 90 days</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

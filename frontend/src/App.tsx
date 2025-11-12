@@ -9,6 +9,8 @@ import { Dashboard } from './pages/Dashboard';
 import { Endpoints } from './pages/Endpoints';
 import { AgentDownload } from './pages/AgentDownload';
 import { Runs } from './pages/Runs';
+import { RunsByJob } from './pages/RunsByJob';
+import { RunsByEndpoint } from './pages/RunsByEndpoint';
 import { Jobs } from './pages/Jobs';
 import { JobDetail } from './pages/JobDetail';
 import { JobNew } from './pages/JobNew';
@@ -38,6 +40,8 @@ function App() {
             <Route path="endpoints" element={<Endpoints />} />
             <Route path="endpoints/:endpointId/assign-jobs" element={<AssignJobsToEndpoint />} />
             <Route path="runs" element={<Runs />} />
+            <Route path="runs/by-job" element={<RunsByJob />} />
+            <Route path="runs/by-endpoint" element={<RunsByEndpoint />} />
             <Route path="groups" element={<Groups />} />
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/new" element={<JobNew />} />
