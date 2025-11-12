@@ -81,6 +81,7 @@ class JobRunResponse(BaseModel):
     id: int
     tenant_id: str
     job_name: str
+    namespace: Optional[str]
     status: JobStatus
     
     started_at: datetime
@@ -91,6 +92,7 @@ class JobRunResponse(BaseModel):
     error_message: Optional[str]
     exit_code: Optional[int]
     
+    endpoint_id: Optional[int]
     agent_id: Optional[str]
     
     created_at: datetime
