@@ -10,7 +10,7 @@ export const Dashboard = () => {
 
   useEffect(() => {
     Promise.all([
-      runsApi.list({ page: 1, page_size: 5 }),
+      runsApi.list({ limit: 5 }),
       agentsApi.list(),
     ])
       .then(([runs, agentsList]) => {
