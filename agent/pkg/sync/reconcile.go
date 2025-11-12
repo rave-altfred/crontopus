@@ -92,8 +92,17 @@ func (r *Reconciler) Reconcile() (int, error) {
 			if namespace == "" {
 				namespace = "default"
 			}
-			command = wrapper.WrapCommand(command, r.backendURL, r.endpointToken, r.endpointID, manifest.Metadata.Name, namespace)
-			log.Printf("Wrapped command for job '%s' (ID: %s) in namespace '%s' with callback injection", manifest.Metadata.Name, jobID, namespace)
+			
+			// Write job config file for elegant wrapper
+			if err := wrapper.WriteJobConfig(jobID, manifest.Metadata.Name, namespace, command); err != nil {
+				log.Printf("Warning: Failed to write job config for '%s': %v (using inline wrapper)", manifest.Metadata.Name, err)
+				// Fallback to inline wrapper
+				command = wrapper.WrapCommand(command, r.backendURL, r.endpointToken, r.endpointID, manifest.Metadata.Name, namespace)
+			} else {
+				// Use elegant wrapper format
+				command = wrapper.WrapCommandWithID(jobID)
+				log.Printf("Using elegant wrapper for job '%s' (ID: %s) in namespace '%s'", manifest.Metadata.Name, jobID, namespace)
+			}
 		} else if isDiscovered {
 			log.Printf("Skipping wrap for discovered job '%s' (ID: %s) - keeping original command for external management", manifest.Metadata.Name, jobID)
 		}

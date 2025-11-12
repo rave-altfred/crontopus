@@ -12,7 +12,11 @@ import (
 //go:embed templates/checkin.sh
 var checkinScriptTemplate string
 
+//go:embed templates/run-job.sh
+var runJobScriptTemplate string
+
 // InstallCheckinScript installs the check-in helper script to ~/.crontopus/bin/checkin
+// and the run-job wrapper to ~/.crontopus/bin/run-job
 func InstallCheckinScript() error {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -24,12 +28,62 @@ func InstallCheckinScript() error {
 		return fmt.Errorf("failed to create bin directory: %w", err)
 	}
 
-	scriptPath := filepath.Join(binDir, "checkin")
-	if err := os.WriteFile(scriptPath, []byte(checkinScriptTemplate), 0755); err != nil {
+	// Install checkin script
+	checkinPath := filepath.Join(binDir, "checkin")
+	if err := os.WriteFile(checkinPath, []byte(checkinScriptTemplate), 0755); err != nil {
 		return fmt.Errorf("failed to write checkin script: %w", err)
 	}
 
+	// Install run-job script
+	runJobPath := filepath.Join(binDir, "run-job")
+	if err := os.WriteFile(runJobPath, []byte(runJobScriptTemplate), 0755); err != nil {
+		return fmt.Errorf("failed to write run-job script: %w", err)
+	}
+
 	return nil
+}
+
+// WriteJobConfig writes job configuration to ~/.crontopus/jobs/<uuid>.yaml
+// This config is read by the run-job script
+func WriteJobConfig(jobID, jobName, namespace, command string) error {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to get home directory: %w", err)
+	}
+
+	jobsDir := filepath.Join(homeDir, ".crontopus", "jobs")
+	if err := os.MkdirAll(jobsDir, 0755); err != nil {
+		return fmt.Errorf("failed to create jobs directory: %w", err)
+	}
+
+	configPath := filepath.Join(jobsDir, jobID+".yaml")
+	configContent := fmt.Sprintf(`job_name: "%s"
+namespace: "%s"
+command: "%s"
+`,
+		strings.ReplaceAll(jobName, "\"", "\\\""),
+		strings.ReplaceAll(namespace, "\"", "\\\""),
+		strings.ReplaceAll(command, "\"", "\\\""),
+	)
+
+	if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {
+		return fmt.Errorf("failed to write job config: %w", err)
+	}
+
+	return nil
+}
+
+// WrapCommandWithID wraps a job using the elegant format with job config file
+// Returns: ~/.crontopus/bin/run-job <uuid>
+func WrapCommandWithID(jobID string) string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		// Fallback to relative path
+		return fmt.Sprintf("~/.crontopus/bin/run-job %s", jobID)
+	}
+	
+	runJobPath := filepath.Join(homeDir, ".crontopus", "bin", "run-job")
+	return fmt.Sprintf("%s %s", runJobPath, jobID)
 }
 
 // WrapCommand wraps a job command with check-in callbacks
