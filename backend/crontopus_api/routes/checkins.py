@@ -8,7 +8,7 @@ from typing import Optional, List
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, case
 from pydantic import BaseModel
 
 from crontopus_api.config import get_db
@@ -243,8 +243,8 @@ async def runs_by_job(
         JobRun.namespace,
         func.count(func.distinct(JobRun.endpoint_id)).label('endpoint_count'),
         func.count(JobRun.id).label('run_count'),
-        func.sum(func.cast(JobRun.status == JobStatus.SUCCESS, db.bind.dialect.name == 'postgresql' and 'integer' or None)).label('success_count'),
-        func.sum(func.cast(JobRun.status == JobStatus.FAILURE, db.bind.dialect.name == 'postgresql' and 'integer' or None)).label('failure_count')
+        func.sum(case((JobRun.status == JobStatus.SUCCESS, 1), else_=0)).label('success_count'),
+        func.sum(case((JobRun.status == JobStatus.FAILURE, 1), else_=0)).label('failure_count')
     ).filter(
         JobRun.tenant_id == current_user.tenant_id,
         JobRun.started_at >= since
@@ -345,8 +345,8 @@ async def runs_by_endpoint(
         # Query runs for this endpoint in the time window
         run_stats = db.query(
             func.count(JobRun.id).label('run_count'),
-            func.sum(func.cast(JobRun.status == JobStatus.SUCCESS, db.bind.dialect.name == 'postgresql' and 'integer' or None)).label('success_count'),
-            func.sum(func.cast(JobRun.status == JobStatus.FAILURE, db.bind.dialect.name == 'postgresql' and 'integer' or None)).label('failure_count')
+            func.sum(case((JobRun.status == JobStatus.SUCCESS, 1), else_=0)).label('success_count'),
+            func.sum(case((JobRun.status == JobStatus.FAILURE, 1), else_=0)).label('failure_count')
         ).filter(
             JobRun.endpoint_id == endpoint.id,
             JobRun.started_at >= since
