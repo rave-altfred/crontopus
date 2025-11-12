@@ -108,26 +108,28 @@ func (r *Reconciler) Reconcile() (int, error) {
 				log.Printf("Reconciliation: Job '%s' (ID: %s) is up-to-date", manifest.Metadata.Name, jobID)
 			}
 		} else {
-			// Job doesn't exist, add it
-			log.Printf("Reconciliation: Adding new job '%s' (ID: %s)", manifest.Metadata.Name, jobID)
-			if err := r.scheduler.Add(jobEntry); err != nil {
-				log.Printf("Error adding job '%s': %v", manifest.Metadata.Name, err)
-				continue
-			}
-			changeCount++
-			
-			// If this is a discovered job, remove any unmarked duplicate with same original command
-			if manifest.Namespace == "discovered" {
-				// Try to remove unmarked job with original command
-				if originalCmd := manifest.Spec.Command; originalCmd != "" {
-					if cronScheduler, ok := r.scheduler.(*scheduler.CronScheduler); ok {
-						if err := cronScheduler.RemoveByCommand(originalCmd); err != nil {
-							log.Printf("Warning: Failed to remove unmarked duplicate: %v", err)
-						} else {
-							log.Printf("Removed unmarked duplicate job for '%s'", manifest.Metadata.Name)
-						}
-					}
+			// Job doesn't exist in scheduler
+			// Check if this is a discovered job (read-only)
+			isDiscovered := false
+			if manifest.Metadata.Labels != nil {
+				if source, ok := manifest.Metadata.Labels["source"]; ok && source == "discovered" {
+					isDiscovered = true
 				}
+			}
+			
+			if isDiscovered {
+				// Discovered jobs are read-only - if they don't exist, they were removed externally
+				// Don't recreate them. Log for awareness.
+				log.Printf("Reconciliation: Discovered job '%s' (ID: %s) not found in scheduler - it was removed externally. Not recreating.", manifest.Metadata.Name, jobID)
+				// Note: The job will be removed from Git in the cleanup phase below
+			} else {
+				// Crontopus-managed job doesn't exist, add it
+				log.Printf("Reconciliation: Adding new job '%s' (ID: %s)", manifest.Metadata.Name, jobID)
+				if err := r.scheduler.Add(jobEntry); err != nil {
+					log.Printf("Error adding job '%s': %v", manifest.Metadata.Name, err)
+					continue
+				}
+				changeCount++
 			}
 		}
 	}
