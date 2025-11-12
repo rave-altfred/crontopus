@@ -73,20 +73,6 @@ export const MainLayout = () => {
 
               <li className="pt-4">
                 <Link
-                  to="/groups"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                    isActive('/groups')
-                      ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  <FolderOpen size={20} />
-                  <span className="font-medium">Groups</span>
-                </Link>
-              </li>
-
-              <li>
-                <Link
                   to="/jobs"
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive('/jobs')
@@ -96,6 +82,20 @@ export const MainLayout = () => {
                 >
                   <FileText size={20} />
                   <span className="font-medium">Jobs</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to="/groups"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    isActive('/groups')
+                      ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  <FolderOpen size={20} />
+                  <span className="font-medium">Job Groups</span>
                 </Link>
               </li>
 

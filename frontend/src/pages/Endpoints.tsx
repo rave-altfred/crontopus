@@ -253,11 +253,11 @@ export const Endpoints = () => {
                                       <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{ji.job_name}</td>
                                       <td className="px-4 py-2 text-sm">
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                          ji.source === 'crontopus'
+                                          ji.source === 'crontopus' || ji.source === 'git'
                                             ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                                             : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
                                         }`}>
-                                          {ji.source}
+                                          {ji.source === 'git' ? 'crontopus' : ji.source}
                                         </span>
                                       </td>
                                       <td className="px-4 py-2 text-sm">

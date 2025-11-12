@@ -23,7 +23,15 @@ export function Groups() {
       setLoading(true);
       setError(null);
       const data = await namespacesApi.list();
-      setNamespaces(data);
+      // Sort: discovered first, then default, then alphabetically
+      const sorted = data.sort((a, b) => {
+        if (a.name === 'discovered') return -1;
+        if (b.name === 'discovered') return 1;
+        if (a.name === 'default') return -1;
+        if (b.name === 'default') return 1;
+        return a.name.localeCompare(b.name);
+      });
+      setNamespaces(sorted);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load groups');
     } finally {
@@ -77,9 +85,9 @@ export function Groups() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Groups</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Job Groups</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Organize your jobs into groups
+            Organize your jobs into logical groups
           </p>
         </div>
         <button
@@ -87,7 +95,7 @@ export function Groups() {
           className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
         >
           <Plus className="w-5 h-5 mr-2" />
-          Create Group
+          Create Job Group
         </button>
       </div>
 
@@ -104,20 +112,26 @@ export function Groups() {
         {namespaces.length === 0 ? (
           <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-gray-400">No groups yet</p>
+            <p className="text-gray-500 dark:text-gray-400">No job groups yet</p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-              Create your first group to organize jobs
+              Create your first job group to organize jobs
             </p>
           </div>
         ) : (
           namespaces.map((ns) => (
             <div
               key={ns.name}
-              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+              className={`bg-white dark:bg-gray-800 rounded-lg p-4 transition-colors ${
+                ns.name === 'discovered'
+                  ? 'border-2 border-purple-300 dark:border-purple-700 hover:border-purple-400 dark:hover:border-purple-600'
+                  : 'border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+              }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3 flex-1">
-                  {ns.is_system ? (
+                  {ns.name === 'discovered' ? (
+                    <FolderOpen className="w-6 h-6 text-purple-500 dark:text-purple-400" />
+                  ) : ns.is_system ? (
                     <FolderOpen className="w-6 h-6 text-blue-500" />
                   ) : (
                     <Folder className="w-6 h-6 text-gray-500 dark:text-gray-400" />
@@ -125,19 +139,31 @@ export function Groups() {
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {ns.name}
+                        {ns.name === 'discovered' && '🔍 '}{ns.name}
                       </h3>
                       {ns.is_system && (
-                        <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-medium rounded">
-                          System
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded ${
+                          ns.name === 'discovered'
+                            ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300'
+                            : 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                        }`}>
+                          {ns.name === 'discovered' ? 'Auto-discovered' : 'System'}
                         </span>
                       )}
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                       {ns.job_count} {ns.job_count === 1 ? 'job' : 'jobs'}
-                      {ns.name === 'discovered' && ' · Auto-populated by agent discovery'}
-                      {ns.name === 'default' && ' · Default group for new jobs'}
                     </p>
+                    {ns.name === 'discovered' && (
+                      <p className="text-sm text-purple-600 dark:text-purple-400 mt-1 font-medium">
+                        Jobs found by agents on endpoints that weren't created in Crontopus
+                      </p>
+                    )}
+                    {ns.name === 'default' && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Default group for new jobs
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -169,13 +195,13 @@ export function Groups() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              Create New Group
+              Create New Job Group
             </h2>
             
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Group Name
+                  Job Group Name
                 </label>
                 <input
                   type="text"
