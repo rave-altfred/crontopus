@@ -169,7 +169,7 @@ export const JobDetail = () => {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Environment</h4>
+          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Group</h4>
           <span
             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
               manifest._meta?.namespace === 'production'

@@ -2,16 +2,26 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { jobsApi, type JobListItem, type JobEndpoint } from '../api/jobs';
+import { namespacesApi, type Namespace } from '../api/namespaces';
 
 export const Jobs = () => {
   const [jobs, setJobs] = useState<JobListItem[]>([]);
+  const [namespaces, setNamespaces] = useState<Namespace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'production' | 'staging' | 'discovered'>('all');
+  const [filter, setFilter] = useState<string>('all');
   const [repository, setRepository] = useState<string>('');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [endpointsByJob, setEndpointsByJob] = useState<Record<string, JobEndpoint[]>>({});
   const [loadingEndpoints, setLoadingEndpoints] = useState<Record<string, boolean>>({});
+
+  // Fetch namespaces on mount
+  useEffect(() => {
+    namespacesApi
+      .list()
+      .then((data) => setNamespaces(data))
+      .catch((err) => console.error('Failed to load namespaces:', err));
+  }, []);
 
   useEffect(() => {
     const namespace = filter === 'all' ? undefined : filter;
@@ -72,7 +82,7 @@ export const Jobs = () => {
         </div>
       </div>
 
-      <div className="flex space-x-2">
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setFilter('all')}
           className={`px-4 py-2 rounded-md text-sm font-medium ${
@@ -83,36 +93,22 @@ export const Jobs = () => {
         >
           All
         </button>
-        <button
-          onClick={() => setFilter('production')}
-          className={`px-4 py-2 rounded-md text-sm font-medium ${
-            filter === 'production'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
-        >
-          Production
-        </button>
-        <button
-          onClick={() => setFilter('staging')}
-          className={`px-4 py-2 rounded-md text-sm font-medium ${
-            filter === 'staging'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
-        >
-          Staging
-        </button>
-        <button
-          onClick={() => setFilter('discovered')}
-          className={`px-4 py-2 rounded-md text-sm font-medium ${
-            filter === 'discovered'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
-        >
-          🔍 Discovered
-        </button>
+        {namespaces.map((ns) => (
+          <button
+            key={ns.name}
+            onClick={() => setFilter(ns.name)}
+            className={`px-4 py-2 rounded-md text-sm font-medium ${
+              filter === ns.name
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+            }`}
+          >
+            {ns.name === 'discovered' && '🔍 '}{ns.name}
+            {ns.job_count > 0 && (
+              <span className="ml-1 text-xs opacity-75">({ns.job_count})</span>
+            )}
+          </button>
+        ))}
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
@@ -124,7 +120,7 @@ export const Jobs = () => {
                 Job Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Environment
+                Group
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Path
