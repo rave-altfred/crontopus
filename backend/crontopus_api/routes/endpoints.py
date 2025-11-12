@@ -38,6 +38,7 @@ from crontopus_api.security.enrollment_auth import get_user_for_enrollment
 from crontopus_api.security.password import get_password_hash
 
 router = APIRouter(prefix="/endpoints", tags=["endpoints"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/enroll", response_model=AgentEnrollResponse, status_code=status.HTTP_201_CREATED)
