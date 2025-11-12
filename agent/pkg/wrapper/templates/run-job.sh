@@ -1,6 +1,6 @@
 #!/bin/sh
 # Crontopus Job Runner
-# Usage: run-job <job-uuid>
+# Usage: run-job CRONTOPUS:<job-uuid>
 # 
 # This script reads job configuration from ~/.crontopus/jobs/<uuid>.yaml
 # and executes it with automatic check-in to the Crontopus backend.
@@ -10,11 +10,12 @@ set -e
 # Validate input
 if [ -z "$1" ]; then
     echo "Error: Job UUID required" >&2
-    echo "Usage: $0 <job-uuid>" >&2
+    echo "Usage: $0 CRONTOPUS:<job-uuid>" >&2
     exit 1
 fi
 
-JOB_UUID="$1"
+# Strip CRONTOPUS: prefix if present
+JOB_UUID="${1#CRONTOPUS:}"
 JOB_CONFIG="$HOME/.crontopus/jobs/${JOB_UUID}.yaml"
 
 # Check if config exists

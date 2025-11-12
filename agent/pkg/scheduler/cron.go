@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -36,7 +37,7 @@ func (s *CronScheduler) Add(job JobEntry) error {
 	newEntries := []string{}
 	for _, entry := range entries {
 		// Skip empty lines and comments
-		if strings.TrimSpace(entry) == "" || (strings.HasPrefix(strings.TrimSpace(entry), "#") && !strings.Contains(entry, s.marker)) {
+		if strings.TrimSpace(entry) == "" || (strings.HasPrefix(strings.TrimSpace(entry), "#") && !strings.Contains(strings.TrimSpace(entry), "CRONTOPUS:")) {
 			newEntries = append(newEntries, entry)
 			continue
 		}
@@ -45,7 +46,6 @@ func (s *CronScheduler) Add(job JobEntry) error {
 		existingJob := s.parseCronEntry(entry)
 		if existingJob != nil {
 			// Only check UUID collision - UUID is the unique identifier
-			// Multiple jobs can have the same name (even in same namespace)
 			if job.ID != "" && existingJob.ID != "" && existingJob.ID == job.ID {
 				return fmt.Errorf("job with ID %s already exists", job.ID)
 			}
@@ -237,18 +237,19 @@ func (s *CronScheduler) RemoveByCommand(command string) error {
 			continue
 		}
 		
-		// Check if this is an unmarked job matching the command
-		if !strings.Contains(entry, s.marker) {
-			// Extract command from cron entry
-			fields := strings.Fields(entry)
-			if len(fields) >= 6 {
-				entryCommand := strings.Join(fields[5:], " ")
-				if entryCommand == command {
-					found = true
-					continue // Skip this entry
-				}
+	// Check if this is an unmarked job matching the command
+	// Unmarked jobs don't contain CRONTOPUS:
+	if !strings.Contains(entry, "CRONTOPUS:") {
+		// Extract command from cron entry
+		fields := strings.Fields(entry)
+		if len(fields) >= 6 {
+			entryCommand := strings.Join(fields[5:], " ")
+			if entryCommand == command {
+				found = true
+				continue // Skip this entry
 			}
 		}
+	}
 		newEntries = append(newEntries, entry)
 	}
 
@@ -327,55 +328,23 @@ func (s *CronScheduler) writeCrontab(entries []string) error {
 }
 
 // formatCronEntry formats a JobEntry as a cron line
-// Format: schedule command # CRONTOPUS:job-uuid (new) or # CRONTOPUS:namespace:job-name (legacy)
+// Format: schedule command (where command includes CRONTOPUS:uuid)
 func (s *CronScheduler) formatCronEntry(job JobEntry) string {
-	// Use UUID-based marker (new format)
-	if job.ID != "" {
-		return fmt.Sprintf("%s %s %s%s", job.Schedule, job.Command, s.marker, job.ID)
-	}
-	
-	// Fallback to old format (backward compatibility during migration)
-	namespace := job.Namespace
-	if namespace == "" {
-		namespace = "default"
-	}
-	return fmt.Sprintf("%s %s %s%s:%s", job.Schedule, job.Command, s.marker, namespace, job.Name)
+	// Command already contains CRONTOPUS:uuid marker (from WrapCommandWithID)
+	return fmt.Sprintf("%s %s", job.Schedule, job.Command)
 }
 
 // parseCronEntry parses a cron line into a JobEntry
-// Expected format: schedule command # CRONTOPUS:job-uuid (new) or # CRONTOPUS:namespace:job-name (legacy)
+// Expected format: schedule command (where command contains CRONTOPUS:uuid)
 func (s *CronScheduler) parseCronEntry(line string) *JobEntry {
-	// Only parse Crontopus-managed entries
-	if !strings.Contains(line, s.marker) {
+	// Only parse Crontopus-managed entries (command contains CRONTOPUS:)
+	if !strings.Contains(line, "CRONTOPUS:") {
 		return nil
 	}
-
-	// Extract identifier from marker
-	parts := strings.Split(line, s.marker)
-	if len(parts) != 2 {
-		return nil
-	}
-
-	// Parse identifier (could be UUID or namespace:job-name)
-	identifier := strings.TrimSpace(parts[1])
-	identifierParts := strings.SplitN(identifier, ":", 2)
-	
-	var id, namespace, name string
-	if len(identifierParts) == 1 {
-		// New format: UUID only
-		id = identifier
-		// Name and namespace will be extracted from command
-	} else if len(identifierParts) == 2 {
-		// Legacy format: namespace:job-name
-		namespace = identifierParts[0]
-		name = identifierParts[1]
-	}
-	
-	cronPart := strings.TrimSpace(parts[0])
 
 	// Parse schedule and command
 	// Format: "* * * * * command"
-	fields := strings.Fields(cronPart)
+	fields := strings.Fields(line)
 	if len(fields) < 6 {
 		return nil
 	}
@@ -383,12 +352,42 @@ func (s *CronScheduler) parseCronEntry(line string) *JobEntry {
 	schedule := strings.Join(fields[0:5], " ")
 	command := strings.Join(fields[5:], " ")
 	
-	// For UUID-based jobs, extract name and namespace from checkin command
-	if id != "" && name == "" {
-		name = extractJobNameFromCheckin(command)
-		namespace = extractNamespaceFromCheckin(command)
-		if namespace == "" {
-			namespace = "default"
+	// Extract UUID from command (format: /path/to/run-job CRONTOPUS:uuid)
+	var id string
+	if idx := strings.Index(command, "CRONTOPUS:"); idx != -1 {
+		// Extract UUID after CRONTOPUS:
+		uuidPart := command[idx+len("CRONTOPUS:"):]
+		// UUID is the first token after CRONTOPUS:
+		uuidFields := strings.Fields(uuidPart)
+		if len(uuidFields) > 0 {
+			id = uuidFields[0]
+		}
+	}
+	
+	if id == "" {
+		return nil
+	}
+
+	// Extract name and namespace from job config file
+	// For elegant format, we need to read the config file
+	// But for listing purposes, we can use placeholder values
+	// The reconciler will have the correct values from Git
+	name := id // Use UUID as name fallback
+	namespace := "default"
+	
+	// Try to read from job config if available
+	homeDir, err := os.UserHomeDir()
+	if err == nil {
+		configPath := filepath.Join(homeDir, ".crontopus", "jobs", id+".yaml")
+		if data, err := os.ReadFile(configPath); err == nil {
+			// Parse YAML manually (simple key: value format)
+			for _, line := range strings.Split(string(data), "\n") {
+				if strings.HasPrefix(line, "job_name:") {
+					name = strings.Trim(strings.TrimPrefix(line, "job_name:"), ` "'`)
+				} else if strings.HasPrefix(line, "namespace:") {
+					namespace = strings.Trim(strings.TrimPrefix(line, "namespace:"), ` "'`)
+				}
+			}
 		}
 	}
 

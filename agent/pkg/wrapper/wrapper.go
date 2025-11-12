@@ -74,16 +74,16 @@ command: "%s"
 }
 
 // WrapCommandWithID wraps a job using the elegant format with job config file
-// Returns: ~/.crontopus/bin/run-job <uuid>
+// Returns: ~/.crontopus/bin/run-job CRONTOPUS:<uuid>
 func WrapCommandWithID(jobID string) string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		// Fallback to relative path
-		return fmt.Sprintf("~/.crontopus/bin/run-job %s", jobID)
+		return fmt.Sprintf("~/.crontopus/bin/run-job CRONTOPUS:%s", jobID)
 	}
 	
 	runJobPath := filepath.Join(homeDir, ".crontopus", "bin", "run-job")
-	return fmt.Sprintf("%s %s", runJobPath, jobID)
+	return fmt.Sprintf("%s CRONTOPUS:%s", runJobPath, jobID)
 }
 
 // WrapCommand wraps a job command with check-in callbacks
