@@ -104,83 +104,6 @@ async def create_checkin(
     return CheckinResponse(run_id=job_run.id)
 
 
-@router.get("/runs", response_model=JobRunListResponse)
-async def list_runs(
-    limit: int = Query(100, ge=1, le=1000, description="Maximum number of runs to return"),
-    job_name: Optional[str] = Query(None, description="Filter by job name"),
-    namespace: Optional[str] = Query(None, description="Filter by namespace"),
-    endpoint_id: Optional[int] = Query(None, description="Filter by endpoint ID"),
-    status: Optional[JobStatus] = Query(None, description="Filter by status"),
-    days: Optional[int] = Query(None, ge=1, le=365, description="Days to look back"),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """
-    List job run history for the current tenant.
-    
-    Supports filtering by job name, namespace, endpoint, status, and time window.
-    Returns up to 'limit' most recent runs (default 100).
-    """
-    # Base query with tenant isolation
-    query = db.query(JobRun).filter(JobRun.tenant_id == current_user.tenant_id)
-    
-    # Apply time filter if specified
-    if days:
-        since = datetime.now(timezone.utc) - timedelta(days=days)
-        query = query.filter(JobRun.started_at >= since)
-    
-    # Apply filters
-    if job_name:
-        query = query.filter(JobRun.job_name.ilike(f"%{job_name}%"))
-    
-    if namespace:
-        query = query.filter(JobRun.namespace == namespace)
-    
-    if endpoint_id:
-        query = query.filter(JobRun.endpoint_id == endpoint_id)
-    
-    if status:
-        query = query.filter(JobRun.status == status)
-    
-    # Get total count
-    total = query.count()
-    
-    # Apply limit (no pagination, just top N results)
-    runs = query.order_by(JobRun.started_at.desc()).limit(limit).all()
-    
-    return JobRunListResponse(
-        runs=runs,
-        total=total,
-        page=1,
-        page_size=limit
-    )
-
-
-@router.get("/runs/{run_id}", response_model=JobRunResponse)
-async def get_run(
-    run_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Get details of a specific job run.
-    
-    Enforces tenant isolation.
-    """
-    run = db.query(JobRun).filter(
-        JobRun.id == run_id,
-        JobRun.tenant_id == current_user.tenant_id
-    ).first()
-    
-    if not run:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Run not found"
-        )
-    
-    return run
-
-
 # Response models for aggregated views
 class JobAggregation(BaseModel):
     job_name: str
@@ -388,3 +311,80 @@ async def runs_by_endpoint(
         endpoints=endpoint_aggregations,
         total=len(endpoint_aggregations)
     )
+
+
+@router.get("/runs", response_model=JobRunListResponse)
+async def list_runs(
+    limit: int = Query(100, ge=1, le=1000, description="Maximum number of runs to return"),
+    job_name: Optional[str] = Query(None, description="Filter by job name"),
+    namespace: Optional[str] = Query(None, description="Filter by namespace"),
+    endpoint_id: Optional[int] = Query(None, description="Filter by endpoint ID"),
+    status: Optional[JobStatus] = Query(None, description="Filter by status"),
+    days: Optional[int] = Query(None, ge=1, le=365, description="Days to look back"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    List job run history for the current tenant.
+    
+    Supports filtering by job name, namespace, endpoint, status, and time window.
+    Returns up to 'limit' most recent runs (default 100).
+    """
+    # Base query with tenant isolation
+    query = db.query(JobRun).filter(JobRun.tenant_id == current_user.tenant_id)
+    
+    # Apply time filter if specified
+    if days:
+        since = datetime.now(timezone.utc) - timedelta(days=days)
+        query = query.filter(JobRun.started_at >= since)
+    
+    # Apply filters
+    if job_name:
+        query = query.filter(JobRun.job_name.ilike(f"%{job_name}%"))
+    
+    if namespace:
+        query = query.filter(JobRun.namespace == namespace)
+    
+    if endpoint_id:
+        query = query.filter(JobRun.endpoint_id == endpoint_id)
+    
+    if status:
+        query = query.filter(JobRun.status == status)
+    
+    # Get total count
+    total = query.count()
+    
+    # Apply limit (no pagination, just top N results)
+    runs = query.order_by(JobRun.started_at.desc()).limit(limit).all()
+    
+    return JobRunListResponse(
+        runs=runs,
+        total=total,
+        page=1,
+        page_size=limit
+    )
+
+
+@router.get("/runs/{run_id}", response_model=JobRunResponse)
+async def get_run(
+    run_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get details of a specific job run.
+    
+    Enforces tenant isolation.
+    """
+    run = db.query(JobRun).filter(
+        JobRun.id == run_id,
+        JobRun.tenant_id == current_user.tenant_id
+    ).first()
+    
+    if not run:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Run not found"
+        )
+    
+    return run
