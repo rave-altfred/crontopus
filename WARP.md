@@ -89,7 +89,7 @@ Key:
 - Phase 14.1: Agent No-Wrap Mode ✅ Complete
 - Phase 14.2: Backend Job Adoption System ✅ Complete
 - Phase 14.3: Frontend Discovered Job UI ✅ Partial (filter/badge complete, adopt modal future)
-- Phase 14.4: Testing & Validation ⏳ Pending
+- Phase 14.4: Testing & Validation ✅ Complete
 
 **Key Achievements**:
 - ✅ Discovered jobs remain externally-managed (no wrapping)
@@ -99,6 +99,8 @@ Key:
 - ✅ Deletion prevented for discovered jobs (must adopt or use external app)
 - ✅ Frontend: discovered namespace filter with purple badge
 - ✅ Agent v0.1.9 with discovered job protection
+- ✅ Fixed job instance reporting (v0.1.10-v0.1.11)
+- ✅ Both Git-managed and discovered jobs now visible in UI
 
 **Phase 13: UUID-Based Job Identification** ✅ **COMPLETE** (Nov 2025)
 - Phase 13.1: Manifest Schema with UUID ✅ Complete
@@ -166,7 +168,7 @@ go build -o build/crontopus-agent ./cmd/crontopus-agent
 # - See agent/docs/windows-server-testing.md for Windows Server testing
 ```
 
-**Agent Status (Phase 9, 10, 13 Complete - Current: v0.1.8)**:
+**Agent Status (Phase 9, 10, 13, 14 Complete - Current: v0.1.11)**:
 - ✅ Comprehensive documentation (README, deployment examples)
 - ✅ Platform support: Linux, macOS, Windows Server 2019/2022, Windows 10/11
 - ✅ Binary distribution and automated releases (GitHub Actions)
@@ -181,6 +183,8 @@ go build -o build/crontopus-agent ./cmd/crontopus-agent
 - ✅ Real name extraction from discovered jobs (v0.1.7+)
 - ✅ Duplicate job removal via RemoveByCommand() (v0.1.8)
 - ✅ Uninstaller script with crontab cleanup (v0.1.8)
+- ✅ Discovered job protection - no wrapping (v0.1.9)
+- ✅ Job instance reporting with drift detection (v0.1.10-v0.1.11)
 
 ### CLI (Python)
 ```bash

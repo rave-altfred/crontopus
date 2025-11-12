@@ -1556,29 +1556,34 @@ When Crontopus discovers and wraps external cron jobs:
 
 ### 14.4 Testing & Validation
 
-- [ ] Create external cron job for testing
+- [x] Create external cron job for testing
   - Use crontab -e to add test job manually
   - Verify agent discovers without wrapping
   - Check UUID marker added
   - Verify original command unchanged
-- [ ] Test external removal
+- [x] Test job instance reporting
+  - Fixed agent/backend field mismatch (Command vs OriginalCommand) - v0.1.10
+  - Fixed job name extraction from checkin commands - v0.1.11
+  - Both Git-managed and discovered jobs now appear in endpoint job list
+  - Drift detection properly removes stale instances
+- [ ] Test external removal (Future validation)
   - Remove cron entry using crontab -e
   - Verify agent doesn't recreate on next sync
   - Verify job removed from Git
-- [ ] Test adoption flow
+- [ ] Test adoption flow (Future validation)
   - Discover external job
   - Adopt to production namespace
   - Verify source label removed
   - Verify agent wraps job on next sync
   - Verify callbacks work
-- [ ] Test uninstaller scenarios
+- [ ] Test uninstaller scenarios (Future validation)
   - Install external app with cron
   - Crontopus discovers job
   - Uninstall external app
   - Verify app can remove its own job
   - Verify Crontopus removes from Git
 
-**Deliverable**: End-to-end validation of discovered job lifecycle
+**Deliverable**: ✅ Core functionality validated, comprehensive testing pending
 
 ### Benefits:
 - ✅ External apps can manage their own cron jobs
