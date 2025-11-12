@@ -76,8 +76,17 @@ func (r *Reconciler) Reconcile() (int, error) {
 	for jobID, manifest := range desiredJobs {
 		command := manifest.GetFullCommand()
 		
-		// Wrap command with callback injection
-		if wrapper.ShouldWrap(command) && r.backendURL != "" {
+		// Check if this is a discovered job (externally managed)
+		isDiscovered := false
+		if manifest.Metadata.Labels != nil {
+			if source, ok := manifest.Metadata.Labels["source"]; ok && source == "discovered" {
+				isDiscovered = true
+			}
+		}
+		
+		// Only wrap Crontopus-managed jobs, not discovered jobs
+		// Discovered jobs keep their original commands so external apps can manage them
+		if !isDiscovered && wrapper.ShouldWrap(command) && r.backendURL != "" {
 			// Use namespace from manifest (extracted from directory structure)
 			namespace := manifest.Namespace
 			if namespace == "" {
@@ -85,6 +94,8 @@ func (r *Reconciler) Reconcile() (int, error) {
 			}
 			command = wrapper.WrapCommand(command, r.backendURL, r.endpointToken, r.endpointID, manifest.Metadata.Name, namespace)
 			log.Printf("Wrapped command for job '%s' (ID: %s) in namespace '%s' with callback injection", manifest.Metadata.Name, jobID, namespace)
+		} else if isDiscovered {
+			log.Printf("Skipping wrap for discovered job '%s' (ID: %s) - keeping original command for external management", manifest.Metadata.Name, jobID)
 		}
 		
 		jobEntry := scheduler.JobEntry{

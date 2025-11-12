@@ -259,14 +259,30 @@ async def delete_job(
 ):
     """
     Delete a job by removing its manifest from Git.
+    Discovered jobs cannot be deleted - they must be managed by their external application.
     """
     try:
         # Construct file path
         file_path = f"{namespace}/{job_name}.yaml"
         
-        # Delete from Git
-        # Use tenant-specific repository for isolation
+        # Fetch current manifest to check if it's discovered
         repo_name = f"job-manifests-{current_user.tenant_id}"
+        manifest_data = await forgejo.get_job_manifest(
+            owner="crontopus",
+            repo=repo_name,
+            file_path=file_path
+        )
+        
+        if manifest_data:
+            # Check if job is discovered
+            labels = manifest_data.get("metadata", {}).get("labels", {})
+            if labels.get("source") == "discovered":
+                raise HTTPException(
+                    status_code=403,
+                    detail="Cannot delete discovered jobs. Remove this job using the application that created it, or adopt it first."
+                )
+        
+        # Delete from Git
         result = await forgejo.delete_file(
             owner="crontopus",
             repo=repo_name,
@@ -282,6 +298,99 @@ async def delete_job(
             "commit": result.get("commit"),
         }
         
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{namespace}/{job_name}/adopt")
+async def adopt_job(
+    namespace: str,
+    job_name: str,
+    target_namespace: str = Body(..., embed=True, description="Target namespace (production/staging)"),
+    forgejo: ForgejoClient = Depends(get_forgejo_client),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Adopt a discovered job by moving it to a managed namespace.
+    
+    This removes the 'discovered' label and moves the job from 'discovered' to target namespace.
+    After adoption, Crontopus will fully manage the job (wrapping, monitoring, etc).
+    """
+    try:
+        # Validate source is discovered namespace
+        if namespace != "discovered":
+            raise HTTPException(
+                status_code=400,
+                detail="Only jobs in 'discovered' namespace can be adopted"
+            )
+        
+        # Fetch current manifest
+        repo_name = f"job-manifests-{current_user.tenant_id}"
+        file_path = f"{namespace}/{job_name}.yaml"
+        manifest_data = await forgejo.get_job_manifest(
+            owner="crontopus",
+            repo=repo_name,
+            file_path=file_path
+        )
+        
+        if not manifest_data:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        # Verify it's actually a discovered job
+        labels = manifest_data.get("metadata", {}).get("labels", {})
+        if labels.get("source") != "discovered":
+            raise HTTPException(
+                status_code=400,
+                detail="This job is not marked as discovered"
+            )
+        
+        # Remove _meta section
+        manifest_data.pop('_meta', None)
+        
+        # Update metadata: change namespace and remove discovered label
+        manifest_data["metadata"]["namespace"] = target_namespace
+        if "labels" in manifest_data["metadata"]:
+            manifest_data["metadata"]["labels"].pop("source", None)
+            manifest_data["metadata"]["labels"].pop("endpoint_id", None)
+            # If no labels left, remove the labels key
+            if not manifest_data["metadata"]["labels"]:
+                manifest_data["metadata"].pop("labels")
+        
+        # Convert to YAML
+        yaml_content = yaml.dump(manifest_data, sort_keys=False, default_flow_style=False)
+        
+        # Create new file in target namespace
+        new_file_path = f"{target_namespace}/{job_name}.yaml"
+        await forgejo.create_or_update_file(
+            owner="crontopus",
+            repo=repo_name,
+            file_path=new_file_path,
+            content=yaml_content,
+            message=f"Adopt job {job_name} from discovered to {target_namespace}",
+            author_name=current_user.username,
+            author_email=current_user.email or f"{current_user.username}@crontopus.io",
+        )
+        
+        # Delete old file from discovered namespace
+        await forgejo.delete_file(
+            owner="crontopus",
+            repo=repo_name,
+            file_path=file_path,
+            message=f"Remove {job_name} from discovered (adopted to {target_namespace})",
+            author_name=current_user.username,
+            author_email=current_user.email or f"{current_user.username}@crontopus.io",
+        )
+        
+        return {
+            "message": f"Job adopted successfully and moved to {target_namespace}",
+            "old_path": file_path,
+            "new_path": new_file_path,
+        }
+        
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
