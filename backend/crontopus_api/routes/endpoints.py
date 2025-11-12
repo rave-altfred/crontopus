@@ -449,10 +449,8 @@ async def report_job_instances(
     instances_updated = 0
     reported_job_ids = []
     
-    print(f"[DEBUG] Endpoint {endpoint_id} reporting {len(instances_data.instances)} job instances", flush=True)
-    for i, instance_report in enumerate(instances_data.instances):
-        print(f"[DEBUG]   Instance {i+1}: job_name='{instance_report.job_name}', namespace='{instance_report.namespace}', source='{instance_report.source}'", flush=True)
-        # Find or create job instance
+    # Find or create job instance
+    for instance_report in instances_data.instances:
         job_instance = db.query(JobInstance).filter(
             JobInstance.endpoint_id == endpoint_id,
             JobInstance.job_name == instance_report.job_name,
@@ -485,7 +483,6 @@ async def report_job_instances(
     
     # Delete jobs not reported (drift detection)
     # Remove job instances that are no longer on the endpoint
-    print(f"[DEBUG] Drift detection: {len(reported_job_ids)} instances reported: {reported_job_ids}", flush=True)
     if reported_job_ids:
         stale_instances = db.query(JobInstance).filter(
             JobInstance.endpoint_id == endpoint_id,
@@ -497,9 +494,7 @@ async def report_job_instances(
             JobInstance.endpoint_id == endpoint_id
         ).all()
     
-    print(f"[DEBUG] Drift detection: Removing {len(stale_instances)} stale instances", flush=True)
     for stale in stale_instances:
-        print(f"[DEBUG]   Removing stale: id={stale.id}, job_name='{stale.job_name}', namespace='{stale.namespace}'", flush=True)
         db.delete(stale)
     
     db.commit()

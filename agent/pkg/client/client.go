@@ -167,11 +167,11 @@ func (c *Client) DiscoverJobs(endpointID int, jobs []DiscoveredJob) error {
 
 // JobInstance represents a job instance on this endpoint
 type JobInstance struct {
-	JobName   string `json:"job_name"`
-	Namespace string `json:"namespace"`
-	Status    string `json:"status"`  // scheduled, running, paused, error
-	Source    string `json:"source"`  // git, discovered
-	Command   string `json:"command"` // Original command
+	JobName         string `json:"job_name"`
+	Namespace       string `json:"namespace"`
+	Status          string `json:"status"`           // scheduled, running, paused, error
+	Source          string `json:"source"`           // git, discovered
+	OriginalCommand string `json:"original_command"` // Original command before wrapping
 }
 
 // ReportJobInstancesRequest represents job instances to report

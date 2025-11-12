@@ -285,11 +285,11 @@ func (r *Reconciler) ReportJobInstances(apiClient *client.Client) error {
 		}
 		
 		instances = append(instances, client.JobInstance{
-			JobName:   job.Name,
-			Namespace: namespace,
-			Status:    "scheduled", // Assume scheduled if in scheduler
-			Source:    source,
-			Command:   job.Command,
+			JobName:         job.Name,
+			Namespace:       namespace,
+			Status:          "scheduled", // Assume scheduled if in scheduler
+			Source:          source,
+			OriginalCommand: job.Command,
 		})
 	}
 	
