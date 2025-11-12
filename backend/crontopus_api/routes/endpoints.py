@@ -448,7 +448,9 @@ async def report_job_instances(
     instances_updated = 0
     reported_job_ids = []
     
-    for instance_report in instances_data.instances:
+    logger.info(f"Endpoint {endpoint_id} reporting {len(instances_data.instances)} job instances")
+    for i, instance_report in enumerate(instances_data.instances):
+        logger.info(f"  Instance {i+1}: job_name='{instance_report.job_name}', namespace='{instance_report.namespace}', source='{instance_report.source}'")
         # Find or create job instance
         job_instance = db.query(JobInstance).filter(
             JobInstance.endpoint_id == endpoint_id,
@@ -482,6 +484,7 @@ async def report_job_instances(
     
     # Delete jobs not reported (drift detection)
     # Remove job instances that are no longer on the endpoint
+    logger.info(f"Drift detection: {len(reported_job_ids)} instances reported")
     if reported_job_ids:
         stale_instances = db.query(JobInstance).filter(
             JobInstance.endpoint_id == endpoint_id,
@@ -493,7 +496,9 @@ async def report_job_instances(
             JobInstance.endpoint_id == endpoint_id
         ).all()
     
+    logger.info(f"Drift detection: Removing {len(stale_instances)} stale instances")
     for stale in stale_instances:
+        logger.info(f"  Removing stale: id={stale.id}, job_name='{stale.job_name}', namespace='{stale.namespace}'")
         db.delete(stale)
     
     db.commit()
