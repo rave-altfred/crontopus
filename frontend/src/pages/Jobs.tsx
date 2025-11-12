@@ -174,6 +174,11 @@ export const Jobs = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {job.name.replace(/\.(yaml|yml)$/, '')}
+                      {endpointsByJob[jobKey] && (
+                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                          {(endpointsByJob[jobKey] || []).length} endpoint{(endpointsByJob[jobKey] || []).length === 1 ? '' : 's'}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -219,7 +224,9 @@ export const Jobs = () => {
                             <div className="text-sm text-gray-500 dark:text-gray-400">Loading endpoints...</div>
                           ) : (
                             <div className="space-y-2">
-                              <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">Endpoints running this job</div>
+                              <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                Endpoints running this job ({(endpointsByJob[jobKey] || []).length})
+                              </div>
                               <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                   <thead className="bg-gray-100 dark:bg-gray-800">

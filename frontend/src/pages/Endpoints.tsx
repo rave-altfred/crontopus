@@ -250,7 +250,15 @@ export const Endpoints = () => {
                                   {(jobsByEndpoint[endpoint.id] || []).map((ji: JobInstance) => (
                                     <tr key={ji.id}>
                                       <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{ji.namespace}</td>
-                                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{ji.job_name}</td>
+                                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+                                        <Link
+                                          to={`/jobs/${ji.namespace}/${ji.job_name}`}
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="text-blue-600 dark:text-blue-400 hover:underline"
+                                        >
+                                          {ji.job_name}
+                                        </Link>
+                                      </td>
                                       <td className="px-4 py-2 text-sm">
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                           ji.source === 'crontopus' || ji.source === 'git'

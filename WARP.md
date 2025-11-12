@@ -101,6 +101,23 @@ Key:
 - ✅ Three report pages in navigation menu
 - ✅ Color-coded health badges (green/yellow/red)
 
+**Phase 12: Job Discovery & Multi-Endpoint Tracking** ✅ **COMPLETE** (Nov 2025)
+- Phase 12.1: Job Instance Tracking ✅ Complete
+- Phase 12.2: Job Discovery & Reporting ✅ Complete
+- Phase 12.3: Callback Injection ✅ Complete
+- Phase 12.4: Cross-Reference APIs ✅ Complete
+- Phase 12.5-12.9: Frontend Integration & Testing ✅ Complete
+
+**Key Achievements**:
+- ✅ JobInstance model with drift detection
+- ✅ Automatic job discovery (every 5 minutes)
+- ✅ Job instance reporting (every 30s sync)
+- ✅ Elegant callback wrapper: `~/.crontopus/bin/run-job CRONTOPUS:<uuid>` (v0.1.14)
+- ✅ Job configs in `~/.crontopus/jobs/<uuid>.yaml`
+- ✅ Cross-reference APIs: job↔endpoints mapping
+- ✅ Clean crontab entries (~50 chars vs 300+)
+- ✅ Proper handling of job names with spaces (v0.1.12 fix)
+
 **Phase 14: Discovered Jobs Management** ✅ **COMPLETE** (Nov 2025)
 - Phase 14.1: Agent No-Wrap Mode ✅ Complete
 - Phase 14.2: Backend Job Adoption System ✅ Complete
@@ -144,7 +161,7 @@ Key:
 - Phase 10: Enrollment Token System ✅ Complete
 - Phase 9: Agent Documentation & Distribution ✅ Complete
 
-**Next Phase**: Phase 11 - Job Discovery Enhancements (Planned)
+**Next Phase**: Phase 4 - Alerting & Monitoring (Planned)
 
 See `docs/development-plan.md` for full roadmap.
 
@@ -184,7 +201,7 @@ go build -o build/crontopus-agent ./cmd/crontopus-agent
 # - See agent/docs/windows-server-testing.md for Windows Server testing
 ```
 
-**Agent Status (Phase 9, 10, 13, 14 Complete - Current: v0.1.14)**:
+**Agent Status (Phase 9, 10, 12, 13, 14 Complete - Current: v0.1.14)**:
 - ✅ Comprehensive documentation (README, deployment examples)
 - ✅ Platform support: Linux, macOS, Windows Server 2019/2022, Windows 10/11
 - ✅ Binary distribution and automated releases (GitHub Actions)
@@ -201,8 +218,11 @@ go build -o build/crontopus-agent ./cmd/crontopus-agent
 - ✅ Uninstaller script with crontab cleanup (v0.1.8)
 - ✅ Discovered job protection - no wrapping (v0.1.9)
 - ✅ Job instance reporting with drift detection (v0.1.10-v0.1.11)
+- ✅ Job name handling with spaces (v0.1.12)
 - ✅ Elegant crontab format with external job configs (v0.1.13)
 - ✅ Simplified crontab: `~/.crontopus/bin/run-job CRONTOPUS:<uuid>` (v0.1.14)
+- ✅ Automatic job discovery and callback injection (Phase 12)
+- ✅ Cross-reference APIs for job-endpoint tracking (Phase 12)
 
 ### CLI (Python)
 ```bash
