@@ -5,16 +5,24 @@
 
 # Read configuration from agent config
 CONFIG_FILE="$HOME/.crontopus/config.yaml"
+TOKEN_FILE="$HOME/.crontopus/agent-token"
 
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "Error: Config file not found at $CONFIG_FILE" >&2
     exit 1
 fi
 
-# Parse YAML config (simple grep-based parser)
-BACKEND_URL=$(grep -E '^\s*url:' "$CONFIG_FILE" | head -1 | sed 's/.*url:[[:space:]]*//' | tr -d '"' | tr -d "'")
-ENDPOINT_ID=$(grep -E '^\s*id:' "$CONFIG_FILE" | head -1 | sed 's/.*id:[[:space:]]*//')
-ENDPOINT_TOKEN=$(grep -E '^\s*token:' "$CONFIG_FILE" | head -1 | sed 's/.*token:[[:space:]]*//' | tr -d '"' | tr -d "'")
+if [ ! -f "$TOKEN_FILE" ]; then
+    echo "Error: Token file not found at $TOKEN_FILE" >&2
+    exit 1
+fi
+
+# Parse backend URL from YAML config
+BACKEND_URL=$(grep -E '^\s*api_url:' "$CONFIG_FILE" | head -1 | sed 's/.*api_url:[[:space:]]*//' | tr -d '"' | tr -d "'")
+
+# Parse endpoint ID and token from JSON token file
+ENDPOINT_ID=$(grep -o '"agent_id":[0-9]*' "$TOKEN_FILE" | head -1 | sed 's/"agent_id"://')
+ENDPOINT_TOKEN=$(grep -o '"token":"[^"]*"' "$TOKEN_FILE" | head -1 | sed 's/"token":"//' | sed 's/"$//')
 
 # Validate inputs
 if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ]; then
