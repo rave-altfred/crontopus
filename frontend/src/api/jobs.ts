@@ -141,4 +141,11 @@ export const jobsApi = {
   unassignFromEndpoint: async (namespace: string, jobName: string, endpointId: number): Promise<void> => {
     await apiClient.delete(`/endpoints/${endpointId}/jobs/${namespace}/${jobName}`);
   },
+
+  adopt: async (namespace: string, jobName: string, targetNamespace: string): Promise<any> => {
+    const response = await apiClient.post(`/jobs/${namespace}/${jobName}/adopt`, {
+      target_namespace: targetNamespace
+    });
+    return response.data;
+  },
 };

@@ -7,7 +7,7 @@ export const Jobs = () => {
   const [jobs, setJobs] = useState<JobListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'production' | 'staging'>('all');
+  const [filter, setFilter] = useState<'all' | 'production' | 'staging' | 'discovered'>('all');
   const [repository, setRepository] = useState<string>('');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [endpointsByJob, setEndpointsByJob] = useState<Record<string, JobEndpoint[]>>({});
@@ -103,6 +103,16 @@ export const Jobs = () => {
         >
           Staging
         </button>
+        <button
+          onClick={() => setFilter('discovered')}
+          className={`px-4 py-2 rounded-md text-sm font-medium ${
+            filter === 'discovered'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+          }`}
+        >
+          🔍 Discovered
+        </button>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
@@ -175,10 +185,12 @@ export const Jobs = () => {
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         job.namespace === 'production'
                           ? 'bg-blue-100 text-blue-800'
+                          : job.namespace === 'discovered'
+                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
                           : 'bg-yellow-100 text-yellow-800'
                       }`}
                     >
-                      {job.namespace}
+                      {job.namespace === 'discovered' ? '🔍 ' : ''}{job.namespace}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
