@@ -1860,23 +1860,56 @@ When Crontopus discovers and wraps external cron jobs:
 
 **Deliverable**: Users can generate API tokens for programmatic access
 
-### 17.3 Documentation & Migration
+### 17.3 Rate Limiting & DDoS Protection
+
+- [ ] Implement rate limiting middleware
+  - Use `slowapi` (FastAPI rate limiter) or similar
+  - Different limits per endpoint type:
+    - Authentication: 5 requests/minute per IP (prevent brute force)
+    - Check-ins: 100 requests/minute per endpoint_id (normal job frequency)
+    - API calls: 60 requests/minute per user token (standard API usage)
+    - Public endpoints: 10 requests/minute per IP
+  - Return 429 Too Many Requests with Retry-After header
+  - Store rate limit state in Redis (production) or in-memory (development)
+- [ ] Add rate limit headers to responses
+  - `X-RateLimit-Limit`: Maximum requests allowed
+  - `X-RateLimit-Remaining`: Requests remaining in window
+  - `X-RateLimit-Reset`: Unix timestamp when limit resets
+  - Standard HTTP 429 response for exceeded limits
+- [ ] Implement IP-based throttling
+  - Track requests per IP address
+  - Automatic blocking for repeated violations
+  - Configurable block duration (1 hour, 24 hours, permanent)
+  - Whitelist for trusted IPs (CI/CD, monitoring)
+- [ ] Add monitoring and alerting
+  - Prometheus metrics for rate limit hits
+  - Alert on repeated 429 responses (potential attack)
+  - Dashboard showing top rate-limited IPs
+  - Logs for security team review
+
+**Deliverable**: API protected from abuse and DDoS attacks with configurable rate limits
+
+### 17.4 Documentation & Migration
 
 - [ ] Update API documentation
   - Add authentication section to docs/api-reference.md
   - Document both JWT (UI/CLI) and API token (programmatic) flows
+  - Document rate limits and best practices
   - Example curl commands with authentication
   - Security best practices
+  - How to handle 429 responses (exponential backoff)
 - [ ] Update agent documentation
   - Explain how endpoint tokens work
   - Document check-in authentication flow
+  - Rate limit considerations for agents
   - Troubleshooting authentication errors
 - [ ] Create migration guide
   - Explain changes to check-in endpoint
   - Steps to update deployed agents (if needed)
   - Backward compatibility period
+  - Rate limit rollout strategy
 
-**Deliverable**: Complete documentation for API authentication
+**Deliverable**: Complete documentation for API authentication and rate limiting
 
 ### Benefits
 - ✅ Secure check-in endpoint prevents fake submissions
@@ -1890,14 +1923,34 @@ When Crontopus discovers and wraps external cron jobs:
 - Tokens must be hashed in database (SHA256)
 - Plaintext token shown only once during creation
 - Support token expiration (90 days, 1 year, never)
-- Rate limiting on token authentication (prevent brute force)
+- Rate limiting on all authenticated endpoints (prevent brute force)
 - Audit log for token creation/revocation
 - Secure token generation (cryptographically random)
+- DDoS protection via rate limiting per IP and per token
+- Exponential backoff for failed authentication attempts
+- Security headers (HSTS, CSP, X-Frame-Options, etc.)
+- Request size limits to prevent payload attacks
+- Input validation and sanitization on all endpoints
 
 ### Implementation Priority
-1. **High Priority**: Check-in authentication (closes security gap)
-2. **Medium Priority**: User API tokens (enables integrations)
-3. **Low Priority**: Job-specific tokens (nice-to-have enhancement)
+1. **Critical Priority**: Rate limiting (prevent DDoS attacks)
+2. **High Priority**: Check-in authentication (closes security gap)
+3. **High Priority**: User API tokens (enables integrations)
+4. **Medium Priority**: Advanced rate limiting (per-endpoint tuning)
+5. **Low Priority**: Job-specific tokens (nice-to-have enhancement)
+
+### Rate Limit Recommendations
+
+| Endpoint Type | Limit | Window | Reasoning |
+|--------------|-------|--------|----------|
+| POST /auth/login | 5 req/min per IP | 1 minute | Prevent credential stuffing |
+| POST /auth/register | 3 req/hour per IP | 1 hour | Prevent spam accounts |
+| POST /runs/check-in | 100 req/min per endpoint | 1 minute | Support high-frequency jobs |
+| GET /api/runs | 60 req/min per user | 1 minute | Standard API usage |
+| POST /api/jobs | 30 req/min per user | 1 minute | Job creation rate |
+| GET /health | unlimited | - | Monitoring needs high frequency |
+| Default (authenticated) | 60 req/min per user | 1 minute | General API limit |
+| Default (unauthenticated) | 10 req/min per IP | 1 minute | Prevent enumeration |
 
 ---
 
