@@ -1,7 +1,7 @@
 """
 Authentication routes for user registration and login.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -11,6 +11,7 @@ from crontopus_api.schemas.auth import UserRegister, UserLogin, Token, UserRespo
 from crontopus_api.security import verify_password, get_password_hash, create_access_token
 from crontopus_api.security.dependencies import get_current_user
 from crontopus_api.services.forgejo import ForgejoClient
+from crontopus_api.middleware.rate_limit import limiter
 import httpx
 import logging
 
@@ -112,7 +113,8 @@ async def create_tenant_repository(tenant_id: str, username: str) -> bool:
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def register(user_data: UserRegister, db: Session = Depends(get_db)):
+@limiter.limit("3/hour")  # Prevent spam account creation
+async def register(request: Request, user_data: UserRegister, db: Session = Depends(get_db)):
     """
     Register a new user.
     
@@ -222,7 +224,8 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@limiter.limit("5/minute")  # Prevent brute force attacks
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
     Authenticate user and return JWT token.
     
@@ -268,7 +271,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_me(current_user: User = Depends(get_current_user)):
+@limiter.limit("60/minute")  # Standard API limit for authenticated endpoint
+async def get_me(request: Request, current_user: User = Depends(get_current_user)):
     """
     Get current authenticated user information.
     

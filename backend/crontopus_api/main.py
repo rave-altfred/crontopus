@@ -2,7 +2,7 @@
 Main FastAPI application for Crontopus.
 API-first job scheduling and monitoring platform.
 """
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from sqlalchemy.orm import Session
@@ -10,6 +10,7 @@ from sqlalchemy import text
 
 from crontopus_api.config import settings, get_db
 from crontopus_api.routes import auth, checkins, agents, endpoints, jobs, enrollment_tokens, namespaces
+from crontopus_api.middleware.rate_limit import limiter, RateLimitExceeded, _rate_limit_exceeded_handler
 
 # Create FastAPI app
 app = FastAPI(
@@ -17,6 +18,10 @@ app = FastAPI(
     version=settings.api_version,
     description="API-first job scheduling and monitoring platform"
 )
+
+# Configure rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS
 app.add_middleware(
@@ -57,6 +62,7 @@ async def log_routes():
 
 
 @app.get("/health")
+@limiter.exempt  # Health checks should not be rate limited
 async def health_check():
     """
     Health check endpoint with database connectivity check.
@@ -105,7 +111,8 @@ async def health_check():
 
 
 @app.get("/")
-async def root():
+@limiter.limit("60/minute")  # Apply default rate limit to root
+async def root(request: Request):
     """
     Root endpoint with API information.
     

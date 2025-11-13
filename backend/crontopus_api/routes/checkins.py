@@ -6,7 +6,7 @@ Run history is queried by authenticated users.
 """
 from typing import Optional, List
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, case
 from pydantic import BaseModel
@@ -21,12 +21,15 @@ from crontopus_api.schemas.checkin import (
     AgentCheckinRequest
 )
 from crontopus_api.security.dependencies import get_current_user
+from crontopus_api.middleware.rate_limit import limiter
 
 router = APIRouter(tags=["checkins", "runs"])
 
 
 @router.post("/runs/check-in", response_model=CheckinResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("100/minute")  # Support high-frequency jobs (every ~30 seconds)
 async def agent_checkin(
+    request: Request,
     checkin_data: AgentCheckinRequest,
     db: Session = Depends(get_db)
 ):
