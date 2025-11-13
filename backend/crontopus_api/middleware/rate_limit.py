@@ -51,11 +51,13 @@ def _get_identifier(request: Request) -> str:
 
 
 # Initialize rate limiter with Redis storage
+# Note: swallow_errors=True prevents 500 errors in production if Redis is temporarily unavailable
 limiter = Limiter(
     key_func=_get_identifier,
     storage_uri=f"{settings.redis_url}/{settings.redis_database}",
     strategy="fixed-window",
     headers_enabled=True,  # Add X-RateLimit-* headers
+    swallow_errors=True,  # Graceful degradation if Redis unavailable
 )
 
 

@@ -27,7 +27,7 @@ router = APIRouter(tags=["checkins", "runs"])
 
 
 @router.post("/runs/check-in", response_model=CheckinResponse, status_code=status.HTTP_201_CREATED)
-@limiter.limit("100/minute")  # Support high-frequency jobs (every ~30 seconds)
+# @limiter.limit("100/minute")  # TODO: Fix async compatibility issue
 async def agent_checkin(
     request: Request,
     checkin_data: AgentCheckinRequest,
