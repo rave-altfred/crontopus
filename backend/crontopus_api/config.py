@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     forgejo_username: Optional[str] = None
     forgejo_token: Optional[str] = None
     
+    # Redis/Valkey for rate limiting
+    redis_url: str = "redis://localhost:6379"
+    redis_database: int = 0  # Use 1 in production (Valkey shared instance)
+    
     @property
     def cors_origins_list(self) -> list[str]:
         """Parse CORS origins string into list."""
