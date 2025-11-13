@@ -1791,6 +1791,116 @@ When Crontopus discovers and wraps external cron jobs:
 
 ---
 
+## Phase 17: API Token Authentication (Planned)
+
+**Status**: ⏸️ **PLANNED**
+
+**Goal**: Secure the API with proper authentication for external API access and job check-ins.
+
+### Current State
+
+**Authentication Implemented**:
+- ✅ JWT tokens for user login (web UI, CLI)
+- ✅ Endpoint tokens for agent enrollment and heartbeat
+- ✅ Protected routes requiring user authentication (runs, agents, jobs)
+
+**Security Gaps**:
+- ⚠️ Check-in endpoint (`POST /runs/check-in`) has NO authentication
+  - Currently relies only on `endpoint_id` for validation
+  - Anyone knowing an endpoint_id can submit fake check-ins
+  - Security risk for production deployments
+- ⚠️ No API tokens for programmatic access
+  - Users cannot make API calls outside of web UI/CLI
+  - No way to integrate with external tools/scripts
+
+### 17.1 Check-in Authentication
+
+- [ ] Add endpoint token to check-in payload
+  - Agents already have tokens stored locally
+  - Modify agent callback wrapper to include Bearer token
+  - Update `run-job` script to pass endpoint token
+  - Backend validates token matches endpoint_id
+- [ ] Update check-in endpoint validation
+  - Require `Authorization: Bearer <endpoint_token>` header
+  - Verify token belongs to endpoint_id in request
+  - Return 401 Unauthorized if token missing/invalid
+  - Maintain backward compatibility during migration
+- [ ] Alternative: Job-specific tokens (optional enhancement)
+  - Generate unique token per job for more granular security
+  - Store in JobInstance model
+  - Agent includes job token in check-in
+  - More complex but provides better isolation
+
+**Deliverable**: Check-in endpoint requires authentication, preventing unauthorized submissions
+
+### 17.2 User API Tokens
+
+- [ ] Create APIToken model
+  - Fields: id, user_id, tenant_id, token (hashed), name, scopes, created_at, last_used_at, expires_at
+  - Scopes: read:runs, write:jobs, read:agents, admin:* (future: granular permissions)
+  - Token format: `ctp_<random_string>` (e.g., `ctp_abc123def456`)
+  - SHA256 hash stored in database (like GitHub personal access tokens)
+- [ ] Build API token CRUD endpoints
+  - `GET /api/tokens` - List user's API tokens
+  - `POST /api/tokens` - Create new API token (returns plaintext once)
+  - `DELETE /api/tokens/{id}` - Revoke API token
+  - `PATCH /api/tokens/{id}` - Update token name/expiry
+- [ ] Implement token authentication middleware
+  - Accept Bearer token in Authorization header
+  - Look up token by hash in database
+  - Load associated user and tenant for request context
+  - Update last_used_at timestamp
+  - Check token expiration
+- [ ] Add token management to frontend
+  - Settings page with API tokens section
+  - Create token modal with scope selection
+  - Copy-to-clipboard for newly generated tokens
+  - Warning about token security (like GitHub)
+  - Revoke token confirmation
+
+**Deliverable**: Users can generate API tokens for programmatic access
+
+### 17.3 Documentation & Migration
+
+- [ ] Update API documentation
+  - Add authentication section to docs/api-reference.md
+  - Document both JWT (UI/CLI) and API token (programmatic) flows
+  - Example curl commands with authentication
+  - Security best practices
+- [ ] Update agent documentation
+  - Explain how endpoint tokens work
+  - Document check-in authentication flow
+  - Troubleshooting authentication errors
+- [ ] Create migration guide
+  - Explain changes to check-in endpoint
+  - Steps to update deployed agents (if needed)
+  - Backward compatibility period
+
+**Deliverable**: Complete documentation for API authentication
+
+### Benefits
+- ✅ Secure check-in endpoint prevents fake submissions
+- ✅ API tokens enable automation and integrations
+- ✅ Granular scopes allow fine-grained permissions (future)
+- ✅ Token revocation for compromised credentials
+- ✅ Audit trail via last_used_at timestamps
+- ✅ Industry-standard authentication patterns
+
+### Security Considerations
+- Tokens must be hashed in database (SHA256)
+- Plaintext token shown only once during creation
+- Support token expiration (90 days, 1 year, never)
+- Rate limiting on token authentication (prevent brute force)
+- Audit log for token creation/revocation
+- Secure token generation (cryptographically random)
+
+### Implementation Priority
+1. **High Priority**: Check-in authentication (closes security gap)
+2. **Medium Priority**: User API tokens (enables integrations)
+3. **Low Priority**: Job-specific tokens (nice-to-have enhancement)
+
+---
+
 ## Phase 12: Job Discovery & Multi-Endpoint Tracking
 
 **Status**: ✅ **COMPLETE** (Nov 2025)
