@@ -17,7 +17,7 @@ export const MainLayout = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0f1419]">
+    <div className="min-h-screen bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-brand-900">
       <div className="flex">
         {/* Sidebar */}
         <aside className="w-64 min-h-screen bg-white dark:bg-[#1a1f2e] border-r border-gray-200 dark:border-gray-800 flex flex-col">
