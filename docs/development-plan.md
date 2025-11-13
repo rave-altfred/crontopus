@@ -1791,11 +1791,81 @@ When Crontopus discovers and wraps external cron jobs:
 
 ---
 
-## Phase 17: API Token Authentication (Planned)
+## Phase 17: API Token Authentication
 
-**Status**: ⏸️ **PLANNED**
+**Status**: 🚧 **IN PROGRESS**
 
 **Goal**: Secure the API with proper authentication for external API access and job check-ins.
+
+### Prerequisites & Local Development Setup
+
+**Local PostgreSQL Setup**:
+```bash
+# Check if PostgreSQL is running
+psql -U postgres -c "SELECT version();"
+
+# If not installed, install via Homebrew
+brew install postgresql@14
+brew services start postgresql@14
+
+# Create database and user
+psql postgres
+CREATE DATABASE crontopus;
+CREATE USER crontopus WITH PASSWORD 'crontopus';
+GRANT ALL PRIVILEGES ON DATABASE crontopus TO crontopus;
+\q
+
+# Run migrations
+cd backend
+source venv/bin/activate
+alembic upgrade head
+```
+
+**Local Redis Setup**:
+```bash
+# Redis already installed via Homebrew (redis 8.2.1)
+# Start Redis service
+brew services start redis
+
+# Verify Redis is running
+redis-cli ping
+# Should return: PONG
+
+# Redis will use default settings:
+# - Host: localhost
+# - Port: 6379
+# - Database: 0 (default)
+```
+
+**Production Valkey Setup**:
+- Production uses Valkey (Redis-compatible) on DigitalOcean App Platform
+- Connection string provided via environment variable: `REDIS_URL`
+- **Important**: Valkey instance is shared with other services
+- **Database Selection**: Use database index 1 for Crontopus (index 0 reserved for other services)
+- Configuration: Set `REDIS_DATABASE=1` in environment variables
+
+**Environment Variables**:
+```bash
+# Local (.env file in backend/)
+DATABASE_URL=postgresql://crontopus:crontopus@localhost:5432/crontopus
+REDIS_URL=redis://localhost:6379
+REDIS_DATABASE=0  # Use default for local development
+
+# Production (App Platform environment variables)
+DATABASE_URL=<provided by App Platform>
+REDIS_URL=<valkey connection string>
+REDIS_DATABASE=1  # Use index 1 to avoid conflicts
+```
+
+**Update config.py**:
+```python
+class Settings(BaseSettings):
+    # ... existing settings ...
+    
+    # Redis/Valkey for rate limiting
+    redis_url: str = "redis://localhost:6379"
+    redis_database: int = 0  # Use 1 in production
+```
 
 ### Current State
 
