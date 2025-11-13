@@ -8,21 +8,16 @@ export const Logo = ({ size = 'md', showText = true, className = '' }: LogoProps
   const sizeClasses = {
     sm: 'w-8 h-8',
     md: 'w-12 h-12',
-    lg: 'w-16 h-16',
+    lg: 'w-64 h-64', // Much larger for login/register pages
   };
 
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <div className={`flex items-center justify-center ${className}`}>
       <img 
         src="/logo.png" 
         alt="Crontopus Logo" 
         className={`${sizeClasses[size]} object-contain`}
       />
-      {showText && (
-        <span className="text-2xl font-bold tracking-wider text-[#3d7250] dark:text-[#5fb97d]">
-          CRONTOPUS
-        </span>
-      )}
     </div>
   );
 };

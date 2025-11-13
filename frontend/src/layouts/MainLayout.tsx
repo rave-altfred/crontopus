@@ -1,6 +1,7 @@
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ThemeSelector } from '../components/ThemeSelector';
+import { Logo } from '../components/Logo';
 import { LayoutDashboard, FileText, Server, Activity, FolderOpen, ChevronRight } from 'lucide-react';
 
 export const MainLayout = () => {
@@ -21,15 +22,10 @@ export const MainLayout = () => {
         {/* Sidebar */}
         <aside className="w-64 min-h-screen bg-white dark:bg-[#1a1f2e] border-r border-gray-200 dark:border-gray-800 flex flex-col">
           {/* Logo */}
-          <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Crontopus</h1>
-            </div>
+          <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+            <Link to="/" className="block">
+              <Logo size="sm" className="scale-150 origin-center" />
+            </Link>
           </div>
 
           {/* Navigation */}
@@ -40,7 +36,7 @@ export const MainLayout = () => {
                   to="/"
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive('/')
-                      ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                      ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -61,7 +57,7 @@ export const MainLayout = () => {
                       to="/runs/by-job"
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ml-2 ${
                         isActive('/runs/by-job')
-                          ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                          ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400'
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                       }`}
                     >
@@ -73,7 +69,7 @@ export const MainLayout = () => {
                       to="/runs/by-endpoint"
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ml-2 ${
                         isActive('/runs/by-endpoint')
-                          ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                          ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400'
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                       }`}
                     >
@@ -85,7 +81,7 @@ export const MainLayout = () => {
                       to="/runs"
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ml-2 ${
                         isActive('/runs')
-                          ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                          ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400'
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                       }`}
                     >
@@ -100,7 +96,7 @@ export const MainLayout = () => {
                   to="/jobs"
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive('/jobs')
-                      ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                      ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -114,7 +110,7 @@ export const MainLayout = () => {
                   to="/groups"
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive('/groups')
-                      ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                      ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -128,7 +124,7 @@ export const MainLayout = () => {
                   to="/endpoints"
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive('/endpoints')
-                      ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                      ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -142,7 +138,7 @@ export const MainLayout = () => {
                   to="/agents"
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive('/agents')
-                      ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                      ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -164,7 +160,7 @@ export const MainLayout = () => {
                 <span className="text-sm text-gray-700 dark:text-gray-300">{user?.username}</span>
                 <button
                   onClick={handleLogout}
-                  className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
+                  className="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 font-medium"
                 >
                   Logout
                 </button>
