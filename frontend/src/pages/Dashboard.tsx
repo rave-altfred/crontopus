@@ -39,44 +39,44 @@ export const Dashboard = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-brand-800/30 p-6 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Agents</h3>
-          <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{activeAgents}</p>
+        <div className="bg-white dark:bg-[#44475a] p-6 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-[#6272a4]">Active Agents</h3>
+          <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-[#f8f8f2]">{activeAgents}</p>
         </div>
-        <div className="bg-white dark:bg-brand-800/30 p-6 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Successful Runs (Last 5)</h3>
-          <p className="mt-2 text-3xl font-bold text-green-600 dark:text-green-400">{successfulRuns}</p>
+        <div className="bg-white dark:bg-[#44475a] p-6 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-[#6272a4]">Successful Runs (Last 5)</h3>
+          <p className="mt-2 text-3xl font-bold text-green-600 dark:text-[#50fa7b]">{successfulRuns}</p>
         </div>
-        <div className="bg-white dark:bg-brand-800/30 p-6 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Failed Runs (Last 5)</h3>
-          <p className="mt-2 text-3xl font-bold text-red-600 dark:text-red-400">{failedRuns}</p>
+        <div className="bg-white dark:bg-[#44475a] p-6 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-[#6272a4]">Failed Runs (Last 5)</h3>
+          <p className="mt-2 text-3xl font-bold text-red-600 dark:text-[#ff5555]">{failedRuns}</p>
         </div>
       </div>
 
       {/* Recent Runs */}
-      <div className="bg-white dark:bg-brand-800/30 rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-brand-700/50">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Job Runs</h3>
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-[#6272a4]">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-[#f8f8f2]">Recent Job Runs</h3>
         </div>
-        <div className="divide-y divide-gray-200 dark:divide-brand-700/50">
+        <div className="divide-y divide-gray-200 dark:divide-[#6272a4]">
           {recentRuns.length === 0 ? (
-            <div className="px-6 py-4 text-gray-500 dark:text-gray-400">No runs yet</div>
+            <div className="px-6 py-4 text-gray-500 dark:text-[#6272a4]">No runs yet</div>
           ) : (
             recentRuns.map((run) => (
               <div key={run.id} className="px-6 py-4 flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{run.job_name}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="font-medium text-gray-900 dark:text-[#f8f8f2]">{run.job_name}</p>
+                  <p className="text-sm text-gray-500 dark:text-[#6272a4]">
                     {new Date(run.started_at).toLocaleString()}
                   </p>
                 </div>
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
                     run.status === 'success'
-                      ? 'bg-green-100 text-green-800'
+                      ? 'bg-green-100 text-green-800 dark:bg-[#50fa7b]/20 dark:text-[#50fa7b]'
                       : run.status === 'failure'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                      ? 'bg-red-100 text-red-800 dark:bg-[#ff5555]/20 dark:text-[#ff5555]'
+                      : 'bg-yellow-100 text-yellow-800 dark:bg-[#f1fa8c]/20 dark:text-[#f1fa8c]'
                   }`}
                 >
                   {run.status}
@@ -85,8 +85,8 @@ export const Dashboard = () => {
             ))
           )}
         </div>
-        <div className="px-6 py-4 border-t border-gray-200 dark:border-brand-700/50">
-          <Link to="/runs" className="text-brand-600 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 text-sm font-medium">
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-[#6272a4]">
+          <Link to="/runs" className="text-brand-600 dark:text-[#bd93f9] hover:text-brand-800 dark:hover:text-[#ff79c6] text-sm font-medium">
             View all runs →
           </Link>
         </div>

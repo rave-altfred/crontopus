@@ -59,19 +59,19 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-brand-50 dark:from-gray-900 dark:to-brand-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-brand-50 dark:bg-[#282a36] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="flex flex-col items-center">
           <Logo size="lg" className="mb-8" />
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-center text-sm text-gray-500 dark:text-[#6272a4]">
             Create your account
           </p>
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
-              <div className="text-sm text-red-800 dark:text-red-400">{error}</div>
+            <div className="rounded-md bg-red-50 dark:bg-[#ff5555]/20 border border-red-200 dark:border-[#ff5555] p-4">
+              <div className="text-sm text-red-800 dark:text-[#ff5555]">{error}</div>
             </div>
           )}
 
@@ -153,11 +153,11 @@ export default function Register() {
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-[#6272a4]">
               Already have an account?{' '}
               <Link
                 to="/login"
-                className="font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300"
+                className="font-medium text-brand-600 dark:text-[#bd93f9] hover:text-brand-700 dark:hover:text-[#ff79c6]"
               >
                 Sign in
               </Link>

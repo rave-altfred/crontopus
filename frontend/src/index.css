@@ -2,8 +2,9 @@
 
 @variant dark (&:where(.dark, .dark *));
 
-/* Crontopus PCB-inspired color palette */
+/* Dracula theme color palette */
 @theme {
+  /* Light mode - keep original greens */
   --color-brand-50: #f0f9f3;
   --color-brand-100: #dcf0e3;
   --color-brand-200: #bae1ca;
@@ -15,6 +16,17 @@
   --color-brand-800: #1f3a29;
   --color-brand-900: #1a3023;
   
-  --color-gold: #d4af37;
-  --color-gold-dark: #a88328;
+  /* Dracula colors */
+  --color-dracula-bg: #282a36;
+  --color-dracula-current: #44475a;
+  --color-dracula-selection: #44475a;
+  --color-dracula-fg: #f8f8f2;
+  --color-dracula-comment: #6272a4;
+  --color-dracula-cyan: #8be9fd;
+  --color-dracula-green: #50fa7b;
+  --color-dracula-orange: #ffb86c;
+  --color-dracula-pink: #ff79c6;
+  --color-dracula-purple: #bd93f9;
+  --color-dracula-red: #ff5555;
+  --color-dracula-yellow: #f1fa8c;
 }
