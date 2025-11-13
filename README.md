@@ -183,9 +183,10 @@ Frontend will run at `http://localhost:5173`
 
 **Tech Stack:**
 - React 19 + TypeScript + Vite
-- Tailwind CSS v4 with dark mode support
+- Tailwind CSS v4 with Dracula theme dark mode
 - lucide-react for icons
 - react-syntax-highlighter for code display
+- Custom PCB-inspired ASCII art logo
 
 ### API Routing
 

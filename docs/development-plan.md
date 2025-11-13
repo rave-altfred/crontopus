@@ -1584,6 +1584,107 @@ When Crontopus discovers and wraps external cron jobs:
 
 ---
 
+## Phase 16: UI Branding & Theme
+
+**Status**: ✅ **COMPLETE** (Nov 2025)
+
+**Goal**: Enhance UI visual identity with custom branding and professional dark theme.
+
+### 16.1 PCB-Inspired Logo Design
+
+- [x] Design ASCII art logo
+  - PCB circuit board aesthetic with octopus motif
+  - Clean box-drawing characters (╭─╮│╰╯)
+  - Simple geometric design with circuits/traces
+  - CRONTOPUS™ text integration
+  - Optimized for monospace font rendering
+- [x] Export as PNG for fallback
+  - High-resolution PNG version
+  - Placed in `frontend/public/logo.png`
+  - Transparent background
+
+**Deliverable**: ✅ Custom PCB-inspired logo in ASCII art and PNG formats
+
+### 16.2 ASCII Art Logo Implementation
+
+- [x] Create `Logo.tsx` component
+  - ASCII art rendering in Courier monospace font
+  - Size variants: sm (12px), md (14px), lg (18px)
+  - Responsive sizing for different contexts
+- [x] Implement typing animation (later removed)
+  - Blinking cursor effect
+  - Character-by-character typing
+  - React hooks (useState, useEffect)
+- [x] Remove animation for performance
+  - Static rendering for better UX
+  - Cleaner code without animation complexity
+  - Instant logo display on page load
+- [x] Apply logo throughout UI
+  - Login page (large size)
+  - Register page (large size)
+  - Sidebar navigation (medium size)
+  - Consistent placement and sizing
+
+**Deliverable**: ✅ Static ASCII art logo in Courier font with proper sizing
+
+### 16.3 Dracula Theme Integration
+
+- [x] Research official Dracula color palette
+  - Specification: https://spec.draculatheme.com/
+  - Standard colors documented and verified
+- [x] Add Dracula colors to Tailwind theme
+  - Background: `#282a36`
+  - Current Line/Cards: `#44475a`
+  - Foreground: `#f8f8f2`
+  - Comment/Borders: `#6272a4`
+  - Accent colors: Purple `#bd93f9`, Pink `#ff79c6`, Green `#50fa7b`, Red `#ff5555`, Yellow `#f1fa8c`
+  - ANSI Black (sidebar): `#21222c`
+- [x] Apply Dracula theme to MainLayout
+  - Background: `#282a36`
+  - Sidebar: `#21222c` with `#44475a` borders
+  - Header: `#21222c` with `#44475a` borders
+  - Navigation active state: `#44475a` with `#bd93f9` text
+  - Navigation hover: `#44475a` at 50% opacity
+  - Text colors: `#f8f8f2` (primary), `#6272a4` (muted)
+  - Links: `#bd93f9` default, `#ff79c6` hover
+- [x] Apply Dracula theme to Dashboard
+  - Cards: `#44475a` background
+  - Headers: `#6272a4` muted text
+  - Borders: `#6272a4`
+  - Success stats: `#50fa7b`
+  - Error stats: `#ff5555`
+  - Status badges with semi-transparent backgrounds
+- [x] Bulk update all pages and components
+  - Replaced `dark:bg-gray-800` → `dark:bg-[#44475a]`
+  - Replaced `dark:border-gray-700` → `dark:border-[#6272a4]`
+  - Replaced `dark:text-gray-300` → `dark:text-[#f8f8f2]`
+  - Replaced `dark:text-gray-400` → `dark:text-[#6272a4]`
+  - Replaced `dark:text-indigo-*` → `dark:text-[#bd93f9]` / `dark:text-[#ff79c6]`
+  - **389 lines updated across 18 files**
+- [x] Fix logo contrast in light mode
+  - Logo color: `#2d5a3d` (light mode), `#5fb97d` (dark mode)
+  - Maintains original green branding in light mode
+  - Better contrast against white backgrounds
+
+**Deliverable**: ✅ Complete Dracula theme across entire application
+
+### Technical Notes:
+- Dracula colors defined in `frontend/src/index.css` with CSS variables
+- Light mode retains original green brand colors
+- Logo component simplified without animation overhead
+- Bulk sed replacements for efficient theme application
+- All components maintain consistent color usage
+
+### Benefits:
+- ✅ Professional dark mode with proven color palette
+- ✅ Unique branding with PCB circuit aesthetic
+- ✅ Better readability with high-contrast text
+- ✅ Reduced eye strain for dark mode users
+- ✅ Consistent purple/pink accent colors throughout
+- ✅ Light mode maintains distinct appearance
+
+---
+
 ## Phase 15: Aggregated Run Reports
 
 **Status**: ✅ **COMPLETE** (Nov 2025)
