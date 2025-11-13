@@ -85,6 +85,27 @@ Key:
 
 ## Current Development Phase
 
+**Phase 17: API Security & Rate Limiting** 🚧 **IN PROGRESS** (Nov 2025)
+- Phase 17.1: Check-in Authentication ❌ Not Started
+- Phase 17.2: User API Tokens ❌ Not Started
+- Phase 17.3: Rate Limiting & DDoS Protection ⚠️ Partially Complete
+- Phase 17.4: Documentation & Migration ❌ Not Started
+
+**Current Status** (⚠️ Phase 17.3):
+- ✅ Rate limiting infrastructure complete (SlowAPI + Redis/Valkey)
+- ✅ Smart identifier: User ID → Endpoint ID → IP fallback
+- ✅ Per-endpoint limits: Login 5/min, Register 3/hr, Check-ins 100/min, API 60/min
+- ✅ Production deployment with Valkey database 3 (dedicated to Crontopus)
+- ✅ Local development with Redis (localhost:6379)
+- ✅ Rate limit headers (X-RateLimit-*) configured
+- ⚠️ **Known Issue**: SlowAPI decorators temporarily disabled (async compatibility)
+  - Error: "parameter `response` must be an instance of starlette.responses.Response"
+  - Hotfix applied: All `@limiter.limit()` decorators commented out
+  - API fully functional in production
+  - Pending: Migration to fastapi-limiter or custom async middleware
+
+**Previous Phases**:
+
 **Phase 16: UI Branding & Theme** ✅ **COMPLETE** (Nov 2025)
 - Phase 16.1: PCB-Inspired Logo ✅ Complete
 - Phase 16.2: ASCII Art Logo Implementation ✅ Complete
@@ -175,7 +196,11 @@ Key:
 - Phase 10: Enrollment Token System ✅ Complete
 - Phase 9: Agent Documentation & Distribution ✅ Complete
 
-**Next Phase**: Phase 4 - Alerting & Monitoring (Planned)
+**Next Steps**:
+1. Complete Phase 17.3: Implement async-compatible rate limiting (fastapi-limiter or custom middleware)
+2. Phase 17.1: Check-in Authentication (secure job check-ins)
+3. Phase 17.2: User API Tokens (enable programmatic API access)
+4. Phase 4: Alerting & Monitoring (Planned)
 
 See `docs/development-plan.md` for full roadmap.
 
@@ -184,6 +209,20 @@ See `docs/development-plan.md` for full roadmap.
 ### Backend (FastAPI)
 ```bash
 cd backend
+
+# Prerequisites: Install and start PostgreSQL
+brew install postgresql@14
+brew services start postgresql@14
+psql postgres
+CREATE DATABASE crontopus;
+CREATE USER crontopus WITH PASSWORD 'crontopus';
+GRANT ALL PRIVILEGES ON DATABASE crontopus TO crontopus;
+\q
+
+# Prerequisites: Install and start Redis (for rate limiting)
+brew install redis
+brew services start redis
+redis-cli ping  # Should return: PONG
 
 # Create virtual environment
 python3 -m venv venv

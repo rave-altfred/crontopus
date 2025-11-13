@@ -1791,11 +1791,11 @@ When Crontopus discovers and wraps external cron jobs:
 
 ---
 
-## Phase 17: API Token Authentication
+## Phase 17: API Security & Rate Limiting
 
-**Status**: 🚧 **IN PROGRESS**
+**Status**: 🚧 **IN PROGRESS** - Rate limiting infrastructure complete, decorators temporarily disabled
 
-**Goal**: Secure the API with proper authentication for external API access and job check-ins.
+**Goal**: Secure the API with rate limiting (DDoS protection), proper authentication for external API access, and secure job check-ins.
 
 ### Prerequisites & Local Development Setup
 
@@ -1841,8 +1841,12 @@ redis-cli ping
 - Production uses Valkey (Redis-compatible) on DigitalOcean App Platform
 - Connection string provided via environment variable: `REDIS_URL`
 - **Important**: Valkey instance is shared with other services
-- **Database Selection**: Use database index 1 for Crontopus (index 0 reserved for other services)
-- Configuration: Set `REDIS_DATABASE=1` in environment variables
+- **Database Selection**: Use database index 3 for Crontopus rate limiting
+  - Database 0: 1 key (other service)
+  - Database 1: 44 keys (other service)
+  - Database 2: 8 keys (other service)
+  - Database 3: Empty, reserved for Crontopus
+- Configuration: Set `REDIS_DATABASE=3` in environment variables
 
 **Environment Variables**:
 ```bash
@@ -1854,7 +1858,7 @@ REDIS_DATABASE=0  # Use default for local development
 # Production (App Platform environment variables)
 DATABASE_URL=<provided by App Platform>
 REDIS_URL=<valkey connection string>
-REDIS_DATABASE=1  # Use index 1 to avoid conflicts
+REDIS_DATABASE=3  # Use index 3 to avoid conflicts (0-2 in use)
 ```
 
 **Update config.py**:
@@ -1864,7 +1868,7 @@ class Settings(BaseSettings):
     
     # Redis/Valkey for rate limiting
     redis_url: str = "redis://localhost:6379"
-    redis_database: int = 0  # Use 1 in production
+    redis_database: int = 0  # Use 3 in production
 ```
 
 ### Current State
@@ -1932,32 +1936,71 @@ class Settings(BaseSettings):
 
 ### 17.3 Rate Limiting & DDoS Protection
 
-- [ ] Implement rate limiting middleware
-  - Use `slowapi` (FastAPI rate limiter) or similar
-  - Different limits per endpoint type:
-    - Authentication: 5 requests/minute per IP (prevent brute force)
+**Status**: ⚠️ **PARTIALLY COMPLETE** - Infrastructure ready, decorators temporarily disabled
+
+**Completed**:
+- [x] Implement rate limiting middleware
+  - ✅ SlowAPI installed (v0.1.9) with Redis backend
+  - ✅ Smart identifier: User ID → Endpoint ID → IP address fallback
+  - ✅ Rate limits configured per endpoint type:
+    - Authentication login: 5 requests/minute per IP (prevent brute force)
+    - Authentication register: 3 requests/hour per IP (prevent spam accounts)
     - Check-ins: 100 requests/minute per endpoint_id (normal job frequency)
-    - API calls: 60 requests/minute per user token (standard API usage)
-    - Public endpoints: 10 requests/minute per IP
-  - Return 429 Too Many Requests with Retry-After header
-  - Store rate limit state in Redis (production) or in-memory (development)
-- [ ] Add rate limit headers to responses
-  - `X-RateLimit-Limit`: Maximum requests allowed
-  - `X-RateLimit-Remaining`: Requests remaining in window
-  - `X-RateLimit-Reset`: Unix timestamp when limit resets
-  - Standard HTTP 429 response for exceeded limits
-- [ ] Implement IP-based throttling
+    - Job creation: 30 requests/minute per user token (job management)
+    - API reads: 60 requests/minute per user token (standard API usage)
+    - Authenticated default: 60 requests/minute per user token
+    - Unauthenticated default: 10 requests/minute per IP
+  - ✅ Returns 429 Too Many Requests with Retry-After header
+  - ✅ Redis backend for production (Valkey database 3)
+  - ✅ In-memory fallback for development (local Redis)
+- [x] Add rate limit headers to responses
+  - ✅ `X-RateLimit-Limit`: Maximum requests allowed
+  - ✅ `X-RateLimit-Remaining`: Requests remaining in window
+  - ✅ `X-RateLimit-Reset`: Unix timestamp when limit resets
+  - ✅ Standard HTTP 429 response for exceeded limits
+- [x] Production deployment
+  - ✅ Valkey database 3 reserved for Crontopus rate limiting
+  - ✅ Environment variables configured (REDIS_URL, REDIS_DATABASE=3)
+  - ✅ Dependencies added to requirements.txt (slowapi, redis)
+  - ✅ Local testing successful (429 responses working)
+
+**Known Issues**:
+- ⚠️ **SlowAPI async compatibility issue**: Decorators temporarily disabled
+  - SlowAPI's `@limiter.limit()` decorator incompatible with FastAPI async functions
+  - Error: "parameter `response` must be an instance of starlette.responses.Response"
+  - Occurs in SlowAPI extension.py line 382
+  - **Hotfix Applied**: All `@limiter.limit()` decorators commented out
+    - `backend/crontopus_api/routes/auth.py`: Lines 116, 227, 274
+    - `backend/crontopus_api/routes/checkins.py`: Line 30
+  - Comments added: `# TODO: Fix async compatibility issue`
+  - API fully functional in production post-hotfix
+
+**Pending Work**:
+- [ ] Implement async-compatible rate limiting
+  - Option 1: Use `fastapi-limiter` (native async support)
+  - Option 2: Implement custom middleware with async Redis client
+  - Option 3: Wait for SlowAPI async fixes
+- [ ] Re-enable rate limiting decorators after async fix
+- [ ] Implement IP-based throttling (future)
   - Track requests per IP address
   - Automatic blocking for repeated violations
   - Configurable block duration (1 hour, 24 hours, permanent)
   - Whitelist for trusted IPs (CI/CD, monitoring)
-- [ ] Add monitoring and alerting
+- [ ] Add monitoring and alerting (future)
   - Prometheus metrics for rate limit hits
   - Alert on repeated 429 responses (potential attack)
   - Dashboard showing top rate-limited IPs
   - Logs for security team review
 
-**Deliverable**: API protected from abuse and DDoS attacks with configurable rate limits
+**Deliverable**: ✅ Infrastructure ready, ⚠️ awaiting async-compatible implementation
+
+**Technical Details**:
+- File: `backend/crontopus_api/middleware/rate_limit.py` (123 lines)
+- Configuration: `RATE_LIMITS` dict in middleware
+- Integration: `app.state.limiter` in main.py with exception handler
+- Health endpoint: Exempted from rate limiting
+- Production database: Valkey index 3 (empty, dedicated to Crontopus)
+- Local development: Redis localhost:6379, database 0
 
 ### 17.4 Documentation & Migration
 
@@ -2003,11 +2046,14 @@ class Settings(BaseSettings):
 - Input validation and sanitization on all endpoints
 
 ### Implementation Priority
-1. **Critical Priority**: Rate limiting (prevent DDoS attacks)
-2. **High Priority**: Check-in authentication (closes security gap)
-3. **High Priority**: User API tokens (enables integrations)
-4. **Medium Priority**: Advanced rate limiting (per-endpoint tuning)
-5. **Low Priority**: Job-specific tokens (nice-to-have enhancement)
+1. **Critical Priority**: Rate limiting (prevent DDoS attacks) - ⚠️ **PARTIALLY COMPLETE**
+   - ✅ Infrastructure and middleware complete
+   - ⚠️ Decorators temporarily disabled (async compatibility issue)
+   - 🔴 Pending: Async-compatible solution (fastapi-limiter or custom middleware)
+2. **High Priority**: Check-in authentication (closes security gap) - ❌ **NOT STARTED**
+3. **High Priority**: User API tokens (enables integrations) - ❌ **NOT STARTED**
+4. **Medium Priority**: Advanced rate limiting (per-endpoint tuning) - ❌ **NOT STARTED**
+5. **Low Priority**: Job-specific tokens (nice-to-have enhancement) - ❌ **NOT STARTED**
 
 ### Rate Limit Recommendations
 

@@ -80,6 +80,7 @@ crontopus/
 - **Bidirectional Sync** — Agent reconciles between Git (desired state) and scheduler (current state). Discovers existing cron jobs and imports them to Git automatically.
 - **Automatic Callback Injection** — Agent wraps all job commands with check-in callbacks using an elegant helper script (`~/.crontopus/bin/checkin`). Jobs automatically report success/failure without manual instrumentation. Crontab entries remain clean and readable.
 - **Multi-Endpoint Management** — Track which jobs are running on which machines (endpoints). View job-to-endpoint and endpoint-to-job relationships in web UI. Database-level protection prevents duplicate job assignments on same endpoint.
+- **Rate Limiting & DDoS Protection** ⚠️ — Infrastructure in place with SlowAPI and Redis/Valkey backend. Per-endpoint rate limits configured (login 5/min, check-ins 100/min, API 60/min). Temporarily disabled due to async compatibility issue - awaiting fastapi-limiter migration.
 - **GitOps Integration** — Sync job manifests and policies from tenant-specific Git repositories in **Forgejo**.  
 - **API First Development** — UI and CLI both talk to the same REST endpoints.  
 - **Alerts & Metrics** — Slack/email/PagerDuty notifications and Prometheus metrics.  
@@ -107,6 +108,24 @@ This ensures:
 - **Job Manifests**: https://git.crontopus.com/crontopus/job-manifests
 
 ### Local Development
+
+**Prerequisites:**
+
+```bash
+# PostgreSQL (for database)
+brew install postgresql@14
+brew services start postgresql@14
+psql postgres
+CREATE DATABASE crontopus;
+CREATE USER crontopus WITH PASSWORD 'crontopus';
+GRANT ALL PRIVILEGES ON DATABASE crontopus TO crontopus;
+\q
+
+# Redis (for rate limiting in development)
+brew install redis
+brew services start redis
+redis-cli ping  # Should return: PONG
+```
 
 **Backend Setup:**
 
