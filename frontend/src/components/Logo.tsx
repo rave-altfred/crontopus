@@ -1,25 +1,29 @@
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
-  pixelWidth?: number; // Overrides size classes when provided
   className?: string;
 }
 
-export const Logo = ({ size = 'md', pixelWidth, className = '' }: LogoProps) => {
+export const Logo = ({ size = 'md', className = '' }: LogoProps) => {
   const sizeClasses = {
-    sm: 'w-10',
-    md: 'w-16',
-    lg: 'w-80', // Larger default for marketing/login pages
+    sm: 'text-[8px]',
+    md: 'text-[10px]',
+    lg: 'text-[14px]',
   } as const;
 
   return (
-    <div className={`flex items-center justify-center ${className}`}>
-      <img 
-        src="/logo.png" 
-        alt="Crontopus Logo" 
-        className={`${pixelWidth ? '' : sizeClasses[size]} h-auto max-w-full object-contain`}
-        style={pixelWidth ? { width: `${pixelWidth}px` } : undefined}
-      />
-    </div>
+    <pre
+      className={`${sizeClasses[size]} leading-tight font-mono text-[#5fb97d] dark:text-[#5fb97d] ${className}`}
+      style={{ fontFamily: 'Courier, monospace' }}
+    >
+{`╭────────────────────╮
+│       ╭────╮     ○ │
+│    ╭──╯ [] ╰──╮○ ○ │
+│   ╰──╮ [][] ╭──╯   │
+│      ╰──╮╭──╯      │
+│        ╰╯╰╯        │
+│ C R O N T O P U S™ │
+╰────────────────────╯`}
+    </pre>
   );
 };
 
