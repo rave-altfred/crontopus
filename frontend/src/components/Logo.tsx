@@ -1,10 +1,9 @@
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
-  showText?: boolean;
   className?: string;
 }
 
-export const Logo = ({ size = 'md', showText = true, className = '' }: LogoProps) => {
+export const Logo = ({ size = 'md', className = '' }: LogoProps) => {
   const sizeClasses = {
     sm: 'w-8 h-8',
     md: 'w-12 h-12',
