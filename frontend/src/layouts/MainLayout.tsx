@@ -20,9 +20,9 @@ export const MainLayout = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-brand-900">
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-64 min-h-screen bg-white dark:bg-[#1a1f2e] border-r border-gray-200 dark:border-gray-800 flex flex-col">
+        <aside className="w-64 min-h-screen bg-white dark:bg-brand-900/40 border-r border-gray-200 dark:border-brand-800/50 flex flex-col">
           {/* Logo */}
-          <div className="py-6 px-4 border-b border-gray-200 dark:border-gray-800 flex justify-center">
+          <div className="py-6 px-4 border-b border-gray-200 dark:border-brand-800/50 flex justify-center">
             <Link to="/" className="block">
               <Logo size="md" />
             </Link>
@@ -153,7 +153,7 @@ export const MainLayout = () => {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
           {/* Header */}
-          <header className="bg-white dark:bg-[#1a1f2e] border-b border-gray-200 dark:border-gray-800">
+          <header className="bg-white dark:bg-brand-900/40 border-b border-gray-200 dark:border-brand-800/50">
             <div className="px-8 py-4 flex justify-end items-center">
               <div className="flex items-center gap-4">
                 <ThemeSelector />

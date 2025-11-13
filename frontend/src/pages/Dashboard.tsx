@@ -39,26 +39,26 @@ export const Dashboard = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-brand-800/30 p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Agents</h3>
           <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{activeAgents}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-brand-800/30 p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Successful Runs (Last 5)</h3>
           <p className="mt-2 text-3xl font-bold text-green-600 dark:text-green-400">{successfulRuns}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-brand-800/30 p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Failed Runs (Last 5)</h3>
           <p className="mt-2 text-3xl font-bold text-red-600 dark:text-red-400">{failedRuns}</p>
         </div>
       </div>
 
       {/* Recent Runs */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-brand-800/30 rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-brand-700/50">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Job Runs</h3>
         </div>
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="divide-y divide-gray-200 dark:divide-brand-700/50">
           {recentRuns.length === 0 ? (
             <div className="px-6 py-4 text-gray-500 dark:text-gray-400">No runs yet</div>
           ) : (
@@ -85,8 +85,8 @@ export const Dashboard = () => {
             ))
           )}
         </div>
-        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-          <Link to="/runs" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium">
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-brand-700/50">
+          <Link to="/runs" className="text-brand-600 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 text-sm font-medium">
             View all runs →
           </Link>
         </div>
