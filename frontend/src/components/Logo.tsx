@@ -12,7 +12,7 @@ export const Logo = ({ size = 'md', className = '' }: LogoProps) => {
 
   return (
     <pre
-      className={`${sizeClasses[size]} leading-tight font-mono text-[#5fb97d] dark:text-[#5fb97d] ${className}`}
+      className={`${sizeClasses[size]} leading-tight font-mono text-[#2d5a3d] dark:text-[#5fb97d] ${className}`}
       style={{ fontFamily: 'Courier, monospace' }}
     >
 {`╭────────────────────╮
