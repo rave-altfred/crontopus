@@ -30,7 +30,7 @@ export const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-brand-50 dark:from-gray-900 dark:to-brand-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="flex flex-col items-center">
-          <Logo size="lg" animated={true} className="mb-8" />
+          <Logo size="lg" className="mb-8" />
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
             Sign in to your account
           </p>
