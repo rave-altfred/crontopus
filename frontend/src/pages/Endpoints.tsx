@@ -59,7 +59,7 @@ export const Endpoints = () => {
   };
 
   if (loading) {
-    return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
+    return <div className="text-gray-600 dark:text-[#6272a4]">Loading...</div>;
   }
 
   return (
@@ -75,38 +75,38 @@ export const Endpoints = () => {
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-800">
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
+          <thead className="bg-gray-50 dark:bg-[#44475a]">
             <tr>
               <th className="px-6 py-3 w-8"></th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Hostname
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Platform
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Machine ID
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Version
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Last Heartbeat
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
             {endpoints.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4]">
                   No endpoints enrolled yet
                 </td>
               </tr>
@@ -147,7 +147,7 @@ export const Endpoints = () => {
                               if (e.key === 'Enter') handleSaveEdit(endpoint.id);
                               if (e.key === 'Escape') handleCancelEdit();
                             }}
-                            className="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-[#44475a] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                             autoFocus
                           />
                           <button
@@ -159,7 +159,7 @@ export const Endpoints = () => {
                           </button>
                           <button
                             onClick={handleCancelEdit}
-                            className="text-gray-600 hover:text-gray-800 dark:text-gray-400"
+                            className="text-gray-600 hover:text-gray-800 dark:text-[#6272a4]"
                             title="Cancel"
                           >
                             <X className="w-4 h-4" />
@@ -182,18 +182,18 @@ export const Endpoints = () => {
                       )}
                     </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{endpoint.hostname}</div>
+                    <div className="text-sm text-gray-500 dark:text-[#6272a4]">{endpoint.hostname}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{endpoint.platform}</div>
+                    <div className="text-sm text-gray-500 dark:text-[#6272a4]">{endpoint.platform}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-xs font-mono text-gray-500 dark:text-gray-400">
+                    <div className="text-xs font-mono text-gray-500 dark:text-[#6272a4]">
                       {endpoint.machine_id ? endpoint.machine_id.substring(0, 12) + '...' : 'N/A'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="text-sm text-gray-500 dark:text-[#6272a4]">
                       {endpoint.version || 'N/A'}
                     </div>
                   </td>
@@ -210,7 +210,7 @@ export const Endpoints = () => {
                       {endpoint.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
                     {endpoint.last_heartbeat
                       ? new Date(endpoint.last_heartbeat).toLocaleString()
                       : 'Never'}
@@ -220,7 +220,7 @@ export const Endpoints = () => {
                     <tr>
                       <td colSpan={8} className="px-6 py-3 bg-gray-50 dark:bg-gray-900">
                         {loadingJobs[endpoint.id] ? (
-                          <div className="text-sm text-gray-500 dark:text-gray-400">Loading jobs...</div>
+                          <div className="text-sm text-gray-500 dark:text-[#6272a4]">Loading jobs...</div>
                         ) : (
                           <div className="space-y-2">
                             <div className="flex justify-between items-center mb-2">
@@ -235,22 +235,22 @@ export const Endpoints = () => {
                               </Link>
                             </div>
                             <div className="overflow-x-auto">
-                              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead className="bg-gray-100 dark:bg-gray-800">
+                              <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
+                                <thead className="bg-gray-100 dark:bg-[#44475a]">
                                   <tr>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Group</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Job</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Source</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Seen</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Group</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Job</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Source</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Status</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Last Seen</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Actions</th>
                                   </tr>
                                 </thead>
-                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
                                   {(jobsByEndpoint[endpoint.id] || []).map((ji: JobInstance) => (
                                     <tr key={ji.id}>
-                                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{ji.namespace}</td>
-                                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+                                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-[#f8f8f2]">{ji.namespace}</td>
+                                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-[#f8f8f2]">
                                         <Link
                                           to={`/jobs/${ji.namespace}/${ji.job_name}`}
                                           onClick={(e) => e.stopPropagation()}
@@ -281,7 +281,7 @@ export const Endpoints = () => {
                                           {ji.status}
                                         </span>
                                       </td>
-                                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+                                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-[#f8f8f2]">
                                         {new Date(ji.last_seen).toLocaleString()}
                                       </td>
                                       <td className="px-4 py-2 text-sm">

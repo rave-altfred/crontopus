@@ -26,7 +26,7 @@ export const Dashboard = () => {
   }, []);
 
   if (loading) {
-    return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
+    return <div className="text-gray-600 dark:text-[#6272a4]">Loading...</div>;
   }
 
   const activeAgents = agents.filter(a => a.status === 'active').length;

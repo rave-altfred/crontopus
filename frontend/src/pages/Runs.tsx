@@ -55,7 +55,7 @@ export const Runs = () => {
   };
 
   if (loading) {
-    return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
+    return <div className="text-gray-600 dark:text-[#6272a4]">Loading...</div>;
   }
 
   return (
@@ -63,10 +63,10 @@ export const Runs = () => {
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Job Run Log</h2>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
               Limit
             </label>
             <input
@@ -75,12 +75,12 @@ export const Runs = () => {
               onChange={(e) => setLimit(Number(e.target.value))}
               min={1}
               max={1000}
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
               Job Name
             </label>
             <input
@@ -88,12 +88,12 @@ export const Runs = () => {
               value={jobNameFilter}
               onChange={(e) => setJobNameFilter(e.target.value)}
               placeholder="Filter by job name..."
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
               Namespace
             </label>
             <input
@@ -101,18 +101,18 @@ export const Runs = () => {
               value={namespaceFilter}
               onChange={(e) => setNamespaceFilter(e.target.value)}
               placeholder="Filter by namespace..."
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
               Status
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             >
               <option value="">All statuses</option>
               <option value="success">Success</option>
@@ -121,13 +121,13 @@ export const Runs = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
               Time Window
             </label>
             <select
               value={days || ''}
               onChange={(e) => setDays(e.target.value ? Number(e.target.value) : undefined)}
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             >
               <option value="">All time</option>
               <option value={1}>Last 24 hours</option>
@@ -139,40 +139,40 @@ export const Runs = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
+          <thead className="bg-gray-50 dark:bg-[#44475a]">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Job Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Namespace
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Endpoint
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Exit Code
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Started At
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Duration
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Details
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
             {runs.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={8} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4]">
                   No job runs yet
                 </td>
               </tr>
@@ -187,10 +187,10 @@ export const Runs = () => {
                         <div className="text-sm font-medium text-gray-900 dark:text-white">{run.job_name}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{run.namespace || '-'}</div>
+                        <div className="text-sm text-gray-500 dark:text-[#6272a4]">{run.namespace || '-'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{endpoint?.name || '-'}</div>
+                        <div className="text-sm text-gray-500 dark:text-[#6272a4]">{endpoint?.name || '-'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -205,13 +205,13 @@ export const Runs = () => {
                           {run.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
                         {run.exit_code !== null ? run.exit_code : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
                         {new Date(run.started_at).toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
                         {run.duration !== null ? `${run.duration}s` : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -229,8 +229,8 @@ export const Runs = () => {
                           <div className="space-y-3">
                             {run.output && (
                               <div>
-                                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Output:</h4>
-                                <pre className="text-xs bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 overflow-x-auto">
+                                <h4 className="text-sm font-semibold text-gray-700 dark:text-[#f8f8f2] mb-1">Output:</h4>
+                                <pre className="text-xs bg-white dark:bg-[#44475a] p-3 rounded border border-gray-200 dark:border-[#6272a4] overflow-x-auto">
                                   {run.output}
                                 </pre>
                               </div>
@@ -244,7 +244,7 @@ export const Runs = () => {
                               </div>
                             )}
                             {!run.output && !run.error_message && (
-                              <div className="text-sm text-gray-500 dark:text-gray-400">No output or error details available</div>
+                              <div className="text-sm text-gray-500 dark:text-[#6272a4]">No output or error details available</div>
                             )}
                           </div>
                         </td>

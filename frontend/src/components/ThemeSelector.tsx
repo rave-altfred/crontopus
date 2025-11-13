@@ -10,8 +10,8 @@ export const ThemeSelector = () => {
         onClick={() => setTheme('light')}
         className={`px-2 py-1 rounded text-sm transition-colors flex items-center gap-1 ${
           theme === 'light'
-            ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            ? 'bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow'
+            : 'text-gray-600 dark:text-[#6272a4] hover:text-gray-900 dark:hover:text-white'
         }`}
         title="Light mode"
       >
@@ -21,8 +21,8 @@ export const ThemeSelector = () => {
         onClick={() => setTheme('dark')}
         className={`px-2 py-1 rounded text-sm transition-colors flex items-center gap-1 ${
           theme === 'dark'
-            ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            ? 'bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow'
+            : 'text-gray-600 dark:text-[#6272a4] hover:text-gray-900 dark:hover:text-white'
         }`}
         title="Dark mode"
       >
@@ -32,8 +32,8 @@ export const ThemeSelector = () => {
         onClick={() => setTheme('auto')}
         className={`px-2 py-1 rounded text-sm transition-colors flex items-center gap-1 ${
           theme === 'auto'
-            ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            ? 'bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow'
+            : 'text-gray-600 dark:text-[#6272a4] hover:text-gray-900 dark:hover:text-white'
         }`}
         title="Auto (system preference)"
       >

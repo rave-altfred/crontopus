@@ -16,7 +16,7 @@ export const Agents = () => {
   }, []);
 
   if (loading) {
-    return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
+    return <div className="text-gray-600 dark:text-[#6272a4]">Loading...</div>;
   }
 
   return (
@@ -32,34 +32,34 @@ export const Agents = () => {
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
+          <thead className="bg-gray-50 dark:bg-[#44475a]">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Hostname
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Platform
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Machine ID
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Last Heartbeat
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
             {agents.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4]">
                   No agents enrolled yet
                 </td>
               </tr>
@@ -70,13 +70,13 @@ export const Agents = () => {
                     <div className="text-sm font-medium text-gray-900 dark:text-white">{agent.name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{agent.hostname}</div>
+                    <div className="text-sm text-gray-500 dark:text-[#6272a4]">{agent.hostname}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{agent.platform}</div>
+                    <div className="text-sm text-gray-500 dark:text-[#6272a4]">{agent.platform}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-xs font-mono text-gray-500 dark:text-gray-400">
+                    <div className="text-xs font-mono text-gray-500 dark:text-[#6272a4]">
                       {agent.machine_id ? agent.machine_id.substring(0, 12) + '...' : 'N/A'}
                     </div>
                   </td>
@@ -93,7 +93,7 @@ export const Agents = () => {
                       {agent.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
                     {agent.last_heartbeat
                       ? new Date(agent.last_heartbeat).toLocaleString()
                       : 'Never'}

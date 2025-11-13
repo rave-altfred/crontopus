@@ -75,7 +75,7 @@ export function Groups() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500 dark:text-gray-400">Loading groups...</div>
+        <div className="text-gray-500 dark:text-[#6272a4]">Loading groups...</div>
       </div>
     );
   }
@@ -86,7 +86,7 @@ export function Groups() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Job Groups</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-gray-600 dark:text-[#6272a4] mt-1">
             Organize your jobs into logical groups
           </p>
         </div>
@@ -110,9 +110,9 @@ export function Groups() {
       {/* Namespaces List */}
       <div className="space-y-3">
         {namespaces.length === 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="text-center py-12 bg-white dark:bg-[#44475a] rounded-lg border border-gray-200 dark:border-[#6272a4]">
             <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-gray-400">No job groups yet</p>
+            <p className="text-gray-500 dark:text-[#6272a4]">No job groups yet</p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
               Create your first job group to organize jobs
             </p>
@@ -121,10 +121,10 @@ export function Groups() {
           namespaces.map((ns) => (
             <div
               key={ns.name}
-              className={`bg-white dark:bg-gray-800 rounded-lg p-4 transition-colors ${
+              className={`bg-white dark:bg-[#44475a] rounded-lg p-4 transition-colors ${
                 ns.name === 'discovered'
                   ? 'border-2 border-purple-300 dark:border-purple-700 hover:border-purple-400 dark:hover:border-purple-600'
-                  : 'border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  : 'border border-gray-200 dark:border-[#6272a4] hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -134,7 +134,7 @@ export function Groups() {
                   ) : ns.is_system ? (
                     <FolderOpen className="w-6 h-6 text-blue-500" />
                   ) : (
-                    <Folder className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                    <Folder className="w-6 h-6 text-gray-500 dark:text-[#6272a4]" />
                   )}
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
@@ -151,7 +151,7 @@ export function Groups() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                    <p className="text-sm text-gray-500 dark:text-[#6272a4] mt-0.5">
                       {ns.job_count} {ns.job_count === 1 ? 'job' : 'jobs'}
                     </p>
                     {ns.name === 'discovered' && (
@@ -160,7 +160,7 @@ export function Groups() {
                       </p>
                     )}
                     {ns.name === 'default' && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      <p className="text-sm text-gray-500 dark:text-[#6272a4] mt-1">
                         Default group for new jobs
                       </p>
                     )}
@@ -169,7 +169,7 @@ export function Groups() {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => navigate(`/jobs?namespace=${ns.name}`)}
-                    className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors"
+                    className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-[#44475a] hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-[#f8f8f2] rounded transition-colors"
                   >
                     View Jobs
                   </button>
@@ -193,14 +193,14 @@ export function Groups() {
       {/* Create Dialog */}
       {showCreateDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-[#44475a] rounded-lg shadow-xl p-6 w-full max-w-md">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
               Create New Job Group
             </h2>
             
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
                   Job Group Name
                 </label>
                 <input
@@ -208,13 +208,13 @@ export function Groups() {
                   value={newNamespaceName}
                   onChange={(e) => setNewNamespaceName(e.target.value)}
                   placeholder="e.g., backup, monitoring, team-platform"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#44475a] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   pattern="[a-z0-9]([-a-z0-9]*[a-z0-9])?"
                   maxLength={63}
                   required
                   autoFocus
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-gray-500 dark:text-[#6272a4] mt-1">
                   Lowercase letters, numbers, and hyphens only. Must start and end with alphanumeric.
                 </p>
               </div>
@@ -234,7 +234,7 @@ export function Groups() {
                     setNewNamespaceName('');
                     setCreateError(null);
                   }}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="px-4 py-2 text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>

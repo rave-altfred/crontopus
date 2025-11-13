@@ -44,7 +44,7 @@ export const Jobs = () => {
   }, [filter]);
 
   if (loading) {
-    return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
+    return <div className="text-gray-600 dark:text-[#6272a4]">Loading...</div>;
   }
 
   if (error) {
@@ -88,7 +88,7 @@ export const Jobs = () => {
           className={`px-4 py-2 rounded-md text-sm font-medium ${
             filter === 'all'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+              : 'bg-gray-200 dark:bg-[#44475a] text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
           All
@@ -100,7 +100,7 @@ export const Jobs = () => {
             className={`px-4 py-2 rounded-md text-sm font-medium ${
               filter === ns.name
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+                : 'bg-gray-200 dark:bg-[#44475a] text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
             }`}
           >
             {ns.name === 'discovered' && '🔍 '}{ns.name}
@@ -111,29 +111,29 @@ export const Jobs = () => {
         ))}
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
+          <thead className="bg-gray-50 dark:bg-[#44475a]">
             <tr>
               <th className="px-6 py-3 w-8"></th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Job Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Group
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Path
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
             {jobs.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4]">
                   No job manifests found
                 </td>
               </tr>
@@ -175,7 +175,7 @@ export const Jobs = () => {
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {job.name.replace(/\.(yaml|yml)$/, '')}
                       {endpointsByJob[jobKey] && (
-                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                        <span className="ml-2 text-xs text-gray-500 dark:text-[#6272a4]">
                           {(endpointsByJob[jobKey] || []).length} endpoint{(endpointsByJob[jobKey] || []).length === 1 ? '' : 's'}
                         </span>
                       )}
@@ -194,7 +194,7 @@ export const Jobs = () => {
                       {job.namespace === 'discovered' ? '🔍 ' : ''}{job.namespace}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
                     {job.path}
                   </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -221,34 +221,34 @@ export const Jobs = () => {
                       <tr>
                         <td colSpan={5} className="px-6 py-3 bg-gray-50 dark:bg-gray-900">
                           {loadingEndpoints[jobKey] ? (
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Loading endpoints...</div>
+                            <div className="text-sm text-gray-500 dark:text-[#6272a4]">Loading endpoints...</div>
                           ) : (
                             <div className="space-y-2">
                               <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                                 Endpoints running this job ({(endpointsByJob[jobKey] || []).length})
                               </div>
                               <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                  <thead className="bg-gray-100 dark:bg-gray-800">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
+                                  <thead className="bg-gray-100 dark:bg-[#44475a]">
                                     <tr>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Platform</th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Heartbeat</th>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Name</th>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Platform</th>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Status</th>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Last Heartbeat</th>
                                     </tr>
                                   </thead>
-                                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                  <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
                                     {(endpointsByJob[jobKey] || []).length === 0 ? (
                                       <tr>
-                                        <td colSpan={4} className="px-4 py-2 text-sm text-center text-gray-500 dark:text-gray-400">
+                                        <td colSpan={4} className="px-4 py-2 text-sm text-center text-gray-500 dark:text-[#6272a4]">
                                           No endpoints running this job yet
                                         </td>
                                       </tr>
                                     ) : (
                                       (endpointsByJob[jobKey] || []).map((ep) => (
                                         <tr key={ep.endpoint_id}>
-                                          <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{ep.name}</td>
-                                          <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">{ep.platform}</td>
+                                          <td className="px-4 py-2 text-sm text-gray-700 dark:text-[#f8f8f2]">{ep.name}</td>
+                                          <td className="px-4 py-2 text-sm text-gray-700 dark:text-[#f8f8f2]">{ep.platform}</td>
                                           <td className="px-4 py-2 text-sm">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                               ep.status === 'active'
@@ -258,7 +258,7 @@ export const Jobs = () => {
                                               {ep.status}
                                             </span>
                                           </td>
-                                          <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+                                          <td className="px-4 py-2 text-sm text-gray-700 dark:text-[#f8f8f2]">
                                             {ep.last_heartbeat ? new Date(ep.last_heartbeat).toLocaleString() : 'Never'}
                                           </td>
                                         </tr>
@@ -280,7 +280,7 @@ export const Jobs = () => {
         </table>
       </div>
 
-      <div className="text-sm text-gray-500 dark:text-gray-400">
+      <div className="text-sm text-gray-500 dark:text-[#6272a4]">
         <p>
           Showing {jobs.length} job{jobs.length !== 1 ? 's' : ''} from Git
         </p>

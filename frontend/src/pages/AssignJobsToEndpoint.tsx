@@ -112,7 +112,7 @@ export const AssignJobsToEndpoint = () => {
   };
 
   if (loading) {
-    return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
+    return <div className="text-gray-600 dark:text-[#6272a4]">Loading...</div>;
   }
 
   if (!endpoint) {
@@ -134,10 +134,10 @@ export const AssignJobsToEndpoint = () => {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             Assign Jobs to {endpoint.name}
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-gray-500 dark:text-[#6272a4] mt-1">
             {endpoint.hostname} • {endpoint.platform}
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-[#6272a4]">
             Select jobs to run on this endpoint. Already assigned jobs are hidden.
           </p>
         </div>
@@ -151,11 +151,11 @@ export const AssignJobsToEndpoint = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
               Search
             </label>
             <div className="relative">
@@ -165,20 +165,20 @@ export const AssignJobsToEndpoint = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by job name..."
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-[#44475a] text-gray-900 dark:text-white"
               />
             </div>
           </div>
 
           {/* Namespace Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
               Group
             </label>
             <select
               value={namespaceFilter}
               onChange={(e) => setNamespaceFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-[#44475a] text-gray-900 dark:text-white"
             >
               <option value="all">All Groups</option>
               {namespaces.map(namespace => (
@@ -188,16 +188,16 @@ export const AssignJobsToEndpoint = () => {
           </div>
         </div>
 
-        <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+        <div className="mt-4 text-sm text-gray-600 dark:text-[#6272a4]">
           Showing {filteredJobs.length} of {availableJobs.length} available jobs
           {assignedJobs.length > 0 && ` (${assignedJobs.length} already assigned)`}
         </div>
       </div>
 
       {/* Jobs Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-800">
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
+          <thead className="bg-gray-50 dark:bg-[#44475a]">
             <tr>
               <th className="px-6 py-3 w-12">
                 <input
@@ -207,21 +207,21 @@ export const AssignJobsToEndpoint = () => {
                   className="rounded border-gray-300 dark:border-gray-600"
                 />
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Job Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Group
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Path
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
             {filteredJobs.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={4} className="px-6 py-8 text-center text-gray-500 dark:text-[#6272a4]">
                   {availableJobs.length === 0 
                     ? 'All jobs are already assigned to this endpoint'
                     : 'No jobs match your filters'}
@@ -259,7 +259,7 @@ export const AssignJobsToEndpoint = () => {
                       {job.namespace}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
                     {job.path}
                   </td>
                 </tr>

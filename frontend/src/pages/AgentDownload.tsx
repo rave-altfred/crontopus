@@ -111,7 +111,7 @@ export function AgentDownload() {
   return (
     <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Download Agent</h1>
-      <p className="text-gray-600 dark:text-gray-300 mb-8">
+      <p className="text-gray-600 dark:text-[#f8f8f2] mb-8">
         Generate an enrollment token below, then download a pre-configured agent for your platform
       </p>
       
@@ -127,7 +127,7 @@ export function AgentDownload() {
               <p className="text-sm text-green-800 dark:text-green-200 mb-2">
                 Copy this token now - it won't be shown again:
               </p>
-              <div className="bg-white dark:bg-gray-800 rounded p-3 font-mono text-sm break-all border border-green-300 dark:border-green-700">
+              <div className="bg-white dark:bg-[#44475a] rounded p-3 font-mono text-sm break-all border border-green-300 dark:border-green-700">
                 <code className="text-gray-800 dark:text-gray-200">{newToken}</code>
               </div>
               <button
@@ -151,7 +151,7 @@ export function AgentDownload() {
       )}
       
       {/* Platform Selection - MOVED TO TOP */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-6 mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Choose Your Platform</h2>
           <button
@@ -164,7 +164,7 @@ export function AgentDownload() {
         </div>
         
         {!newToken && (
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-gray-600 dark:text-[#f8f8f2] mb-6">
             Generate an enrollment token above to download the pre-configured installer.
           </p>
         )}
@@ -174,7 +174,7 @@ export function AgentDownload() {
           <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
                   Token Name *
                 </label>
                 <input
@@ -182,11 +182,11 @@ export function AgentDownload() {
                   value={tokenName}
                   onChange={(e) => setTokenName(e.target.value)}
                   placeholder="e.g., Production Servers"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#44475a] text-gray-900 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
                   Expires In (days)
                 </label>
                 <input
@@ -194,11 +194,11 @@ export function AgentDownload() {
                   value={expiresInDays || ''}
                   onChange={(e) => setExpiresInDays(e.target.value ? parseInt(e.target.value) : undefined)}
                   placeholder="Never"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#44475a] text-gray-900 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
                   Max Uses
                 </label>
                 <input
@@ -206,7 +206,7 @@ export function AgentDownload() {
                   value={maxUses || ''}
                   onChange={(e) => setMaxUses(e.target.value ? parseInt(e.target.value) : undefined)}
                   placeholder="Unlimited"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#44475a] text-gray-900 dark:text-white"
                 />
               </div>
             </div>
@@ -220,7 +220,7 @@ export function AgentDownload() {
               </button>
               <button
                 onClick={() => setShowCreateForm(false)}
-                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition"
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-[#44475a] dark:hover:bg-gray-600 text-gray-700 dark:text-[#f8f8f2] font-medium rounded-lg transition"
               >
                 Cancel
               </button>
@@ -233,17 +233,17 @@ export function AgentDownload() {
           <button
             onClick={() => newToken && handleDownload('linux', newToken)}
             disabled={!newToken || downloading === 'linux'}
-            className="flex flex-col items-center p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-800"
+            className="flex flex-col items-center p-6 border-2 border-gray-200 dark:border-[#6272a4] rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-[#44475a]"
           >
             <Terminal className="w-12 h-12 mb-3 text-blue-500" />
             <span className="font-semibold text-lg mb-1 text-gray-900 dark:text-white">Linux</span>
-            <span className="text-sm text-gray-600 dark:text-gray-300 text-center mb-3">
+            <span className="text-sm text-gray-600 dark:text-[#f8f8f2] text-center mb-3">
               Ubuntu, Debian, RHEL, Alpine
             </span>
             {downloading === 'linux' ? (
               <span className="text-sm text-blue-500">Downloading...</span>
             ) : (
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-[#f8f8f2]">
                 <Download className="w-4 h-4" />
                 install-crontopus-agent.sh
               </div>
@@ -254,17 +254,17 @@ export function AgentDownload() {
           <button
             onClick={() => newToken && handleDownload('macos', newToken)}
             disabled={!newToken || downloading === 'macos'}
-            className="flex flex-col items-center p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-800"
+            className="flex flex-col items-center p-6 border-2 border-gray-200 dark:border-[#6272a4] rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-[#44475a]"
           >
             <Apple className="w-12 h-12 mb-3 text-blue-500" />
             <span className="font-semibold text-lg mb-1 text-gray-900 dark:text-white">macOS</span>
-            <span className="text-sm text-gray-600 dark:text-gray-300 text-center mb-3">
+            <span className="text-sm text-gray-600 dark:text-[#f8f8f2] text-center mb-3">
               Intel & Apple Silicon
             </span>
             {downloading === 'macos' ? (
               <span className="text-sm text-blue-500">Downloading...</span>
             ) : (
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-[#f8f8f2]">
                 <Download className="w-4 h-4" />
                 install-crontopus-agent.sh
               </div>
@@ -275,17 +275,17 @@ export function AgentDownload() {
           <button
             onClick={() => newToken && handleDownload('windows', newToken)}
             disabled={!newToken || downloading === 'windows'}
-            className="flex flex-col items-center p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-800"
+            className="flex flex-col items-center p-6 border-2 border-gray-200 dark:border-[#6272a4] rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-[#44475a]"
           >
             <Monitor className="w-12 h-12 mb-3 text-blue-500" />
             <span className="font-semibold text-lg mb-1 text-gray-900 dark:text-white">Windows</span>
-            <span className="text-sm text-gray-600 dark:text-gray-300 text-center mb-3">
+            <span className="text-sm text-gray-600 dark:text-[#f8f8f2] text-center mb-3">
               Server 2019+, Win10/11
             </span>
             {downloading === 'windows' ? (
               <span className="text-sm text-blue-500">Downloading...</span>
             ) : (
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-[#f8f8f2]">
                 <Download className="w-4 h-4" />
                 install-crontopus-agent.ps1
               </div>
@@ -295,7 +295,7 @@ export function AgentDownload() {
       </div>
       
       {/* Enrollment Tokens Section - MOVED TO BOTTOM */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-6 mb-6">
         <div className="flex items-center gap-2 mb-4">
           <Key className="w-5 h-5 text-blue-500" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Enrollment Tokens</h2>
@@ -303,9 +303,9 @@ export function AgentDownload() {
         
         {/* Tokens List */}
         {loadingTokens ? (
-          <div className="text-gray-600 dark:text-gray-400 text-center py-4">Loading tokens...</div>
+          <div className="text-gray-600 dark:text-[#6272a4] text-center py-4">Loading tokens...</div>
         ) : tokens.length === 0 ? (
-          <div className="text-gray-600 dark:text-gray-400 text-center py-8">
+          <div className="text-gray-600 dark:text-[#6272a4] text-center py-8">
             <Key className="w-12 h-12 mx-auto mb-2 opacity-50" />
             <p>No enrollment tokens yet. Generate one to get started.</p>
           </div>
@@ -313,26 +313,26 @@ export function AgentDownload() {
           <>
             <div className="overflow-x-auto">
               <table className="min-w-full">
-                <thead className="border-b border-gray-200 dark:border-gray-700">
+                <thead className="border-b border-gray-200 dark:border-[#6272a4]">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Name</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Used</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Expires</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Last Used</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase">Name</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase">Used</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase">Expires</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase">Last Used</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="divide-y divide-gray-200 dark:divide-[#6272a4]">
                   {paginatedTokens.map((token) => (
                     <tr key={token.id}>
                       <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{token.name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-[#6272a4]">
                         {token.used_count}{token.max_uses ? ` / ${token.max_uses}` : ''}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-[#6272a4]">
                         {token.expires_at ? new Date(token.expires_at).toLocaleDateString() : 'Never'}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-[#6272a4]">
                         {token.last_used_at ? new Date(token.last_used_at).toLocaleString() : 'Never'}
                       </td>
                       <td className="px-4 py-3">
@@ -351,15 +351,15 @@ export function AgentDownload() {
             
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-[#6272a4]">
+                <div className="text-sm text-gray-600 dark:text-[#6272a4]">
                   Showing {(currentPage - 1) * tokensPerPage + 1} to {Math.min(currentPage * tokensPerPage, sortedTokens.length)} of {sortedTokens.length} tokens
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300"
+                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-[#f8f8f2]"
                   >
                     Previous
                   </button>
@@ -371,7 +371,7 @@ export function AgentDownload() {
                         className={`px-3 py-1 rounded ${
                           currentPage === page
                             ? 'bg-blue-500 text-white'
-                            : 'border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                            : 'border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-[#f8f8f2]'
                         }`}
                       >
                         {page}
@@ -381,7 +381,7 @@ export function AgentDownload() {
                   <button
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300"
+                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-[#f8f8f2]"
                   >
                     Next
                   </button>
@@ -411,13 +411,13 @@ export function AgentDownload() {
       </div>
       
       {/* Installation Commands */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Installation Instructions</h2>
         
         <div className="space-y-4">
           {/* Linux/macOS */}
           <div>
-            <h3 className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2">
+            <h3 className="font-semibold text-sm text-gray-700 dark:text-[#f8f8f2] mb-2">
               Linux / macOS
             </h3>
             <div className="bg-gray-100 dark:bg-gray-900 rounded p-3 font-mono text-sm">
@@ -431,7 +431,7 @@ export function AgentDownload() {
           
           {/* Windows */}
           <div>
-            <h3 className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2">
+            <h3 className="font-semibold text-sm text-gray-700 dark:text-[#f8f8f2] mb-2">
               Windows (PowerShell as Administrator)
             </h3>
             <div className="bg-gray-100 dark:bg-gray-900 rounded p-3 font-mono text-sm">
@@ -465,7 +465,7 @@ export function AgentDownload() {
       
       {/* Help Links */}
       <div className="mt-6 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-gray-600 dark:text-[#6272a4]">
           Need help? Check out the{' '}
           <a
             href="https://github.com/rave-altfred/crontopus/blob/main/agent/README.md"

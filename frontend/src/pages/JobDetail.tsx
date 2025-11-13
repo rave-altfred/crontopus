@@ -50,7 +50,7 @@ export const JobDetail = () => {
   }, [jobPath]);
 
   if (loading) {
-    return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
+    return <div className="text-gray-600 dark:text-[#6272a4]">Loading...</div>;
   }
 
   if (error || !job) {
@@ -113,7 +113,7 @@ export const JobDetail = () => {
             ← Back to jobs
           </Link>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{manifest.metadata.name}</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{jobPath}</p>
+          <p className="text-sm text-gray-500 dark:text-[#6272a4] mt-1">{jobPath}</p>
         </div>
         <div className="flex space-x-3">
           <button
@@ -147,16 +147,16 @@ export const JobDetail = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Schedule</h4>
+        <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
+          <h4 className="text-sm font-medium text-gray-500 dark:text-[#6272a4] mb-2">Schedule</h4>
           <p className="text-lg font-mono text-gray-900 dark:text-white">{manifest.spec.schedule}</p>
           {manifest.spec.timezone && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{manifest.spec.timezone}</p>
+            <p className="text-xs text-gray-500 dark:text-[#6272a4] mt-1">{manifest.spec.timezone}</p>
           )}
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Status</h4>
+        <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
+          <h4 className="text-sm font-medium text-gray-500 dark:text-[#6272a4] mb-2">Status</h4>
           <span
             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
               manifest.spec.enabled === false || manifest.spec.paused
@@ -168,8 +168,8 @@ export const JobDetail = () => {
           </span>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Group</h4>
+        <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
+          <h4 className="text-sm font-medium text-gray-500 dark:text-[#6272a4] mb-2">Group</h4>
           <span
             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
               manifest._meta?.namespace === 'production'
@@ -183,11 +183,11 @@ export const JobDetail = () => {
       </div>
 
       {manifest.metadata.labels && Object.keys(manifest.metadata.labels).length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
           <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Labels</h4>
           <div className="flex flex-wrap gap-2">
             {Object.entries(manifest.metadata.labels).map(([key, value]) => (
-              <span key={key} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded">
+              <span key={key} className="px-2 py-1 bg-gray-100 dark:bg-[#44475a] text-gray-700 dark:text-[#f8f8f2] text-xs rounded">
                 {key}: {value}
               </span>
             ))}
@@ -197,8 +197,8 @@ export const JobDetail = () => {
 
       <ManifestViewer content={manifest._meta?.raw_content || ''} fileName={jobPath} />
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-[#6272a4] flex justify-between items-center">
           <h3 className="text-sm font-medium text-gray-900 dark:text-white">Endpoints Running This Job</h3>
           <Link
             to={`/jobs/${namespace}/${jobName}/assign-endpoints`}
@@ -209,33 +209,33 @@ export const JobDetail = () => {
           </Link>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
+            <thead className="bg-gray-50 dark:bg-[#44475a]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Endpoint
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Hostname
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Platform
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Last Heartbeat
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
               {endpoints.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4] text-sm">
                     Not assigned to any endpoints
                   </td>
                 </tr>
@@ -245,10 +245,10 @@ export const JobDetail = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {endpoint.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
                       {endpoint.hostname}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
                       {endpoint.platform}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -264,7 +264,7 @@ export const JobDetail = () => {
                         {endpoint.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
                       {endpoint.last_heartbeat
                         ? new Date(endpoint.last_heartbeat).toLocaleString()
                         : 'Never'}
@@ -286,29 +286,29 @@ export const JobDetail = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-[#6272a4]">
           <h3 className="text-sm font-medium text-gray-900 dark:text-white">Recent Runs</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
+            <thead className="bg-gray-50 dark:bg-[#44475a]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Started At
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Duration
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
               {runs.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4] text-sm">
                     No runs yet
                   </td>
                 </tr>
@@ -328,10 +328,10 @@ export const JobDetail = () => {
                         {run.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
                       {new Date(run.started_at).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
                       {run.duration ? `${run.duration}s` : '-'}
                     </td>
                   </tr>
@@ -345,9 +345,9 @@ export const JobDetail = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-[#44475a] rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Delete Job</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
+            <p className="text-gray-600 dark:text-[#f8f8f2] mb-4">
               Are you sure you want to delete <strong>{manifest.metadata.name}</strong>?
               This will remove the job from Git and cannot be undone.
             </p>
@@ -355,7 +355,7 @@ export const JobDetail = () => {
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={deleting}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
               >
                 Cancel
               </button>
