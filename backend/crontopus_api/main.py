@@ -111,8 +111,7 @@ async def health_check():
 
 
 @app.get("/")
-@limiter.limit("60/minute")  # Apply default rate limit to root
-async def root(request: Request):
+async def root():
     """
     Root endpoint with API information.
     
