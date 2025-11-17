@@ -85,9 +85,9 @@ Key:
 
 ## Current Development Phase
 
-**Phase 17: API Security & Rate Limiting** ⚠️ **PHASES 17.1 & 17.3 COMPLETE** (Nov 2025)
+**Phase 17: API Security & Rate Limiting** ✅ **PHASES 17.1, 17.2 & 17.3 COMPLETE** (Nov 2025)
 - Phase 17.1: Check-in Authentication ✅ Complete (Nov 17, 2025)
-- Phase 17.2: User API Tokens ❌ Not Started
+- Phase 17.2: User API Tokens ✅ Complete (Nov 17, 2025)
 - Phase 17.3: Rate Limiting & DDoS Protection ✅ Complete (Nov 17, 2025)
 - Phase 17.4: Documentation & Migration ⚠️ Partial
 
@@ -99,11 +99,21 @@ Key:
 - ✅ Agent scripts already include tokens (no changes needed)
 - ✅ Deployed to production (version 20251117-173117)
 
+**Phase 17.2 Status** (✅ Complete):
+- ✅ APIToken model with SHA256 hashing
+- ✅ Full CRUD API for token management (5 endpoints)
+- ✅ Token format: ctp_<random> (like GitHub PATs)
+- ✅ Scopes: read:runs, write:jobs, read:agents, write:agents, admin:*
+- ✅ Authentication middleware supports both JWT and API tokens
+- ✅ Automatic last_used_at tracking for audit trail
+- ✅ Token expiration support (configurable or never)
+- ✅ Deployed to production (version 20251117-183507)
+
 **Phase 17.3 Status** (✅ Complete):
 - ✅ Rate limiting infrastructure complete (fastapi-limiter + Redis/Valkey)
 - ✅ Smart identifier: User ID → Endpoint ID → IP fallback
-- ✅ 23 endpoints protected with rate limiting
-- ✅ Per-endpoint limits: Login 5/min, Register 3/hr, Check-ins 100/min, API 60/min
+- ✅ 28 endpoints protected with rate limiting (23 original + 5 token endpoints)
+- ✅ Per-endpoint limits: Login 5/min, Register 3/hr, Check-ins 100/min, API 60/min, Tokens 10/min
 - ✅ Production deployment with Valkey database 3 (dedicated to Crontopus)
 - ✅ Local development with Redis (localhost:6379)
 - ✅ Rate limit headers (X-RateLimit-*) configured
@@ -202,10 +212,11 @@ Key:
 - Phase 9: Agent Documentation & Distribution ✅ Complete
 
 **Next Steps**:
-1. Phase 17.2: User API Tokens (enable programmatic API access)
-2. Phase 17.4: Complete documentation for check-in authentication and rate limiting
-3. Phase 4: Alerting & Monitoring (Planned)
-4. Phase 17.5 (Future): Make token required for check-ins (remove backward compatibility)
+1. Phase 17.4: Complete documentation for API security (check-ins, tokens, rate limiting)
+2. Phase 18: Frontend UI for API token management
+3. Phase 19: Granular scope enforcement per endpoint
+4. Phase 4: Alerting & Monitoring (Planned)
+5. Phase 17.5 (Future): Make check-in token required (remove backward compatibility)
 
 See `docs/development-plan.md` for full roadmap.
 
