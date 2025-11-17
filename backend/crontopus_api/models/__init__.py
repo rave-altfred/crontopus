@@ -12,6 +12,7 @@ from .agent import Agent, AgentStatus  # Keep for backward compatibility during 
 from .endpoint import Endpoint, EndpointStatus
 from .job_instance import JobInstance, JobInstanceStatus, JobInstanceSource
 from .enrollment_token import EnrollmentToken
+from .api_token import APIToken, AVAILABLE_SCOPES
 
 __all__ = [
     "TenantScopedBase",
@@ -27,4 +28,6 @@ __all__ = [
     "JobInstanceStatus",
     "JobInstanceSource",
     "EnrollmentToken",
+    "APIToken",
+    "AVAILABLE_SCOPES",
 ]

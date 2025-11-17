@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from crontopus_api.config import settings, get_db
-from crontopus_api.routes import auth, checkins, agents, endpoints, jobs, enrollment_tokens, namespaces
+from crontopus_api.routes import auth, checkins, agents, endpoints, jobs, enrollment_tokens, namespaces, api_tokens
 from crontopus_api.middleware.rate_limit import get_identifier
 
 # Create FastAPI app
@@ -41,6 +41,7 @@ app.include_router(agents.router, prefix=settings.api_prefix)  # Keep for backwa
 app.include_router(endpoints.router, prefix=settings.api_prefix)  # New: Agent → Endpoint terminology
 app.include_router(enrollment_tokens.router, prefix=settings.api_prefix)  # Enrollment token management
 app.include_router(namespaces.router, prefix=settings.api_prefix)  # Namespace/group management
+app.include_router(api_tokens.router, prefix=settings.api_prefix)  # API token management
 app.include_router(jobs.router, prefix=f"{settings.api_prefix}/jobs")
 
 # Log all registered routes on startup
