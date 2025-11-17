@@ -112,6 +112,28 @@ if [ "$FRONTEND_BUILT" = true ]; then
   echo -e "${GREEN}✓ Frontend images pushed${NC}"
 fi
 
+# Cleanup old images (keep latest tags for caching, remove old versioned tags)
+echo ""
+echo -e "${BLUE}Cleaning up old Docker images...${NC}"
+
+# Remove old versioned backend images (keep latest and current version)
+docker images --format "{{.Repository}}:{{.Tag}}" | \
+  grep "${REGISTRY}/backend:" | \
+  grep -v ":latest$" | \
+  grep -v ":${VERSION}$" | \
+  xargs -r docker rmi 2>/dev/null || true
+
+# Remove old versioned frontend images (keep latest and current version)
+if [ "$FRONTEND_BUILT" = true ]; then
+  docker images --format "{{.Repository}}:{{.Tag}}" | \
+    grep "${REGISTRY}/frontend:" | \
+    grep -v ":latest$" | \
+    grep -v ":${VERSION}$" | \
+    xargs -r docker rmi 2>/dev/null || true
+fi
+
+echo -e "${GREEN}✓ Old images cleaned up${NC}"
+
 # Update app.yaml with versioned tags
 echo ""
 echo -e "${BLUE}Updating app.yaml with version tags...${NC}"
