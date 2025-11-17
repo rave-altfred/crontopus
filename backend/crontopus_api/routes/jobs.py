@@ -13,12 +13,13 @@ Job Storage:
 - All CRUD operations commit changes to Git
 - Database only stores run history and metadata
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, Body
+from fastapi import APIRouter, Depends, HTTPException, Query, Body, Request
 from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
 import yaml
 
 from sqlalchemy.orm import Session
+from fastapi_limiter.depends import RateLimiter
 from ..security.dependencies import get_current_user
 from ..models.user import User
 from ..models import JobInstance, Endpoint
@@ -65,8 +66,9 @@ def get_forgejo_client() -> ForgejoClient:
     )
 
 
-@router.get("/")
+@router.get("/", dependencies=[Depends(RateLimiter(times=60, seconds=60))])
 async def list_jobs(
+    request: Request,
     namespace: Optional[str] = Query(None, description="Filter by namespace/group"),
     current_user: User = Depends(get_current_user),
     forgejo: ForgejoClient = Depends(get_forgejo_client)
@@ -99,8 +101,9 @@ async def list_jobs(
 # Removed catch-all route - use /jobs/{namespace}/{job_name} instead
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, dependencies=[Depends(RateLimiter(times=30, seconds=60))])
 async def create_job(
+    request: Request,
     job: JobCreateRequest,
     forgejo: ForgejoClient = Depends(get_forgejo_client),
     current_user: User = Depends(get_current_user),
@@ -170,8 +173,9 @@ async def create_job(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/{namespace}/{job_name}")
+@router.put("/{namespace}/{job_name}", dependencies=[Depends(RateLimiter(times=30, seconds=60))])
 async def update_job(
+    request: Request,
     namespace: str,
     job_name: str,
     updates: JobUpdateRequest,
@@ -250,8 +254,9 @@ async def update_job(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{namespace}/{job_name}")
+@router.delete("/{namespace}/{job_name}", dependencies=[Depends(RateLimiter(times=30, seconds=60))])
 async def delete_job(
+    request: Request,
     namespace: str,
     job_name: str,
     forgejo: ForgejoClient = Depends(get_forgejo_client),
@@ -304,8 +309,9 @@ async def delete_job(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{namespace}/{job_name}/adopt")
+@router.post("/{namespace}/{job_name}/adopt", dependencies=[Depends(RateLimiter(times=30, seconds=60))])
 async def adopt_job(
+    request: Request,
     namespace: str,
     job_name: str,
     target_namespace: str = Body(..., embed=True, description="Target namespace (production/staging)"),

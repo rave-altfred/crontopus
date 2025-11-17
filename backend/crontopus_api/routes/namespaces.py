@@ -4,11 +4,12 @@ Namespace routes for managing job organization groups.
 Namespaces are Git directories in the job manifest repository.
 They provide flexible organization without database overhead.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel, Field, validator
 from typing import List
 import re
 import logging
+from fastapi_limiter.depends import RateLimiter
 
 from sqlalchemy.orm import Session
 from ..security.dependencies import get_current_user
@@ -64,8 +65,9 @@ def get_forgejo_client() -> ForgejoClient:
     )
 
 
-@router.get("/", response_model=List[NamespaceResponse])
+@router.get("/", response_model=List[NamespaceResponse], dependencies=[Depends(RateLimiter(times=60, seconds=60))])
 async def list_namespaces(
+    request: Request,
     current_user: User = Depends(get_current_user),
     forgejo: ForgejoClient = Depends(get_forgejo_client)
 ):
@@ -128,8 +130,9 @@ async def list_namespaces(
         )
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=NamespaceResponse)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=NamespaceResponse, dependencies=[Depends(RateLimiter(times=30, seconds=60))])
 async def create_namespace(
+    request: Request,
     namespace_data: NamespaceCreateRequest,
     current_user: User = Depends(get_current_user),
     forgejo: ForgejoClient = Depends(get_forgejo_client)
@@ -191,8 +194,9 @@ async def create_namespace(
         )
 
 
-@router.delete("/{name}", status_code=status.HTTP_200_OK)
+@router.delete("/{name}", status_code=status.HTTP_200_OK, dependencies=[Depends(RateLimiter(times=30, seconds=60))])
 async def delete_namespace(
+    request: Request,
     name: str,
     current_user: User = Depends(get_current_user),
     forgejo: ForgejoClient = Depends(get_forgejo_client)

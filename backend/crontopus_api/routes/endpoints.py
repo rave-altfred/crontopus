@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 import logging
+from fastapi_limiter.depends import RateLimiter
 from crontopus_api.config import get_db, get_settings
 from crontopus_api.models import Endpoint, EndpointStatus, User, JobInstance, JobInstanceStatus, JobInstanceSource
 from crontopus_api.schemas.agent import (
@@ -41,8 +42,9 @@ router = APIRouter(prefix="/endpoints", tags=["endpoints"])
 logger = logging.getLogger(__name__)
 
 
-@router.post("/enroll", response_model=AgentEnrollResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/enroll", response_model=AgentEnrollResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(RateLimiter(times=10, seconds=60))])
 async def enroll_endpoint(
+    request: Request,
     endpoint_data: AgentEnroll,
     current_user: User = Depends(get_user_for_enrollment),
     db: Session = Depends(get_db)
@@ -118,8 +120,9 @@ async def enroll_endpoint(
         )
 
 
-@router.get("", response_model=AgentListResponse)
+@router.get("", response_model=AgentListResponse, dependencies=[Depends(RateLimiter(times=60, seconds=60))])
 async def list_endpoints(
+    request: Request,
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),
     status_filter: Optional[EndpointStatus] = Query(None, alias="status", description="Filter by status"),
@@ -159,8 +162,9 @@ async def list_endpoints(
     )
 
 
-@router.get("/{endpoint_id}", response_model=AgentResponse)
+@router.get("/{endpoint_id}", response_model=AgentResponse, dependencies=[Depends(RateLimiter(times=60, seconds=60))])
 async def get_endpoint(
+    request: Request,
     endpoint_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -215,8 +219,9 @@ async def update_endpoint(
     return endpoint
 
 
-@router.post("/{endpoint_id}/heartbeat", status_code=status.HTTP_200_OK)
+@router.post("/{endpoint_id}/heartbeat", status_code=status.HTTP_200_OK, dependencies=[Depends(RateLimiter(times=120, seconds=60))])
 async def endpoint_heartbeat(
+    request: Request,
     endpoint_id: int,
     heartbeat_data: AgentHeartbeat,
     db: Session = Depends(get_db)

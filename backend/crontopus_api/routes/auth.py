@@ -11,7 +11,7 @@ from crontopus_api.schemas.auth import UserRegister, UserLogin, Token, UserRespo
 from crontopus_api.security import verify_password, get_password_hash, create_access_token
 from crontopus_api.security.dependencies import get_current_user
 from crontopus_api.services.forgejo import ForgejoClient
-from crontopus_api.middleware.rate_limit import limiter
+from fastapi_limiter.depends import RateLimiter
 import httpx
 import logging
 
@@ -112,8 +112,7 @@ async def create_tenant_repository(tenant_id: str, username: str) -> bool:
         return False
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-# @limiter.limit("3/hour")  # TODO: Fix async compatibility issue
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(RateLimiter(times=3, seconds=3600))])
 async def register(request: Request, user_data: UserRegister, db: Session = Depends(get_db)):
     """
     Register a new user.
@@ -223,8 +222,7 @@ async def register(request: Request, user_data: UserRegister, db: Session = Depe
     return new_user
 
 
-@router.post("/login", response_model=Token)
-# @limiter.limit("5/minute")  # TODO: Fix async compatibility issue
+@router.post("/login", response_model=Token, dependencies=[Depends(RateLimiter(times=5, seconds=60))])
 async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
     Authenticate user and return JWT token.
@@ -270,8 +268,7 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/me", response_model=UserResponse)
-# @limiter.limit("60/minute")  # TODO: Fix async compatibility issue  
+@router.get("/me", response_model=UserResponse, dependencies=[Depends(RateLimiter(times=60, seconds=60))])
 async def get_me(request: Request, current_user: User = Depends(get_current_user)):
     """
     Get current authenticated user information.

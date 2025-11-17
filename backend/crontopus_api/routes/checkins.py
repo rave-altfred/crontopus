@@ -21,13 +21,12 @@ from crontopus_api.schemas.checkin import (
     AgentCheckinRequest
 )
 from crontopus_api.security.dependencies import get_current_user
-from crontopus_api.middleware.rate_limit import limiter
+from fastapi_limiter.depends import RateLimiter
 
 router = APIRouter(tags=["checkins", "runs"])
 
 
-@router.post("/runs/check-in", response_model=CheckinResponse, status_code=status.HTTP_201_CREATED)
-# @limiter.limit("100/minute")  # TODO: Fix async compatibility issue
+@router.post("/runs/check-in", response_model=CheckinResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(RateLimiter(times=100, seconds=60))])
 async def agent_checkin(
     request: Request,
     checkin_data: AgentCheckinRequest,
@@ -141,8 +140,9 @@ class EndpointAggregationListResponse(BaseModel):
     total: int
 
 
-@router.get("/runs/by-job", response_model=JobAggregationListResponse)
+@router.get("/runs/by-job", response_model=JobAggregationListResponse, dependencies=[Depends(RateLimiter(times=60, seconds=60))])
 async def runs_by_job(
+    request: Request,
     days: int = Query(7, ge=1, le=365, description="Days to look back"),
     job_name: Optional[str] = Query(None, description="Filter by job name"),
     namespace: Optional[str] = Query(None, description="Filter by namespace"),
@@ -227,8 +227,9 @@ async def runs_by_job(
     )
 
 
-@router.get("/runs/by-endpoint", response_model=EndpointAggregationListResponse)
+@router.get("/runs/by-endpoint", response_model=EndpointAggregationListResponse, dependencies=[Depends(RateLimiter(times=60, seconds=60))])
 async def runs_by_endpoint(
+    request: Request,
     days: int = Query(7, ge=1, le=365, description="Days to look back"),
     name: Optional[str] = Query(None, description="Filter by endpoint name"),
     hostname: Optional[str] = Query(None, description="Filter by hostname"),
@@ -316,8 +317,9 @@ async def runs_by_endpoint(
     )
 
 
-@router.get("/runs", response_model=JobRunListResponse)
+@router.get("/runs", response_model=JobRunListResponse, dependencies=[Depends(RateLimiter(times=60, seconds=60))])
 async def list_runs(
+    request: Request,
     limit: int = Query(100, ge=1, le=1000, description="Maximum number of runs to return"),
     job_name: Optional[str] = Query(None, description="Filter by job name"),
     namespace: Optional[str] = Query(None, description="Filter by namespace"),
@@ -368,8 +370,9 @@ async def list_runs(
     )
 
 
-@router.get("/runs/{run_id}", response_model=JobRunResponse)
+@router.get("/runs/{run_id}", response_model=JobRunResponse, dependencies=[Depends(RateLimiter(times=60, seconds=60))])
 async def get_run(
+    request: Request,
     run_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)

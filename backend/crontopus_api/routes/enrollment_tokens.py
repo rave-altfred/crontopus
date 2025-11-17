@@ -7,9 +7,10 @@ for agent deployment.
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
+from fastapi_limiter.depends import RateLimiter
 
 from crontopus_api.config import get_db
 from crontopus_api.models import EnrollmentToken, User
@@ -61,8 +62,9 @@ class EnrollmentTokenListResponse(BaseModel):
     page_size: int
 
 
-@router.post("", response_model=EnrollmentTokenResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=EnrollmentTokenResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(RateLimiter(times=10, seconds=60))])
 async def create_enrollment_token(
+    request: Request,
     token_data: EnrollmentTokenCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -106,8 +108,9 @@ async def create_enrollment_token(
     )
 
 
-@router.get("", response_model=EnrollmentTokenListResponse)
+@router.get("", response_model=EnrollmentTokenListResponse, dependencies=[Depends(RateLimiter(times=60, seconds=60))])
 async def list_enrollment_tokens(
+    request: Request,
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Items per page"),
     current_user: User = Depends(get_current_user),
@@ -138,8 +141,9 @@ async def list_enrollment_tokens(
     )
 
 
-@router.delete("/{token_id}", status_code=status.HTTP_200_OK)
+@router.delete("/{token_id}", status_code=status.HTTP_200_OK, dependencies=[Depends(RateLimiter(times=30, seconds=60))])
 async def delete_enrollment_token(
+    request: Request,
     token_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)

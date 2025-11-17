@@ -10,7 +10,7 @@ from sqlalchemy import text
 
 from crontopus_api.config import settings, get_db
 from crontopus_api.routes import auth, checkins, agents, endpoints, jobs, enrollment_tokens, namespaces
-from crontopus_api.middleware.rate_limit import limiter, RateLimitExceeded, _rate_limit_exceeded_handler
+from crontopus_api.middleware.rate_limit import get_identifier
 
 # Create FastAPI app
 app = FastAPI(
@@ -18,10 +18,6 @@ app = FastAPI(
     version=settings.api_version,
     description="API-first job scheduling and monitoring platform"
 )
-
-# Configure rate limiting
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS
 app.add_middleware(
@@ -52,7 +48,26 @@ import logging
 logger = logging.getLogger("uvicorn")
 
 @app.on_event("startup")
-async def log_routes():
+async def startup_event():
+    """Initialize services on startup."""
+    # Initialize fastapi-limiter with Redis
+    import redis.asyncio as aioredis
+    from fastapi_limiter import FastAPILimiter
+    
+    try:
+        redis_client = aioredis.from_url(
+            settings.redis_url,
+            db=settings.redis_database,
+            encoding="utf-8",
+            decode_responses=True
+        )
+        await FastAPILimiter.init(redis_client, identifier=get_identifier)
+        logger.info(f"Rate limiting initialized with Redis at {settings.redis_url} (db: {settings.redis_database})")
+    except Exception as e:
+        logger.error(f"Failed to initialize rate limiting: {e}")
+        # Continue without rate limiting - graceful degradation
+    
+    # Log registered routes
     logger.info("="*50)
     logger.info("Registered routes:")
     for route in app.routes:
@@ -62,7 +77,6 @@ async def log_routes():
 
 
 @app.get("/health")
-@limiter.exempt  # Health checks should not be rate limited
 async def health_check():
     """
     Health check endpoint with database connectivity check.
