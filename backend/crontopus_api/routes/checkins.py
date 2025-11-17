@@ -6,7 +6,7 @@ Run history is queried by authenticated users.
 """
 from typing import Optional, List
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, Header
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, case
 from pydantic import BaseModel
@@ -21,6 +21,7 @@ from crontopus_api.schemas.checkin import (
     AgentCheckinRequest
 )
 from crontopus_api.security.dependencies import get_current_user
+from crontopus_api.security.password import verify_password
 from fastapi_limiter.depends import RateLimiter
 
 router = APIRouter(tags=["checkins", "runs"])
@@ -30,6 +31,7 @@ router = APIRouter(tags=["checkins", "runs"])
 async def agent_checkin(
     request: Request,
     checkin_data: AgentCheckinRequest,
+    authorization: Optional[str] = Header(None),
     db: Session = Depends(get_db)
 ):
     """
@@ -38,10 +40,15 @@ async def agent_checkin(
     This endpoint is called by jobs wrapped with check-in callbacks.
     Accepts minimal data: endpoint_id, job_name, namespace, status.
     
-    No authentication required - endpoint_id serves as authentication.
+    Authentication:
+    - Requires Authorization: Bearer <endpoint_token> header
+    - Token is validated against endpoint's stored token_hash
+    - For backward compatibility, token validation is optional until all agents upgrade (v0.1.15+)
     """
     from datetime import datetime, timezone
     from crontopus_api.models import Endpoint
+    import logging
+    logger = logging.getLogger(__name__)
     
     # Verify endpoint exists and get tenant_id
     endpoint = db.query(Endpoint).filter(Endpoint.id == checkin_data.endpoint_id).first()
@@ -50,6 +57,39 @@ async def agent_checkin(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Endpoint not found"
         )
+    
+    # Validate endpoint token (optional for backward compatibility)
+    if authorization:
+        # Extract token from Authorization header
+        if not authorization.startswith("Bearer "):
+            logger.warning(f"Invalid Authorization header format for endpoint {endpoint.id}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid Authorization header format. Expected: Bearer <token>"
+            )
+        
+        token = authorization[7:]  # Remove "Bearer " prefix
+        
+        # Verify token against stored hash
+        if not endpoint.token_hash:
+            logger.warning(f"Endpoint {endpoint.id} has no token_hash stored")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Endpoint authentication not configured"
+            )
+        
+        if not verify_password(token, endpoint.token_hash):
+            logger.warning(f"Invalid token provided for endpoint {endpoint.id}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid endpoint token"
+            )
+        
+        logger.debug(f"Endpoint {endpoint.id} authenticated successfully")
+    else:
+        # Backward compatibility: allow check-ins without token for now
+        # TODO: Make token required in future version (Phase 17.1 final step)
+        logger.warning(f"Check-in from endpoint {endpoint.id} without token (deprecated)")
     
     # Create job run record with captured data
     now = datetime.now(timezone.utc)

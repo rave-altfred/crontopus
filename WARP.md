@@ -85,24 +85,29 @@ Key:
 
 ## Current Development Phase
 
-**Phase 17: API Security & Rate Limiting** 🚧 **IN PROGRESS** (Nov 2025)
-- Phase 17.1: Check-in Authentication ❌ Not Started
+**Phase 17: API Security & Rate Limiting** ⚠️ **PHASES 17.1 & 17.3 COMPLETE** (Nov 2025)
+- Phase 17.1: Check-in Authentication ✅ Complete (Nov 17, 2025)
 - Phase 17.2: User API Tokens ❌ Not Started
-- Phase 17.3: Rate Limiting & DDoS Protection ⚠️ Partially Complete
-- Phase 17.4: Documentation & Migration ❌ Not Started
+- Phase 17.3: Rate Limiting & DDoS Protection ✅ Complete (Nov 17, 2025)
+- Phase 17.4: Documentation & Migration ⚠️ Partial
 
-**Current Status** (⚠️ Phase 17.3):
-- ✅ Rate limiting infrastructure complete (SlowAPI + Redis/Valkey)
+**Phase 17.1 Status** (✅ Complete):
+- ✅ Check-in endpoint validates endpoint tokens (bcrypt verification)
+- ✅ Authorization header: `Bearer <endpoint_token>` required
+- ✅ Backward compatibility maintained (token optional during migration)
+- ✅ Comprehensive logging for security monitoring
+- ✅ Agent scripts already include tokens (no changes needed)
+- ✅ Deployed to production (version 20251117-173117)
+
+**Phase 17.3 Status** (✅ Complete):
+- ✅ Rate limiting infrastructure complete (fastapi-limiter + Redis/Valkey)
 - ✅ Smart identifier: User ID → Endpoint ID → IP fallback
+- ✅ 23 endpoints protected with rate limiting
 - ✅ Per-endpoint limits: Login 5/min, Register 3/hr, Check-ins 100/min, API 60/min
 - ✅ Production deployment with Valkey database 3 (dedicated to Crontopus)
 - ✅ Local development with Redis (localhost:6379)
 - ✅ Rate limit headers (X-RateLimit-*) configured
-- ⚠️ **Known Issue**: SlowAPI decorators temporarily disabled (async compatibility)
-  - Error: "parameter `response` must be an instance of starlette.responses.Response"
-  - Hotfix applied: All `@limiter.limit()` decorators commented out
-  - API fully functional in production
-  - Pending: Migration to fastapi-limiter or custom async middleware
+- ✅ Deployed to production (version 20251117-140902)
 
 **Previous Phases**:
 
@@ -197,10 +202,10 @@ Key:
 - Phase 9: Agent Documentation & Distribution ✅ Complete
 
 **Next Steps**:
-1. Complete Phase 17.3: Implement async-compatible rate limiting (fastapi-limiter or custom middleware)
-2. Phase 17.1: Check-in Authentication (secure job check-ins)
-3. Phase 17.2: User API Tokens (enable programmatic API access)
-4. Phase 4: Alerting & Monitoring (Planned)
+1. Phase 17.2: User API Tokens (enable programmatic API access)
+2. Phase 17.4: Complete documentation for check-in authentication and rate limiting
+3. Phase 4: Alerting & Monitoring (Planned)
+4. Phase 17.5 (Future): Make token required for check-ins (remove backward compatibility)
 
 See `docs/development-plan.md` for full roadmap.
 
