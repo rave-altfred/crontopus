@@ -18,6 +18,7 @@ import { JobEdit } from './pages/JobEdit';
 import { AssignJobsToEndpoint } from './pages/AssignJobsToEndpoint';
 import { AssignEndpointsToJob } from './pages/AssignEndpointsToJob';
 import { Groups } from './pages/Groups';
+import { APITokens } from './pages/APITokens';
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
             <Route path="runs/by-job" element={<RunsByJob />} />
             <Route path="runs/by-endpoint" element={<RunsByEndpoint />} />
             <Route path="groups" element={<Groups />} />
+            <Route path="api-tokens" element={<APITokens />} />
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/new" element={<JobNew />} />
             <Route path="jobs/:namespace/:jobName/edit" element={<JobEdit />} />

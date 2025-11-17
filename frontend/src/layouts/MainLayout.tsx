@@ -2,7 +2,7 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ThemeSelector } from '../components/ThemeSelector';
 import { Logo } from '../components/Logo';
-import { LayoutDashboard, FileText, Server, Activity, FolderOpen, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FileText, Server, Activity, FolderOpen, ChevronRight, Key } from 'lucide-react';
 
 export const MainLayout = () => {
   const { user, logout } = useAuth();
@@ -144,6 +144,20 @@ export const MainLayout = () => {
                 >
                   <Activity size={20} />
                   <span className="font-medium">Agents</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to="/api-tokens"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    isActive('/api-tokens')
+                      ? 'bg-brand-50 dark:bg-[#44475a] text-brand-600 dark:text-[#bd93f9]'
+                      : 'text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/50'
+                  }`}
+                >
+                  <Key size={20} />
+                  <span className="font-medium">API Tokens</span>
                 </Link>
               </li>
             </ul>
