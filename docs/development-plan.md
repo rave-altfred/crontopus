@@ -2117,25 +2117,47 @@ class Settings(BaseSettings):
 
 ### 17.4 Documentation & Migration
 
-- [ ] Update API documentation
-  - Add authentication section to docs/api-reference.md
-  - Document both JWT (UI/CLI) and API token (programmatic) flows
-  - Document rate limits and best practices
-  - Example curl commands with authentication
-  - Security best practices
-  - How to handle 429 responses (exponential backoff)
-- [ ] Update agent documentation
-  - Explain how endpoint tokens work
-  - Document check-in authentication flow
-  - Rate limit considerations for agents
-  - Troubleshooting authentication errors
-- [ ] Create migration guide
-  - Explain changes to check-in endpoint
-  - Steps to update deployed agents (if needed)
-  - Backward compatibility period
-  - Rate limit rollout strategy
+**Status**: ✅ **COMPLETE** (Nov 2025)
 
-**Deliverable**: Complete documentation for API authentication and rate limiting
+- [x] Update API documentation
+  - ✅ Created comprehensive `docs/api-reference.md` (448 lines)
+  - ✅ Three authentication methods documented (JWT, API tokens, endpoint tokens)
+  - ✅ Complete rate limiting reference table (15 endpoints)
+  - ✅ Example curl commands for all auth flows
+  - ✅ Security best practices section
+  - ✅ Exponential backoff implementation examples (Python, Bash)
+  - ✅ Integration examples (GitHub Actions, GitLab CI, Jenkins)
+- [x] Update agent documentation
+  - ✅ Added authentication flow section to `agent/README.md`
+  - ✅ Multi-stage authentication explained (enrollment → operational → check-ins)
+  - ✅ Token types and storage documented
+  - ✅ Rate limiting section with agent-specific limits
+  - ✅ Troubleshooting sections for 401/429 errors
+  - ✅ Check-in authentication failures documented
+  - ✅ Rate limit best practices and examples
+- [x] Create migration guide
+  - ✅ Created `docs/api-authentication-guide.md` (554 lines)
+  - ✅ Phase 17 overview and timeline
+  - ✅ Existing agents: No action required (backward compatible)
+  - ✅ CI/CD pipelines: Step-by-step JWT → API token migration
+  - ✅ Custom scripts: Rate limit handling examples
+  - ✅ Security best practices (token management, rate limits)
+  - ✅ Comprehensive troubleshooting guide
+
+**Deliverable**: ✅ Complete documentation suite for API authentication, rate limiting, and migration
+
+**Files Created/Updated**:
+- `docs/api-reference.md` - 448 lines (NEW)
+- `docs/api-authentication-guide.md` - 554 lines (NEW)
+- `agent/README.md` - Updated with authentication and rate limiting sections
+
+**Documentation Coverage**:
+- ✅ All three authentication methods
+- ✅ Rate limiting infrastructure and limits
+- ✅ Security best practices
+- ✅ Migration strategies
+- ✅ Integration examples
+- ✅ Troubleshooting guides
 
 ### Benefits
 - ✅ Secure check-in endpoint prevents fake submissions

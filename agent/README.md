@@ -508,15 +508,109 @@ schtasks /create /tn "Crontopus Agent" /tr "C:\Program Files\Crontopus\crontopus
 2. Check agent logs for specific job names with drift
 3. Verify cron expressions are standard 5-field format
 
+### Check-in Authentication Failures
+
+**Symptom:** `401 Unauthorized` errors in agent logs or check-in failures
+
+**Possible Causes:**
+1. **Missing endpoint token**: Token file doesn't exist or is empty
+2. **Invalid token**: Token doesn't match backend hash
+3. **Corrupted token file**: File permissions or encoding issues
+
+**Solutions:**
+```bash
+# 1. Verify token file exists and has correct permissions
+ls -la ~/.crontopus/agent-token
+# Should show: -rw------- (0600)
+
+# 2. Check token file content (should be non-empty)
+cat ~/.crontopus/agent-token
+# Should show: ep_...
+
+# 3. If token is missing or invalid, re-enroll agent
+# Note: This creates a NEW endpoint entry
+./crontopus-agent --config config.yaml
+
+# 4. Check agent logs for specific error messages
+grep "check-in" ~/.crontopus/agent.log
+grep "401" ~/.crontopus/agent.log
+```
+
+**Backward Compatibility**:
+- Check-in authentication is currently optional (migration period)
+- Jobs will still check-in without tokens (but less secure)
+- **Future**: Tokens will become required (Phase 17.5)
+
+### Rate Limit Errors (429 Responses)
+
+**Symptom:** `429 Too Many Requests` in agent logs
+
+**Possible Causes:**
+1. **Too many check-ins**: Jobs running more frequently than 100/minute
+2. **Heartbeat spikes**: Multiple agents sharing same endpoint ID
+3. **Misconfigured job frequency**: Jobs scheduled every second (not supported)
+
+**Solutions:**
+```bash
+# 1. Review job schedules in Git
+grep "schedule:" ~/.crontopus/job-manifests/**/*.yaml
+
+# 2. Count check-in frequency
+tail -100 ~/.crontopus/agent.log | grep "check-in" | wc -l
+
+# 3. Adjust job frequency if needed
+# Change: schedule: "* * * * *"  (every minute)
+# To: schedule: "*/5 * * * *"  (every 5 minutes)
+
+# 4. Ensure only one agent per machine
+ps aux | grep crontopus-agent
+# Should show only ONE process
+```
+
 ---
 
 ## Security Considerations
+
+### Authentication Flow
+
+The agent uses a **multi-stage authentication system**:
+
+**1. Enrollment** (One-time setup):
+```bash
+# Agent uses enrollment token (long-lived, from web UI)
+Authorization: Bearer <enrollment_token>
+
+# Backend response includes unique endpoint token
+{
+  "id": 456,
+  "token": "ep_aBcDeFgHiJkLmNoPqRsTuVwXyZ987654321"
+}
+```
+
+**2. Operational Use** (All subsequent API calls):
+```bash
+# Agent uses endpoint token for all operations
+Authorization: Bearer <endpoint_token>
+
+# Stored securely in ~/.crontopus/agent-token (0600 permissions)
+```
+
+**3. Job Check-ins** (Automatic):
+- Helper script `~/.crontopus/bin/checkin` reads endpoint token
+- Validates against backend to prevent fake submissions
+- Backward compatible (token optional during migration)
+
+**Token Types**:
+- **Enrollment Token**: Long-lived, user-scoped, created via web UI
+- **Endpoint Token**: Unique per agent, bcrypt hashed in database
+- **Git Token**: Forgejo access token (auto-created per user)
 
 ### Token Storage
 
 - Agent tokens stored in `~/.crontopus/agent-token` (or configured path)
 - File permissions: `0600` (owner read/write only)
 - Token encrypted at rest (future enhancement)
+- Never log tokens in agent logs
 
 ### Git Credentials
 
@@ -529,6 +623,45 @@ schtasks /create /tn "Crontopus Agent" /tr "C:\Program Files\Crontopus\crontopus
 
 - Linux/macOS: Agent runs as user with crontab access (no root required)
 - Windows: Requires admin rights for Task Scheduler (can be scoped to `\Crontopus\` folder)
+
+### Rate Limiting
+
+**Agent-Specific Limits**:
+- **Check-ins**: 100 requests/minute per endpoint (supports high-frequency jobs)
+- **Heartbeats**: 120 requests/minute per endpoint (2Hz maximum)
+- **Enrollment**: 10 requests/minute per IP
+
+**Why Rate Limiting Matters**:
+1. Prevents accidental DoS from misconfigured high-frequency jobs
+2. Protects backend from burst traffic during mass deployments
+3. Ensures fair resource allocation across all tenants
+
+**Agent Behavior**:
+- Agent respects `429 Too Many Requests` responses
+- Automatically implements exponential backoff
+- Logs rate limit events for troubleshooting
+- Check-in helper script includes retry logic
+
+**Best Practices**:
+```yaml
+# Don't schedule jobs faster than 1/minute if possible
+schedule: "* * * * *"  # Every minute - OK
+schedule: "* * * * * *"  # Every second - NOT SUPPORTED
+
+# For high-frequency needs, batch operations:
+schedule: "*/5 * * * *"  # Every 5 minutes, process batch
+```
+
+**Troubleshooting Rate Limits**:
+```bash
+# Check agent logs for rate limit errors
+grep "429" ~/.crontopus/agent.log
+
+# If hitting limits frequently:
+# 1. Reduce job frequency (increase interval)
+# 2. Batch multiple operations together
+# 3. Review check-in implementation (should be once per job run)
+```
 
 ### Network Security
 
