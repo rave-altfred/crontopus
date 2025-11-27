@@ -17,10 +17,10 @@ export const MainLayout = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#282a36]">
+    <div className="min-h-screen bg-grid-pattern">
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-64 min-h-screen bg-white dark:bg-[#21222c] border-r border-gray-200 dark:border-[#44475a] flex flex-col">
+        <aside className="w-64 min-h-screen bg-white dark:bg-[#21222c] border-r border-gray-200 dark:border-[#6272a4]/30 flex flex-col">
           {/* Logo */}
           <div className="py-6 px-4 border-b border-gray-200 dark:border-[#44475a] flex justify-center">
             <Link to="/" className="block">
@@ -34,10 +34,10 @@ export const MainLayout = () => {
               <li>
                 <Link
                   to="/"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-2 transition-all ${
                     isActive('/')
-                      ? 'bg-brand-50 dark:bg-[#44475a] text-brand-600 dark:text-[#bd93f9]'
-                      : 'text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/50'
+                      ? 'bg-brand-50 border-brand-600 dark:bg-[#bd93f9]/10 dark:border-[#bd93f9] text-brand-600 dark:text-[#bd93f9]'
+                      : 'border-transparent text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/30'
                   }`}
                 >
                   <LayoutDashboard size={20} />
@@ -55,10 +55,10 @@ export const MainLayout = () => {
                   <li>
                     <Link
                       to="/runs/by-job"
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ml-2 ${
+                      className={`flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-2 transition-all ml-2 ${
                         isActive('/runs/by-job')
-                          ? 'bg-brand-50 dark:bg-[#44475a] text-brand-600 dark:text-[#bd93f9]'
-                          : 'text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/50'
+                          ? 'bg-brand-50 border-brand-600 dark:bg-[#bd93f9]/10 dark:border-[#bd93f9] text-brand-600 dark:text-[#bd93f9]'
+                          : 'border-transparent text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/30'
                       }`}
                     >
                       <span className="font-medium">Run by Job</span>
@@ -67,10 +67,10 @@ export const MainLayout = () => {
                   <li>
                     <Link
                       to="/runs/by-endpoint"
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ml-2 ${
+                      className={`flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-2 transition-all ml-2 ${
                         isActive('/runs/by-endpoint')
-                          ? 'bg-brand-50 dark:bg-[#44475a] text-brand-600 dark:text-[#bd93f9]'
-                          : 'text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/50'
+                          ? 'bg-brand-50 border-brand-600 dark:bg-[#bd93f9]/10 dark:border-[#bd93f9] text-brand-600 dark:text-[#bd93f9]'
+                          : 'border-transparent text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/30'
                       }`}
                     >
                       <span className="font-medium">Run by Endpoint</span>
@@ -79,10 +79,10 @@ export const MainLayout = () => {
                   <li>
                     <Link
                       to="/runs"
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ml-2 ${
+                      className={`flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-2 transition-all ml-2 ${
                         isActive('/runs')
-                          ? 'bg-brand-50 dark:bg-[#44475a] text-brand-600 dark:text-[#bd93f9]'
-                          : 'text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/50'
+                          ? 'bg-brand-50 border-brand-600 dark:bg-[#bd93f9]/10 dark:border-[#bd93f9] text-brand-600 dark:text-[#bd93f9]'
+                          : 'border-transparent text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/30'
                       }`}
                     >
                       <span className="font-medium">Job Run Log</span>
@@ -94,10 +94,10 @@ export const MainLayout = () => {
               <li className="pt-4">
                 <Link
                   to="/jobs"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-2 transition-all ${
                     isActive('/jobs')
-                      ? 'bg-brand-50 dark:bg-[#44475a] text-brand-600 dark:text-[#bd93f9]'
-                      : 'text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/50'
+                      ? 'bg-brand-50 border-brand-600 dark:bg-[#bd93f9]/10 dark:border-[#bd93f9] text-brand-600 dark:text-[#bd93f9]'
+                      : 'border-transparent text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/30'
                   }`}
                 >
                   <FileText size={20} />
@@ -108,10 +108,10 @@ export const MainLayout = () => {
               <li>
                 <Link
                   to="/groups"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-2 transition-all ${
                     isActive('/groups')
-                      ? 'bg-brand-50 dark:bg-[#44475a] text-brand-600 dark:text-[#bd93f9]'
-                      : 'text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/50'
+                      ? 'bg-brand-50 border-brand-600 dark:bg-[#bd93f9]/10 dark:border-[#bd93f9] text-brand-600 dark:text-[#bd93f9]'
+                      : 'border-transparent text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/30'
                   }`}
                 >
                   <FolderOpen size={20} />
@@ -122,10 +122,10 @@ export const MainLayout = () => {
               <li>
                 <Link
                   to="/endpoints"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-2 transition-all ${
                     isActive('/endpoints')
-                      ? 'bg-brand-50 dark:bg-[#44475a] text-brand-600 dark:text-[#bd93f9]'
-                      : 'text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/50'
+                      ? 'bg-brand-50 border-brand-600 dark:bg-[#bd93f9]/10 dark:border-[#bd93f9] text-brand-600 dark:text-[#bd93f9]'
+                      : 'border-transparent text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/30'
                   }`}
                 >
                   <Server size={20} />
@@ -136,10 +136,10 @@ export const MainLayout = () => {
               <li>
                 <Link
                   to="/agents"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-2 transition-all ${
                     isActive('/agents')
-                      ? 'bg-brand-50 dark:bg-[#44475a] text-brand-600 dark:text-[#bd93f9]'
-                      : 'text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/50'
+                      ? 'bg-brand-50 border-brand-600 dark:bg-[#bd93f9]/10 dark:border-[#bd93f9] text-brand-600 dark:text-[#bd93f9]'
+                      : 'border-transparent text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/30'
                   }`}
                 >
                   <Activity size={20} />
@@ -150,10 +150,10 @@ export const MainLayout = () => {
               <li>
                 <Link
                   to="/api-tokens"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-2 transition-all ${
                     isActive('/api-tokens')
-                      ? 'bg-brand-50 dark:bg-[#44475a] text-brand-600 dark:text-[#bd93f9]'
-                      : 'text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/50'
+                      ? 'bg-brand-50 border-brand-600 dark:bg-[#bd93f9]/10 dark:border-[#bd93f9] text-brand-600 dark:text-[#bd93f9]'
+                      : 'border-transparent text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-[#44475a]/30'
                   }`}
                 >
                   <Key size={20} />
