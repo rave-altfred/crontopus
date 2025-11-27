@@ -298,27 +298,5 @@ export const AssignEndpointsToJob = () => {
         </table>
       </div>
     </div>
-                        endpoint.status === 'active'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : endpoint.status === 'inactive'
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      }`}
-                    >
-                      {endpoint.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
-                    {endpoint.last_heartbeat
-                      ? new Date(endpoint.last_heartbeat).toLocaleString()
-                      : 'Never'}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
   );
 };
