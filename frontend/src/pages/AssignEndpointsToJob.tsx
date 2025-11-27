@@ -113,33 +113,33 @@ export const AssignEndpointsToJob = () => {
         <div>
           <Link
             to={`/jobs/${namespace}/${jobName}`}
-            className="inline-flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mb-2"
+            className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mb-2"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Job
           </Link>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Assign Endpoints to {jobName}
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white font-mono">
+            ASSIGN ENDPOINTS: {jobName}
           </h2>
-          <p className="text-sm text-gray-500 dark:text-[#6272a4] mt-1">
-            Select endpoints to run this job. Already assigned endpoints are hidden.
+          <p className="text-sm font-mono text-gray-500 dark:text-[#6272a4] mt-1">
+            // Select endpoints to run this job. Already assigned endpoints are hidden.
           </p>
         </div>
         <button
           onClick={handleAssign}
           disabled={assigning || selectedEndpoints.size === 0}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-blue-600 text-white text-xs font-mono font-bold uppercase tracking-wider hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {assigning ? 'Assigning...' : `Assign ${selectedEndpoints.size} Endpoint${selectedEndpoints.size !== 1 ? 's' : ''}`}
+          {assigning ? 'ASSIGNING...' : `ASSIGN ${selectedEndpoints.size} ENDPOINT${selectedEndpoints.size !== 1 ? 'S' : ''}`}
         </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
+      <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a] p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+            <label className="block text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
               Search
             </label>
             <div className="relative">
@@ -149,99 +149,99 @@ export const AssignEndpointsToJob = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by name, hostname, or machine ID..."
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-[#44475a] text-gray-900 dark:text-white"
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-[#44475a] bg-white dark:bg-[#21222c] text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
           </div>
 
           {/* Platform Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+            <label className="block text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
               Platform
             </label>
             <select
               value={platformFilter}
               onChange={(e) => setPlatformFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-[#44475a] text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#44475a] bg-white dark:bg-[#21222c] text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:border-blue-500"
             >
-              <option value="all">All Platforms</option>
+              <option value="all">ALL PLATFORMS</option>
               {platforms.map(platform => (
-                <option key={platform} value={platform}>{platform}</option>
+                <option key={platform} value={platform}>{platform.toUpperCase()}</option>
               ))}
             </select>
           </div>
 
           {/* Status Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+            <label className="block text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
               Status
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-[#44475a] text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#44475a] bg-white dark:bg-[#21222c] text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:border-blue-500"
             >
-              <option value="all">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="revoked">Revoked</option>
+              <option value="all">ALL STATUSES</option>
+              <option value="active">ACTIVE</option>
+              <option value="inactive">INACTIVE</option>
+              <option value="revoked">REVOKED</option>
             </select>
           </div>
         </div>
 
-        <div className="mt-4 text-sm text-gray-600 dark:text-[#6272a4]">
-          Showing {filteredEndpoints.length} of {availableEndpoints.length} available endpoints
-          {assignedEndpoints.length > 0 && ` (${assignedEndpoints.length} already assigned)`}
+        <div className="mt-4 text-xs font-mono text-gray-600 dark:text-[#6272a4]">
+          SHOWING {filteredEndpoints.length} OF {availableEndpoints.length} AVAILABLE ENDPOINTS
+          {assignedEndpoints.length > 0 && ` (${assignedEndpoints.length} ALREADY ASSIGNED)`}
         </div>
       </div>
 
       {/* Endpoints Table */}
-      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
-          <thead className="bg-gray-50 dark:bg-[#44475a]">
+      <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a]">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#44475a]">
+          <thead className="bg-gray-50 dark:bg-[#21222c]">
             <tr>
               <th className="px-6 py-3 w-12">
                 <input
                   type="checkbox"
                   checked={filteredEndpoints.length > 0 && selectedEndpoints.size === filteredEndpoints.length}
                   onChange={toggleAll}
-                  className="rounded border-gray-300 dark:border-gray-600"
+                  className="rounded border-gray-300 dark:border-[#44475a] bg-white dark:bg-[#282a36] focus:ring-blue-500"
                 />
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Hostname
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Platform
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Machine ID
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Last Heartbeat
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
+          <tbody className="bg-white dark:bg-[#282a36] divide-y divide-gray-200 dark:divide-[#44475a]">
             {filteredEndpoints.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-500 dark:text-[#6272a4]">
+                <td colSpan={7} className="px-6 py-8 text-center text-gray-500 dark:text-[#6272a4] font-mono text-sm">
                   {availableEndpoints.length === 0 
-                    ? 'All endpoints are already assigned to this job'
-                    : 'No endpoints match your filters'}
+                    ? 'ALL ENDPOINTS ARE ALREADY ASSIGNED TO THIS JOB'
+                    : 'NO ENDPOINTS MATCH YOUR FILTERS'}
                 </td>
               </tr>
             ) : (
               filteredEndpoints.map((endpoint) => (
                 <tr
                   key={endpoint.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                  className="hover:bg-gray-50 dark:hover:bg-[#21222c] cursor-pointer transition-colors"
                   onClick={() => toggleEndpoint(endpoint.id)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -249,22 +249,22 @@ export const AssignEndpointsToJob = () => {
                       type="checkbox"
                       checked={selectedEndpoints.has(endpoint.id)}
                       onChange={() => toggleEndpoint(endpoint.id)}
-                      className="rounded border-gray-300 dark:border-gray-600"
+                      className="rounded border-gray-300 dark:border-[#44475a] bg-white dark:bg-[#282a36] focus:ring-blue-500"
                       onClick={(e) => e.stopPropagation()}
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="text-sm font-mono font-bold text-gray-900 dark:text-white">
                       {endpoint.name}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-[#6272a4]">
+                    <div className="text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                       {endpoint.hostname}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-[#6272a4]">
+                    <div className="text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                       {endpoint.platform}
                     </div>
                   </td>
@@ -275,7 +275,29 @@ export const AssignEndpointsToJob = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      className={`px-2 py-0.5 text-xs font-mono border ${
+                        endpoint.status === 'active'
+                          ? 'border-green-200 text-green-700 dark:border-green-800 dark:text-green-400'
+                          : endpoint.status === 'inactive'
+                          ? 'border-yellow-200 text-yellow-700 dark:border-yellow-800 dark:text-yellow-400'
+                          : 'border-red-200 text-red-700 dark:border-red-800 dark:text-red-400'
+                      }`}
+                    >
+                      {endpoint.status.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
+                    {endpoint.last_heartbeat
+                      ? new Date(endpoint.last_heartbeat).toLocaleString()
+                      : 'NEVER'}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
                         endpoint.status === 'active'
                           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                           : endpoint.status === 'inactive'

@@ -59,25 +59,39 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-brand-50 dark:bg-[#282a36] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#1e1f29] py-12 px-4 sm:px-6 lg:px-8 bg-grid-pattern">
+      <div className="max-w-md w-full space-y-8 bg-white dark:bg-[#282a36] p-8 rounded border border-gray-200 dark:border-[#44475a] shadow-lg">
         <div className="flex flex-col items-center">
-          <Logo size="lg" className="mb-8" />
-          <p className="text-center text-sm text-gray-500 dark:text-[#6272a4]">
-            Create your account
+          <Logo size="lg" className="mb-6" />
+          <h2 className="mt-2 text-center text-2xl font-bold text-gray-900 dark:text-white font-mono uppercase tracking-wide">
+            Create Account
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-[#6272a4] font-mono">
+            Join the control plane
           </p>
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-[#ff5555]/20 border border-red-200 dark:border-[#ff5555] p-4">
-              <div className="text-sm text-red-800 dark:text-[#ff5555]">{error}</div>
+            <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700 dark:text-red-200 font-mono">
+                    {error}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="space-y-4">
             <div>
-              <label htmlFor="username" className="sr-only">
+              <label htmlFor="username" className="block text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
                 Username
               </label>
               <input
@@ -85,7 +99,7 @@ export default function Register() {
                 name="username"
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-[#44475a] rounded-t-md focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-[#44475a] placeholder-gray-400 dark:placeholder-gray-600 text-gray-900 dark:text-white bg-white dark:bg-[#21222c] font-mono text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -93,7 +107,7 @@ export default function Register() {
               />
             </div>
             <div>
-              <label htmlFor="email" className="sr-only">
+              <label htmlFor="email" className="block text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
                 Email address
               </label>
               <input
@@ -101,7 +115,7 @@ export default function Register() {
                 name="email"
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-[#44475a] focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-[#44475a] placeholder-gray-400 dark:placeholder-gray-600 text-gray-900 dark:text-white bg-white dark:bg-[#21222c] font-mono text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -109,7 +123,7 @@ export default function Register() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
+              <label htmlFor="password" className="block text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
                 Password
               </label>
               <input
@@ -117,15 +131,15 @@ export default function Register() {
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-[#44475a] focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm"
-                placeholder="Password (min 8 characters)"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-[#44475a] placeholder-gray-400 dark:placeholder-gray-600 text-gray-900 dark:text-white bg-white dark:bg-[#21222c] font-mono text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Min 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
               />
             </div>
             <div>
-              <label htmlFor="confirm-password" className="sr-only">
+              <label htmlFor="confirm-password" className="block text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
                 Confirm Password
               </label>
               <input
@@ -133,7 +147,7 @@ export default function Register() {
                 name="confirm-password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-[#44475a] rounded-b-md focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-[#44475a] placeholder-gray-400 dark:placeholder-gray-600 text-gray-900 dark:text-white bg-white dark:bg-[#21222c] font-mono text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Confirm password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -146,20 +160,20 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-mono font-bold uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </div>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600 dark:text-[#6272a4]">
-              Already have an account?{' '}
+          <div className="text-center pt-4 border-t border-gray-200 dark:border-[#44475a]">
+            <p className="text-xs text-gray-600 dark:text-[#6272a4] font-mono">
+              ALREADY HAVE AN ACCOUNT?{' '}
               <Link
                 to="/login"
-                className="font-medium text-brand-600 dark:text-[#bd93f9] hover:text-brand-700 dark:hover:text-[#ff79c6]"
+                className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 uppercase"
               >
-                Sign in
+                SIGN IN
               </Link>
             </p>
           </div>

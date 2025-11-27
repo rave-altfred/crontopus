@@ -46,30 +46,30 @@ export const RunsByJob = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Run by Job</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white font-mono uppercase">Run by Job</h2>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
+      <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a] p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+            <label className="block text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
               Time Window
             </label>
             <select
               value={days}
               onChange={(e) => setDays(Number(e.target.value))}
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#44475a] bg-white dark:bg-[#21222c] text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:border-blue-500"
             >
-              <option value={1}>Last 24 hours</option>
-              <option value={7}>Last 7 days</option>
-              <option value={30}>Last 30 days</option>
-              <option value={90}>Last 90 days</option>
+              <option value={1}>LAST 24 HOURS</option>
+              <option value={7}>LAST 7 DAYS</option>
+              <option value={30}>LAST 30 DAYS</option>
+              <option value={90}>LAST 90 DAYS</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+            <label className="block text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
               Job Name
             </label>
             <input
@@ -77,12 +77,12 @@ export const RunsByJob = () => {
               value={jobNameFilter}
               onChange={(e) => setJobNameFilter(e.target.value)}
               placeholder="Filter by name..."
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#44475a] bg-white dark:bg-[#21222c] text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+            <label className="block text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
               Namespace
             </label>
             <input
@@ -90,85 +90,93 @@ export const RunsByJob = () => {
               value={namespaceFilter}
               onChange={(e) => setNamespaceFilter(e.target.value)}
               placeholder="Filter by namespace..."
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#44475a] bg-white dark:bg-[#21222c] text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+            <label className="block text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
               Status
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#44475a] bg-white dark:bg-[#21222c] text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:border-blue-500"
             >
-              <option value="">All statuses</option>
-              <option value="success">Success</option>
-              <option value="failure">Failure</option>
+              <option value="">ALL STATUSES</option>
+              <option value="success">SUCCESS</option>
+              <option value="failure">FAILURE</option>
             </select>
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
-          <thead className="bg-gray-50 dark:bg-[#44475a]">
+      <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a]">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#44475a]">
+          <thead className="bg-gray-50 dark:bg-[#21222c]">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Job Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Namespace
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Endpoints
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Total Runs
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Success
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Failures
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Health
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
+          <tbody className="bg-white dark:bg-[#282a36] divide-y divide-gray-200 dark:divide-[#44475a]">
             {jobs.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4]">
-                  No job runs in the selected time window
+                <td colSpan={7} className="px-6 py-8 text-center text-gray-500 dark:text-[#6272a4] font-mono text-sm">
+                  NO JOB RUNS IN THE SELECTED TIME WINDOW
                 </td>
               </tr>
             ) : (
               jobs.map((job, idx) => (
-                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-[#21222c] transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{job.job_name}</div>
+                    <div className="text-sm font-mono font-bold text-gray-900 dark:text-white">{job.job_name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-[#6272a4]">{job.namespace}</div>
+                    <div className="text-sm font-mono text-gray-500 dark:text-[#6272a4]">{job.namespace}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                     {job.endpoint_count}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                     {job.run_count}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-green-600 dark:text-green-400">
                     {job.success_count}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 dark:text-red-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-red-600 dark:text-red-400">
                     {job.failure_count}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {getHealthBadge(job.health)}
+                    <span className={`px-2 py-0.5 text-xs font-mono border ${
+                      job.health === 'healthy'
+                        ? 'border-green-200 text-green-700 dark:border-green-800 dark:text-green-400'
+                        : job.health === 'degraded'
+                        ? 'border-yellow-200 text-yellow-700 dark:border-yellow-800 dark:text-yellow-400'
+                        : 'border-red-200 text-red-700 dark:border-red-800 dark:text-red-400'
+                    }`}>
+                      {job.health.toUpperCase()}
+                    </span>
                   </td>
                 </tr>
               ))
