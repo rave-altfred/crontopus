@@ -112,29 +112,29 @@ export const JobDetail = () => {
           <Link to="/jobs" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mb-2 inline-block">
             ← Back to jobs
           </Link>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{manifest.metadata.name}</h2>
-          <p className="text-sm text-gray-500 dark:text-[#6272a4] mt-1">{jobPath}</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white font-mono">{manifest.metadata.name}</h2>
+          <p className="text-sm font-mono text-gray-500 dark:text-[#6272a4] mt-1">{jobPath}</p>
         </div>
         <div className="flex space-x-3">
           <button
             onClick={() => navigate(`/jobs/${namespace}/${jobName}/edit`)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+            className="px-4 py-2 bg-blue-600 text-white text-xs font-mono font-bold uppercase tracking-wider hover:bg-blue-700 transition-colors"
           >
-            ✏️ Edit
+            Edit
           </button>
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
+            className="px-4 py-2 bg-red-600 text-white text-xs font-mono font-bold uppercase tracking-wider hover:bg-red-700 transition-colors"
           >
-            🗑️ Delete
+            Delete
           </button>
           <a
             href={gitUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm font-medium"
+            className="px-4 py-2 bg-gray-800 text-white text-xs font-mono font-bold uppercase tracking-wider hover:bg-gray-900 dark:bg-[#44475a] dark:hover:bg-[#6272a4] transition-colors"
           >
-            View in Git →
+            Git
           </a>
         </div>
       </div>
@@ -147,34 +147,34 @@ export const JobDetail = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
-          <h4 className="text-sm font-medium text-gray-500 dark:text-[#6272a4] mb-2">Schedule</h4>
+        <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a] p-4">
+          <h4 className="text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-2 uppercase tracking-wider">Schedule</h4>
           <p className="text-lg font-mono text-gray-900 dark:text-white">{manifest.spec.schedule}</p>
           {manifest.spec.timezone && (
-            <p className="text-xs text-gray-500 dark:text-[#6272a4] mt-1">{manifest.spec.timezone}</p>
+            <p className="text-xs font-mono text-gray-500 dark:text-[#6272a4] mt-1">{manifest.spec.timezone}</p>
           )}
         </div>
 
-        <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
-          <h4 className="text-sm font-medium text-gray-500 dark:text-[#6272a4] mb-2">Status</h4>
+        <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a] p-4">
+          <h4 className="text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-2 uppercase tracking-wider">Status</h4>
           <span
-            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+            className={`px-2 py-0.5 text-xs font-mono border ${
               manifest.spec.enabled === false || manifest.spec.paused
-                ? 'bg-gray-100 text-gray-800'
-                : 'bg-green-100 text-green-800'
+                ? 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700'
+                : 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
             }`}
           >
-            {manifest.spec.enabled === false ? 'Disabled' : manifest.spec.paused ? 'Paused' : 'Enabled'}
+            {(manifest.spec.enabled === false ? 'DISABLED' : manifest.spec.paused ? 'PAUSED' : 'ENABLED')}
           </span>
         </div>
 
-        <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
-          <h4 className="text-sm font-medium text-gray-500 dark:text-[#6272a4] mb-2">Group</h4>
+        <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a] p-4">
+          <h4 className="text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-2 uppercase tracking-wider">Group</h4>
           <span
-            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+            className={`px-2 py-0.5 text-xs font-mono border ${
               manifest._meta?.namespace === 'production'
-                ? 'bg-blue-100 text-blue-800'
-                : 'bg-yellow-100 text-yellow-800'
+                ? 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
+                : 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800'
             }`}
           >
             {manifest._meta?.namespace || 'unknown'}
@@ -183,11 +183,11 @@ export const JobDetail = () => {
       </div>
 
       {manifest.metadata.labels && Object.keys(manifest.metadata.labels).length > 0 && (
-        <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Labels</h4>
+        <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a] p-4">
+          <h4 className="text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-3 uppercase tracking-wider">Labels</h4>
           <div className="flex flex-wrap gap-2">
             {Object.entries(manifest.metadata.labels).map(([key, value]) => (
-              <span key={key} className="px-2 py-1 bg-gray-100 dark:bg-[#44475a] text-gray-700 dark:text-[#f8f8f2] text-xs rounded">
+              <span key={key} className="px-2 py-1 bg-gray-100 dark:bg-[#44475a] text-gray-700 dark:text-[#f8f8f2] text-xs font-mono border border-gray-200 dark:border-gray-600">
                 {key}: {value}
               </span>
             ))}
@@ -197,74 +197,74 @@ export const JobDetail = () => {
 
       <ManifestViewer content={manifest._meta?.raw_content || ''} fileName={jobPath} />
 
-      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow">
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-[#6272a4] flex justify-between items-center">
-          <h3 className="text-sm font-medium text-gray-900 dark:text-white">Endpoints Running This Job</h3>
+      <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a]">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-[#44475a] flex justify-between items-center">
+          <h3 className="text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Endpoints Running This Job</h3>
           <Link
             to={`/jobs/${namespace}/${jobName}/assign-endpoints`}
-            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition"
+            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-mono font-bold uppercase tracking-wider transition-colors"
           >
             <Plus className="w-3 h-3" />
             Assign Endpoints
           </Link>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
-            <thead className="bg-gray-50 dark:bg-[#44475a]">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-[#44475a]">
+            <thead className="bg-gray-50 dark:bg-[#21222c]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Endpoint
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Hostname
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Platform
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Last Heartbeat
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
+            <tbody className="bg-white dark:bg-[#282a36] divide-y divide-gray-200 dark:divide-[#44475a]">
               {endpoints.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4] text-sm">
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4] text-sm font-mono">
                     Not assigned to any endpoints
                   </td>
                 </tr>
               ) : (
                 endpoints.map((endpoint) => (
                   <tr key={endpoint.endpoint_id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-medium text-gray-900 dark:text-white">
                       {endpoint.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                       {endpoint.hostname}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                       {endpoint.platform}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        className={`px-2 py-0.5 text-xs font-mono border ${
                           endpoint.status === 'active'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            ? 'border-green-200 text-green-700 dark:border-green-800 dark:text-green-400'
                             : endpoint.status === 'inactive'
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                            ? 'border-yellow-200 text-yellow-700 dark:border-yellow-800 dark:text-yellow-400'
+                            : 'border-red-200 text-red-700 dark:border-red-800 dark:text-red-400'
                         }`}
                       >
-                        {endpoint.status}
+                        {endpoint.status.toUpperCase()}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                       {endpoint.last_heartbeat
                         ? new Date(endpoint.last_heartbeat).toLocaleString()
                         : 'Never'}
@@ -286,29 +286,29 @@ export const JobDetail = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow">
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-[#6272a4]">
-          <h3 className="text-sm font-medium text-gray-900 dark:text-white">Recent Runs</h3>
+      <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a]">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-[#44475a]">
+          <h3 className="text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Recent Runs</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
-            <thead className="bg-gray-50 dark:bg-[#44475a]">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-[#44475a]">
+            <thead className="bg-gray-50 dark:bg-[#21222c]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Started At
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                   Duration
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
+            <tbody className="bg-white dark:bg-[#282a36] divide-y divide-gray-200 dark:divide-[#44475a]">
               {runs.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4] text-sm">
+                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4] text-sm font-mono">
                     No runs yet
                   </td>
                 </tr>
@@ -317,21 +317,21 @@ export const JobDetail = () => {
                   <tr key={run.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        className={`px-2 py-0.5 text-xs font-mono border ${
                           run.status === 'success'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            ? 'border-green-200 text-green-700 dark:border-green-800 dark:text-green-400'
                             : run.status === 'failure'
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                            ? 'border-red-200 text-red-700 dark:border-red-800 dark:text-red-400'
+                            : 'border-yellow-200 text-yellow-700 dark:border-yellow-800 dark:text-yellow-400'
                         }`}
                       >
-                        {run.status}
+                        {run.status.toUpperCase()}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                       {new Date(run.started_at).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                       {run.duration ? `${run.duration}s` : '-'}
                     </td>
                   </tr>

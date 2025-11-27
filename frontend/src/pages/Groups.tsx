@@ -85,35 +85,35 @@ export function Groups() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Job Groups</h1>
-          <p className="text-gray-600 dark:text-[#6272a4] mt-1">
-            Organize your jobs into logical groups
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white font-mono uppercase">Job Groups</h1>
+          <p className="text-sm font-mono text-gray-600 dark:text-[#6272a4] mt-1">
+            // Organize your jobs into logical groups
           </p>
         </div>
         <button
           onClick={() => setShowCreateDialog(true)}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold font-mono uppercase rounded-sm transition-colors"
         >
-          <Plus className="w-5 h-5 mr-2" />
+          <Plus className="w-4 h-4 mr-2" />
           Create Job Group
         </button>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 flex items-start">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mr-3 flex-shrink-0 mt-0.5" />
-          <div className="text-red-800 dark:text-red-200">{error}</div>
+          <div className="text-red-800 dark:text-red-200 font-mono text-sm">{error}</div>
         </div>
       )}
 
       {/* Namespaces List */}
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {namespaces.length === 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-[#44475a] rounded-lg border border-gray-200 dark:border-[#6272a4]">
-            <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-[#6272a4]">No job groups yet</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+          <div className="col-span-full text-center py-12 bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a]">
+            <FolderOpen className="w-12 h-12 text-gray-400 dark:text-[#44475a] mx-auto mb-3" />
+            <p className="text-gray-500 dark:text-[#6272a4] font-mono uppercase tracking-wide">No job groups yet</p>
+            <p className="text-xs font-mono text-gray-400 dark:text-[#6272a4]/70 mt-1">
               Create your first job group to organize jobs
             </p>
           </div>
@@ -121,68 +121,72 @@ export function Groups() {
           namespaces.map((ns) => (
             <div
               key={ns.name}
-              className={`bg-white dark:bg-[#44475a] rounded-lg p-4 transition-colors ${
+              className={`bg-white dark:bg-[#282a36] p-4 transition-all group ${
                 ns.name === 'discovered'
-                  ? 'border-2 border-purple-300 dark:border-purple-700 hover:border-purple-400 dark:hover:border-purple-600'
-                  : 'border border-gray-200 dark:border-[#6272a4] hover:border-gray-300 dark:hover:border-gray-600'
+                  ? 'border-2 border-purple-400 dark:border-purple-600'
+                  : 'border border-gray-200 dark:border-[#44475a] hover:border-blue-400 dark:hover:border-blue-500'
               }`}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3 flex-1">
-                  {ns.name === 'discovered' ? (
-                    <FolderOpen className="w-6 h-6 text-purple-500 dark:text-purple-400" />
-                  ) : ns.is_system ? (
-                    <FolderOpen className="w-6 h-6 text-blue-500" />
-                  ) : (
-                    <Folder className="w-6 h-6 text-gray-500 dark:text-[#6272a4]" />
-                  )}
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <div className="flex flex-col h-full">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    {ns.name === 'discovered' ? (
+                      <FolderOpen className="w-6 h-6 text-purple-500 dark:text-purple-400" />
+                    ) : ns.is_system ? (
+                      <FolderOpen className="w-6 h-6 text-blue-500 dark:text-blue-400" />
+                    ) : (
+                      <Folder className="w-6 h-6 text-gray-400 dark:text-[#6272a4]" />
+                    )}
+                    <div>
+                      <h3 className="text-lg font-mono font-bold text-gray-900 dark:text-white">
                         {ns.name === 'discovered' && '🔍 '}{ns.name}
                       </h3>
                       {ns.is_system && (
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded ${
+                        <span className={`inline-block mt-1 px-1.5 py-0.5 text-[10px] font-mono uppercase border ${
                           ns.name === 'discovered'
-                            ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300'
-                            : 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                            ? 'border-purple-200 text-purple-700 dark:border-purple-800 dark:text-purple-300'
+                            : 'border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-300'
                         }`}>
                           {ns.name === 'discovered' ? 'Auto-discovered' : 'System'}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-[#6272a4] mt-0.5">
-                      {ns.job_count} {ns.job_count === 1 ? 'job' : 'jobs'}
-                    </p>
-                    {ns.name === 'discovered' && (
-                      <p className="text-sm text-purple-600 dark:text-purple-400 mt-1 font-medium">
-                        Jobs found by agents on endpoints that weren't created in Crontopus
-                      </p>
-                    )}
-                    {ns.name === 'default' && (
-                      <p className="text-sm text-gray-500 dark:text-[#6272a4] mt-1">
-                        Default group for new jobs
-                      </p>
-                    )}
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => navigate(`/jobs?namespace=${ns.name}`)}
-                    className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-[#44475a] hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-[#f8f8f2] rounded transition-colors"
-                  >
-                    View Jobs
-                  </button>
                   {!ns.is_system && (
                     <button
                       onClick={() => handleDelete(ns.name)}
                       disabled={deletingNamespace === ns.name}
-                      className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50"
+                      className="text-gray-400 hover:text-red-600 dark:text-[#6272a4] dark:hover:text-[#ff5555] transition-colors"
                       title="Delete group"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   )}
+                </div>
+
+                <div className="flex-1">
+                  <p className="text-sm font-mono text-gray-500 dark:text-[#6272a4]">
+                    <span className="text-2xl font-bold text-gray-900 dark:text-white">{ns.job_count}</span> JOB{ns.job_count !== 1 ? 'S' : ''}
+                  </p>
+                  {ns.name === 'discovered' && (
+                    <p className="text-xs font-mono text-purple-600 dark:text-purple-400 mt-2 border-l-2 border-purple-200 dark:border-purple-800 pl-2">
+                      Jobs found by agents on endpoints that weren't created in Crontopus
+                    </p>
+                  )}
+                  {ns.name === 'default' && (
+                    <p className="text-xs font-mono text-gray-500 dark:text-[#6272a4] mt-2 border-l-2 border-gray-200 dark:border-[#44475a] pl-2">
+                      Default group for new jobs
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#44475a]">
+                  <button
+                    onClick={() => navigate(`/jobs?namespace=${ns.name}`)}
+                    className="w-full py-1.5 text-xs font-mono font-bold uppercase bg-gray-50 dark:bg-[#21222c] hover:bg-gray-100 dark:hover:bg-[#44475a] text-gray-700 dark:text-[#f8f8f2] border border-gray-200 dark:border-[#44475a] transition-colors"
+                  >
+                    View Jobs
+                  </button>
                 </div>
               </div>
             </div>
@@ -192,15 +196,15 @@ export function Groups() {
 
       {/* Create Dialog */}
       {showCreateDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-[#44475a] rounded-lg shadow-xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a] p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 font-mono uppercase">
               Create New Job Group
             </h2>
             
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+                <label className="block text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
                   Job Group Name
                 </label>
                 <input
@@ -208,25 +212,25 @@ export function Groups() {
                   value={newNamespaceName}
                   onChange={(e) => setNewNamespaceName(e.target.value)}
                   placeholder="e.g., backup, monitoring, team-platform"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#44475a] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-[#44475a] bg-white dark:bg-[#21222c] text-gray-900 dark:text-white font-mono text-sm focus:ring-1 focus:ring-blue-500 outline-none"
                   pattern="[a-z0-9]([-a-z0-9]*[a-z0-9])?"
                   maxLength={63}
                   required
                   autoFocus
                 />
-                <p className="text-xs text-gray-500 dark:text-[#6272a4] mt-1">
+                <p className="text-xs font-mono text-gray-500 dark:text-[#6272a4] mt-1">
                   Lowercase letters, numbers, and hyphens only. Must start and end with alphanumeric.
                 </p>
               </div>
 
               {createError && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-start">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 flex items-start">
                   <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 mr-2 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-red-800 dark:text-red-200">{createError}</div>
+                  <div className="text-xs font-mono text-red-800 dark:text-red-200">{createError}</div>
                 </div>
               )}
 
-              <div className="flex justify-end space-x-3 pt-2">
+              <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -234,14 +238,14 @@ export function Groups() {
                     setNewNamespaceName('');
                     setCreateError(null);
                   }}
-                  className="px-4 py-2 text-gray-700 dark:text-[#f8f8f2] hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="px-4 py-2 border border-gray-300 dark:border-[#44475a] hover:bg-gray-100 dark:hover:bg-[#44475a] text-gray-700 dark:text-[#f8f8f2] text-xs font-mono font-bold uppercase transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating || !newNamespaceName}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-mono font-bold uppercase transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {creating ? 'Creating...' : 'Create'}
                 </button>
