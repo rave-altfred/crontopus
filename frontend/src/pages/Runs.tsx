@@ -63,10 +63,10 @@ export const Runs = () => {
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Job Run Log</h2>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow p-4">
+      <div className="bg-white dark:bg-[#282a36] rounded-lg border border-gray-200 dark:border-[#44475a] p-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+            <label className="block text-xs font-mono font-semibold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
               Limit
             </label>
             <input
@@ -75,104 +75,104 @@ export const Runs = () => {
               onChange={(e) => setLimit(Number(e.target.value))}
               min={1}
               max={1000}
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full text-sm font-mono bg-white dark:bg-[#44475a] border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-[#bd93f9]"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+            <label className="block text-xs font-mono font-semibold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
               Job Name
             </label>
             <input
               type="text"
               value={jobNameFilter}
               onChange={(e) => setJobNameFilter(e.target.value)}
-              placeholder="Filter by job name..."
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              placeholder="filter..."
+              className="w-full text-sm font-mono bg-white dark:bg-[#44475a] border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-[#bd93f9]"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+            <label className="block text-xs font-mono font-semibold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
               Namespace
             </label>
             <input
               type="text"
               value={namespaceFilter}
               onChange={(e) => setNamespaceFilter(e.target.value)}
-              placeholder="Filter by namespace..."
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              placeholder="filter..."
+              className="w-full text-sm font-mono bg-white dark:bg-[#44475a] border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-[#bd93f9]"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+            <label className="block text-xs font-mono font-semibold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
               Status
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full text-sm font-mono bg-white dark:bg-[#44475a] border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-[#bd93f9]"
             >
-              <option value="">All statuses</option>
-              <option value="success">Success</option>
-              <option value="failure">Failure</option>
+              <option value="">ALL STATUSES</option>
+              <option value="success">SUCCESS</option>
+              <option value="failure">FAILURE</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-[#f8f8f2] mb-1">
+            <label className="block text-xs font-mono font-semibold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">
               Time Window
             </label>
             <select
               value={days || ''}
               onChange={(e) => setDays(e.target.value ? Number(e.target.value) : undefined)}
-              className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#44475a] text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full text-sm font-mono bg-white dark:bg-[#44475a] border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-[#bd93f9]"
             >
-              <option value="">All time</option>
-              <option value={1}>Last 24 hours</option>
-              <option value={7}>Last 7 days</option>
-              <option value={30}>Last 30 days</option>
-              <option value={90}>Last 90 days</option>
+              <option value="">ALL TIME</option>
+              <option value={1}>LAST 24 HOURS</option>
+              <option value={7}>LAST 7 DAYS</option>
+              <option value={30}>LAST 30 DAYS</option>
+              <option value={90}>LAST 90 DAYS</option>
             </select>
           </div>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
-          <thead className="bg-gray-50 dark:bg-[#44475a]">
+      <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a]">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#44475a]">
+          <thead className="bg-gray-50 dark:bg-[#21222c]">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Job Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Namespace
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Endpoint
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Exit Code
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Started At
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Duration
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Details
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
+          <tbody className="bg-white dark:bg-[#282a36] divide-y divide-gray-200 dark:divide-[#44475a]">
             {runs.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4]">
+                <td colSpan={8} className="px-6 py-4 text-center font-mono text-sm text-gray-500 dark:text-[#6272a4]">
                   No job runs yet
                 </td>
               </tr>
@@ -182,74 +182,74 @@ export const Runs = () => {
                 const endpoint = run.endpoint_id ? endpoints.get(run.endpoint_id) : null;
                 return (
                   <>
-                    <tr key={run.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">{run.job_name}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500 dark:text-[#6272a4]">{run.namespace || '-'}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500 dark:text-[#6272a4]">{endpoint?.name || '-'}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            run.status === 'success'
-                              ? 'bg-green-100 text-green-800'
-                              : run.status === 'failure'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}
-                        >
-                          {run.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
-                        {run.exit_code !== null ? run.exit_code : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
-                        {new Date(run.started_at).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
-                        {run.duration !== null ? `${run.duration}s` : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button
-                          onClick={() => toggleRow(run.id)}
-                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                        >
-                          {isExpanded ? '▼' : '▶'}
-                        </button>
+                  <tr key={run.id} className="hover:bg-gray-50 dark:hover:bg-[#44475a]/20 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-mono font-medium text-gray-900 dark:text-[#f8f8f2]">{run.job_name}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-mono text-gray-500 dark:text-[#6272a4]">{run.namespace || '-'}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-mono text-gray-500 dark:text-[#6272a4]">{endpoint?.name || '-'}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-0.5 text-xs font-mono border ${
+                          run.status === 'success'
+                            ? 'border-green-200 text-green-700 dark:border-green-800 dark:text-green-400'
+                            : run.status === 'failure'
+                            ? 'border-red-200 text-red-700 dark:border-red-800 dark:text-red-400'
+                            : 'border-yellow-200 text-yellow-700 dark:border-yellow-800 dark:text-yellow-400'
+                        }`}
+                      >
+                        {run.status.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
+                      {run.exit_code !== null ? run.exit_code : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
+                      {new Date(run.started_at).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
+                      {run.duration !== null ? `${run.duration}s` : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => toggleRow(run.id)}
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                      >
+                        {isExpanded ? '▼' : '▶'}
+                      </button>
+                    </td>
+                  </tr>
+                  {isExpanded && (
+                    <tr key={`${run.id}-details`}>
+                      <td colSpan={8} className="px-6 py-4 bg-gray-50 dark:bg-[#21222c] border-t border-gray-200 dark:border-[#44475a]">
+                        <div className="space-y-3">
+                          {run.output && (
+                            <div>
+                              <h4 className="text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] mb-1 uppercase tracking-wider">Output:</h4>
+                              <pre className="text-xs font-mono bg-white dark:bg-[#282a36] p-3 border border-gray-200 dark:border-[#44475a] overflow-x-auto text-gray-800 dark:text-[#f8f8f2]">
+                                {run.output}
+                              </pre>
+                            </div>
+                          )}
+                          {run.error_message && (
+                            <div>
+                              <h4 className="text-xs font-mono font-bold text-red-600 dark:text-[#ff5555] mb-1 uppercase tracking-wider">Error:</h4>
+                              <pre className="text-xs font-mono bg-red-50 dark:bg-red-900/10 p-3 border border-red-200 dark:border-red-800 overflow-x-auto text-red-900 dark:text-[#ff5555]">
+                                {run.error_message}
+                              </pre>
+                            </div>
+                          )}
+                          {!run.output && !run.error_message && (
+                            <div className="text-sm font-mono text-gray-500 dark:text-[#6272a4]">No output or error details available</div>
+                          )}
+                        </div>
                       </td>
                     </tr>
-                    {isExpanded && (
-                      <tr key={`${run.id}-details`}>
-                        <td colSpan={8} className="px-6 py-4 bg-gray-50 dark:bg-gray-900">
-                          <div className="space-y-3">
-                            {run.output && (
-                              <div>
-                                <h4 className="text-sm font-semibold text-gray-700 dark:text-[#f8f8f2] mb-1">Output:</h4>
-                                <pre className="text-xs bg-white dark:bg-[#44475a] p-3 rounded border border-gray-200 dark:border-[#6272a4] overflow-x-auto">
-                                  {run.output}
-                                </pre>
-                              </div>
-                            )}
-                            {run.error_message && (
-                              <div>
-                                <h4 className="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Error:</h4>
-                                <pre className="text-xs bg-red-50 dark:bg-red-900/20 p-3 rounded border border-red-200 dark:border-red-800 overflow-x-auto text-red-900 dark:text-red-200">
-                                  {run.error_message}
-                                </pre>
-                              </div>
-                            )}
-                            {!run.output && !run.error_message && (
-                              <div className="text-sm text-gray-500 dark:text-[#6272a4]">No output or error details available</div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
+                  )}
                   </>
                 );
               })

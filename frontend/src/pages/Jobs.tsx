@@ -85,55 +85,55 @@ export const Jobs = () => {
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-md text-sm font-medium ${
+          className={`px-4 py-1 text-sm font-mono border transition-colors ${
             filter === 'all'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 dark:bg-[#44475a] text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+              ? 'bg-gray-900 text-white border-gray-900 dark:bg-[#bd93f9] dark:text-[#282a36] dark:border-[#bd93f9]'
+              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-[#282a36] dark:text-[#f8f8f2] dark:border-[#6272a4] dark:hover:bg-[#44475a]'
           }`}
         >
-          All
+          ALL
         </button>
         {namespaces.map((ns) => (
           <button
             key={ns.name}
             onClick={() => setFilter(ns.name)}
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
+            className={`px-4 py-1 text-sm font-mono border transition-colors ${
               filter === ns.name
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 dark:bg-[#44475a] text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+                ? 'bg-gray-900 text-white border-gray-900 dark:bg-[#bd93f9] dark:text-[#282a36] dark:border-[#bd93f9]'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-[#282a36] dark:text-[#f8f8f2] dark:border-[#6272a4] dark:hover:bg-[#44475a]'
             }`}
           >
-            {ns.name === 'discovered' && '🔍 '}{ns.name}
+            {ns.name === 'discovered' && '🔍 '}{ns.name.toUpperCase()}
             {ns.job_count > 0 && (
-              <span className="ml-1 text-xs opacity-75">({ns.job_count})</span>
+              <span className="ml-2 opacity-75">[{ns.job_count}]</span>
             )}
           </button>
         ))}
       </div>
 
-      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
-          <thead className="bg-gray-50 dark:bg-[#44475a]">
+      <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a]">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#44475a]">
+          <thead className="bg-gray-50 dark:bg-[#21222c]">
             <tr>
               <th className="px-6 py-3 w-8"></th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Job Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Group
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Path
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
+          <tbody className="bg-white dark:bg-[#282a36] divide-y divide-gray-200 dark:divide-[#44475a]">
             {jobs.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4]">
+                <td colSpan={5} className="px-6 py-4 text-center text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                   No job manifests found
                 </td>
               </tr>
@@ -144,7 +144,7 @@ export const Jobs = () => {
                   <>
                     <tr
                       key={job.sha}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                      className="hover:bg-gray-50 dark:hover:bg-[#44475a]/20 cursor-pointer transition-colors"
                       onClick={async () => {
                         const next = !expanded[jobKey];
                         setExpanded({ ...expanded, [jobKey]: next });
@@ -172,29 +172,29 @@ export const Jobs = () => {
                         )}
                       </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="text-sm font-mono font-medium text-gray-900 dark:text-[#f8f8f2]">
                       {job.name.replace(/\.(yaml|yml)$/, '')}
                       {endpointsByJob[jobKey] && (
                         <span className="ml-2 text-xs text-gray-500 dark:text-[#6272a4]">
-                          {(endpointsByJob[jobKey] || []).length} endpoint{(endpointsByJob[jobKey] || []).length === 1 ? '' : 's'}
+                          [{endpointsByJob[jobKey]?.length || 0}]
                         </span>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      className={`px-2 py-0.5 text-xs font-mono border ${
                         job.namespace === 'production'
-                          ? 'bg-blue-100 text-blue-800'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
                           : job.namespace === 'discovered'
-                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                          : 'bg-yellow-100 text-yellow-800'
+                          ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800'
+                          : 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800'
                       }`}
                     >
                       {job.namespace === 'discovered' ? '🔍 ' : ''}{job.namespace}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                     {job.path}
                   </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -219,46 +219,46 @@ export const Jobs = () => {
                     </tr>
                     {expanded[jobKey] && (
                       <tr>
-                        <td colSpan={5} className="px-6 py-3 bg-gray-50 dark:bg-gray-900">
+                        <td colSpan={5} className="px-6 py-4 bg-gray-50 dark:bg-[#21222c] border-t border-gray-200 dark:border-[#44475a]">
                           {loadingEndpoints[jobKey] ? (
-                            <div className="text-sm text-gray-500 dark:text-[#6272a4]">Loading endpoints...</div>
+                            <div className="text-sm font-mono text-gray-500 dark:text-[#6272a4]">Loading endpoints...</div>
                           ) : (
-                            <div className="space-y-2">
-                              <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                Endpoints running this job ({(endpointsByJob[jobKey] || []).length})
+                            <div className="space-y-3 pl-8 border-l-2 border-gray-300 dark:border-[#44475a]">
+                              <div className="text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+                                Endpoints ({endpointsByJob[jobKey]?.length || 0})
                               </div>
                               <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
-                                  <thead className="bg-gray-100 dark:bg-[#44475a]">
+                                <table className="min-w-full text-sm">
+                                  <thead className="border-b border-gray-200 dark:border-[#44475a]">
                                     <tr>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Name</th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Platform</th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Status</th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Last Heartbeat</th>
+                                      <th className="px-4 py-2 text-left font-mono text-xs text-gray-500 dark:text-[#6272a4]">NAME</th>
+                                      <th className="px-4 py-2 text-left font-mono text-xs text-gray-500 dark:text-[#6272a4]">PLATFORM</th>
+                                      <th className="px-4 py-2 text-left font-mono text-xs text-gray-500 dark:text-[#6272a4]">STATUS</th>
+                                      <th className="px-4 py-2 text-left font-mono text-xs text-gray-500 dark:text-[#6272a4]">LAST HEARTBEAT</th>
                                     </tr>
                                   </thead>
-                                  <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
+                                  <tbody className="divide-y divide-gray-200 dark:divide-[#44475a]/50">
                                     {(endpointsByJob[jobKey] || []).length === 0 ? (
                                       <tr>
-                                        <td colSpan={4} className="px-4 py-2 text-sm text-center text-gray-500 dark:text-[#6272a4]">
-                                          No endpoints running this job yet
+                                        <td colSpan={4} className="px-4 py-2 font-mono text-center text-gray-500 dark:text-[#6272a4]">
+                                          No endpoints running this job
                                         </td>
                                       </tr>
                                     ) : (
                                       (endpointsByJob[jobKey] || []).map((ep) => (
                                         <tr key={ep.endpoint_id}>
-                                          <td className="px-4 py-2 text-sm text-gray-700 dark:text-[#f8f8f2]">{ep.name}</td>
-                                          <td className="px-4 py-2 text-sm text-gray-700 dark:text-[#f8f8f2]">{ep.platform}</td>
-                                          <td className="px-4 py-2 text-sm">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                          <td className="px-4 py-2 font-mono text-gray-700 dark:text-[#f8f8f2]">{ep.name}</td>
+                                          <td className="px-4 py-2 font-mono text-gray-500 dark:text-[#6272a4]">{ep.platform}</td>
+                                          <td className="px-4 py-2">
+                                            <span className={`px-2 py-0.5 text-xs font-mono border ${
                                               ep.status === 'active'
-                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                                ? 'border-green-200 text-green-700 dark:border-green-800 dark:text-green-400'
+                                                : 'border-gray-200 text-gray-600 dark:border-gray-700 dark:text-gray-400'
                                             }`}>
-                                              {ep.status}
+                                              {ep.status.toUpperCase()}
                                             </span>
                                           </td>
-                                          <td className="px-4 py-2 text-sm text-gray-700 dark:text-[#f8f8f2]">
+                                          <td className="px-4 py-2 font-mono text-gray-500 dark:text-[#6272a4]">
                                             {ep.last_heartbeat ? new Date(ep.last_heartbeat).toLocaleString() : 'Never'}
                                           </td>
                                         </tr>

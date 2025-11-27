@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import yaml from 'react-syntax-highlighter/dist/esm/languages/hljs/yaml';
-import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { dracula } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 // Register YAML language
 SyntaxHighlighter.registerLanguage('yaml', yaml);
@@ -21,30 +21,37 @@ export const ManifestViewer = ({ content, fileName }: ManifestViewerProps) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-        <h3 className="text-sm font-medium text-gray-900">
-          {fileName || 'Job Manifest'}
+    <div className="bg-white dark:bg-[#282a36] rounded border border-gray-200 dark:border-[#44475a] overflow-hidden">
+      <div className="px-4 py-2 bg-gray-50 dark:bg-[#21222c] border-b border-gray-200 dark:border-[#44475a] flex justify-between items-center">
+        <h3 className="text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+          {fileName || 'JOB MANIFEST'}
         </h3>
         <button
           onClick={handleCopy}
-          className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
+          className="px-3 py-1 text-xs font-mono text-gray-600 dark:text-[#6272a4] hover:text-gray-900 dark:hover:text-white transition-colors"
         >
-          {copied ? '✓ Copied!' : 'Copy'}
+          {copied ? '✓ COPIED' : 'COPY'}
         </button>
       </div>
       <div className="overflow-x-auto">
         <SyntaxHighlighter
           language="yaml"
-          style={github}
+          style={dracula}
           customStyle={{
             margin: 0,
             padding: '1rem',
             fontSize: '0.875rem',
             lineHeight: '1.5',
-            backgroundColor: '#f9fafb',
+            backgroundColor: 'transparent', // Let parent container handle bg
+            fontFamily: 'monospace'
           }}
-          showLineNumbers
+          showLineNumbers={true}
+          lineNumberStyle={{
+            minWidth: '2.5em',
+            paddingRight: '1em',
+            color: '#6272a4',
+            textAlign: 'right'
+          }}
         >
           {content}
         </SyntaxHighlighter>

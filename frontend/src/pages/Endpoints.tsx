@@ -75,45 +75,45 @@ export const Endpoints = () => {
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-[#44475a] rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
-          <thead className="bg-gray-50 dark:bg-[#44475a]">
+      <div className="bg-white dark:bg-[#282a36] border border-gray-200 dark:border-[#44475a]">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-[#44475a]">
+          <thead className="bg-gray-50 dark:bg-[#21222c]">
             <tr>
               <th className="px-6 py-3 w-8"></th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Hostname
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Platform
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Machine ID
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Version
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-mono text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
                 Last Heartbeat
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
+          <tbody className="bg-white dark:bg-[#282a36] divide-y divide-gray-200 dark:divide-[#44475a]">
             {endpoints.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-[#6272a4]">
+                <td colSpan={7} className="px-6 py-4 text-center font-mono text-sm text-gray-500 dark:text-[#6272a4]">
                   No endpoints enrolled yet
                 </td>
               </tr>
             ) : (
               endpoints.map((endpoint) => (
                 <>
-                  <tr key={endpoint.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40 cursor-pointer" onClick={async () => {
+                  <tr key={endpoint.id} className="hover:bg-gray-50 dark:hover:bg-[#44475a]/20 cursor-pointer transition-colors" onClick={async () => {
                     const id = endpoint.id;
                     const next = !expanded[id];
                     setExpanded({ ...expanded, [id]: next });
@@ -167,7 +167,7 @@ export const Endpoints = () => {
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">{endpoint.name}</div>
+                          <div className="text-sm font-mono font-medium text-gray-900 dark:text-white">{endpoint.name}</div>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -182,10 +182,10 @@ export const Endpoints = () => {
                       )}
                     </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-[#6272a4]">{endpoint.hostname}</div>
+                    <div className="text-sm font-mono text-gray-500 dark:text-[#6272a4]">{endpoint.hostname}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-[#6272a4]">{endpoint.platform}</div>
+                    <div className="text-sm font-mono text-gray-500 dark:text-[#6272a4]">{endpoint.platform}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-xs font-mono text-gray-500 dark:text-[#6272a4]">
@@ -193,24 +193,24 @@ export const Endpoints = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-[#6272a4]">
+                    <div className="text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                       {endpoint.version || 'N/A'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      className={`px-2 py-0.5 text-xs font-mono border ${
                         endpoint.status === 'active'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                          ? 'border-green-200 text-green-700 dark:border-green-800 dark:text-green-400'
                           : endpoint.status === 'inactive'
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          ? 'border-yellow-200 text-yellow-700 dark:border-yellow-800 dark:text-yellow-400'
+                          : 'border-red-200 text-red-700 dark:border-red-800 dark:text-red-400'
                       }`}
                     >
-                      {endpoint.status}
+                      {endpoint.status.toUpperCase()}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-[#6272a4]">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-[#6272a4]">
                     {endpoint.last_heartbeat
                       ? new Date(endpoint.last_heartbeat).toLocaleString()
                       : 'Never'}
@@ -218,39 +218,41 @@ export const Endpoints = () => {
                   </tr>
                   {expanded[endpoint.id] && (
                     <tr>
-                      <td colSpan={8} className="px-6 py-3 bg-gray-50 dark:bg-gray-900">
+                      <td colSpan={8} className="px-6 py-4 bg-gray-50 dark:bg-[#21222c] border-t border-gray-200 dark:border-[#44475a]">
                         {loadingJobs[endpoint.id] ? (
-                          <div className="text-sm text-gray-500 dark:text-[#6272a4]">Loading jobs...</div>
+                          <div className="text-sm font-mono text-gray-500 dark:text-[#6272a4]">Loading jobs...</div>
                         ) : (
-                          <div className="space-y-2">
+                          <div className="space-y-3 pl-8 border-l-2 border-gray-300 dark:border-[#44475a]">
                             <div className="flex justify-between items-center mb-2">
-                              <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">Jobs on this endpoint</div>
+                              <div className="text-xs font-mono font-bold text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">
+                                Jobs on this endpoint
+                              </div>
                               <Link
                                 to={`/endpoints/${endpoint.id}/assign-jobs`}
                                 onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center gap-1 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition"
+                                className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-mono font-medium rounded transition"
                               >
                                 <Plus className="w-3 h-3" />
-                                Assign Jobs
+                                ASSIGN JOBS
                               </Link>
                             </div>
                             <div className="overflow-x-auto">
-                              <table className="min-w-full divide-y divide-gray-200 dark:divide-[#6272a4]">
-                                <thead className="bg-gray-100 dark:bg-[#44475a]">
+                              <table className="min-w-full text-sm">
+                                <thead className="border-b border-gray-200 dark:border-[#44475a]">
                                   <tr>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Group</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Job</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Source</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Status</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Last Seen</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-[#6272a4] uppercase tracking-wider">Actions</th>
+                                    <th className="px-4 py-2 text-left font-mono text-xs text-gray-500 dark:text-[#6272a4]">GROUP</th>
+                                    <th className="px-4 py-2 text-left font-mono text-xs text-gray-500 dark:text-[#6272a4]">JOB</th>
+                                    <th className="px-4 py-2 text-left font-mono text-xs text-gray-500 dark:text-[#6272a4]">SOURCE</th>
+                                    <th className="px-4 py-2 text-left font-mono text-xs text-gray-500 dark:text-[#6272a4]">STATUS</th>
+                                    <th className="px-4 py-2 text-left font-mono text-xs text-gray-500 dark:text-[#6272a4]">LAST SEEN</th>
+                                    <th className="px-4 py-2 text-left font-mono text-xs text-gray-500 dark:text-[#6272a4]">ACTIONS</th>
                                   </tr>
                                 </thead>
-                                <tbody className="bg-white dark:bg-[#44475a] divide-y divide-gray-200 dark:divide-[#6272a4]">
+                                <tbody className="divide-y divide-gray-200 dark:divide-[#44475a]/50">
                                   {(jobsByEndpoint[endpoint.id] || []).map((ji: JobInstance) => (
                                     <tr key={ji.id}>
-                                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-[#f8f8f2]">{ji.namespace}</td>
-                                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-[#f8f8f2]">
+                                      <td className="px-4 py-2 font-mono text-gray-700 dark:text-[#f8f8f2]">{ji.namespace}</td>
+                                      <td className="px-4 py-2 font-mono text-gray-700 dark:text-[#f8f8f2]">
                                         <Link
                                           to={`/jobs/${ji.namespace}/${ji.job_name}`}
                                           onClick={(e) => e.stopPropagation()}
@@ -259,32 +261,32 @@ export const Endpoints = () => {
                                           {ji.job_name}
                                         </Link>
                                       </td>
-                                      <td className="px-4 py-2 text-sm">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                      <td className="px-4 py-2">
+                                        <span className={`px-2 py-0.5 text-xs font-mono border ${
                                           ji.source === 'crontopus' || ji.source === 'git'
-                                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                            : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                                            ? 'border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400'
+                                            : 'border-purple-200 text-purple-700 dark:border-purple-800 dark:text-purple-400'
                                         }`}>
                                           {ji.source === 'git' ? 'crontopus' : ji.source}
                                         </span>
                                       </td>
-                                      <td className="px-4 py-2 text-sm">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                      <td className="px-4 py-2">
+                                        <span className={`px-2 py-0.5 text-xs font-mono border ${
                                           ji.status === 'scheduled'
-                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                            ? 'border-green-200 text-green-700 dark:border-green-800 dark:text-green-400'
                                             : ji.status === 'running'
-                                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                                            ? 'border-emerald-200 text-emerald-700 dark:border-emerald-800 dark:text-emerald-400'
                                             : ji.status === 'paused'
-                                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                            ? 'border-yellow-200 text-yellow-700 dark:border-yellow-800 dark:text-yellow-400'
+                                            : 'border-red-200 text-red-700 dark:border-red-800 dark:text-red-400'
                                         }`}>
-                                          {ji.status}
+                                          {ji.status.toUpperCase()}
                                         </span>
                                       </td>
-                                      <td className="px-4 py-2 text-sm text-gray-700 dark:text-[#f8f8f2]">
+                                      <td className="px-4 py-2 font-mono text-gray-700 dark:text-[#f8f8f2]">
                                         {new Date(ji.last_seen).toLocaleString()}
                                       </td>
-                                      <td className="px-4 py-2 text-sm">
+                                      <td className="px-4 py-2">
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
