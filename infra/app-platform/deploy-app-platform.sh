@@ -33,6 +33,79 @@ echo -e "${BLUE}  Crontopus Deployment${NC}"
 echo -e "${BLUE}  Version: ${VERSION}${NC}"
 echo -e "${BLUE}================================================${NC}"
 
+# Check for --skip-tests flag
+SKIP_TESTS=false
+for arg in "$@"; do
+  if [ "$arg" == "--skip-tests" ]; then
+    SKIP_TESTS=true
+    break
+  fi
+done
+
+# Run Tests (Pre-flight Check)
+if [ "$SKIP_TESTS" = false ]; then
+    echo ""
+    echo -e "${BLUE}🧪 Running pre-flight tests...${NC}"
+    
+    # Backend Tests
+    echo -e "  ${BLUE}> Running Backend tests...${NC}"
+    if [ -f "../../backend/run_tests.sh" ]; then
+        # Run in a subshell to preserve current directory
+        (
+            cd ../../backend
+            chmod +x run_tests.sh
+            # Suppress output unless there's an error
+            OUTPUT=$(./run_tests.sh 2>&1)
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -ne 0 ]; then
+                echo -e "${RED}❌ Backend tests failed!${NC}"
+                echo "$OUTPUT"
+                exit 1
+            fi
+        )
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Aborting deployment due to failed tests.${NC}"
+            exit 1
+        fi
+        echo -e "${GREEN}  ✓ Backend tests passed${NC}"
+    else
+        echo -e "${YELLOW}  ⚠ Backend test script not found, skipping...${NC}"
+    fi
+
+    # Frontend Tests
+    echo -e "  ${BLUE}> Running Frontend tests...${NC}"
+    if [ -d "../../frontend" ]; then
+        # Run in a subshell to preserve current directory
+        (
+            cd ../../frontend
+            if [ -f "package.json" ]; then
+                # Ensure dependencies are installed (quietly)
+                npm install > /dev/null 2>&1
+                # Run tests
+                OUTPUT=$(npm test -- --run 2>&1)
+                EXIT_CODE=$?
+                if [ $EXIT_CODE -ne 0 ]; then
+                    echo -e "${RED}❌ Frontend tests failed!${NC}"
+                    echo "$OUTPUT"
+                    exit 1
+                fi
+            fi
+        )
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Aborting deployment due to failed tests.${NC}"
+            exit 1
+        fi
+        echo -e "${GREEN}  ✓ Frontend tests passed${NC}"
+    else
+        echo -e "${YELLOW}  ⚠ Frontend directory not found, skipping...${NC}"
+    fi
+    
+    echo -e "${GREEN}✅ All tests passed! Proceeding with deployment...${NC}"
+else
+    echo ""
+    echo -e "${YELLOW}⏩ Skipping tests as requested...${NC}"
+fi
+
 # Check prerequisites
 echo ""
 echo -e "${BLUE}Checking prerequisites...${NC}"

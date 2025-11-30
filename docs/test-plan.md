@@ -120,7 +120,7 @@ All tests must run in **CI (GitHub Actions)** to prevent regressions. Local test
 ### Phase 2: Integration (Weeks 3-4)
 - [ ] **Agent**: Add Docker-based cron integration tests.
 - [ ] **Backend**: Add Redis rate-limiting tests.
-- [ ] **CI**: Setup GitHub Actions for Frontend/Backend/Agent unit tests.
+- [x] **CI**: Setup GitHub Actions for Frontend/Backend/Agent unit tests.
 
 ### Phase 3: E2E & Performance (Weeks 5-6)
 - [ ] **E2E**: Setup Playwright. Implement "Critical User Flows".
