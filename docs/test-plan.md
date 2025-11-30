@@ -115,7 +115,7 @@ All tests must run in **CI (GitHub Actions)** to prevent regressions. Local test
 ### Phase 1: Foundation (Weeks 1-2)
 - [x] **Backend**: Switch `pytest` to use Dockerized Postgres.
 - [x] **Frontend**: Setup Vitest + React Testing Library. Write tests for `Login` and `Register`.
-- [ ] **Agent**: Refactor `scheduler` package to use interfaces for easier mocking.
+- [x] **Agent**: Refactor `scheduler` package to use interfaces for easier mocking.
 
 ### Phase 2: Integration (Weeks 3-4)
 - [ ] **Agent**: Add Docker-based cron integration tests.

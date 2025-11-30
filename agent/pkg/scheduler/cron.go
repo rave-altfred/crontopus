@@ -13,12 +13,15 @@ import (
 type CronScheduler struct {
 	// Marker to identify Crontopus-managed entries
 	marker string
+	// Command runner for executing crontab
+	runner CommandRunner
 }
 
 // NewCronScheduler creates a new cron scheduler
 func NewCronScheduler() (*CronScheduler, error) {
 	return &CronScheduler{
 		marker: "# CRONTOPUS:",
+		runner: &RealCommandRunner{},
 	}, nil
 }
 
@@ -279,8 +282,7 @@ func (s *CronScheduler) Verify(name string) (bool, error) {
 
 // readCrontab reads the current user's crontab
 func (s *CronScheduler) readCrontab() ([]string, error) {
-	cmd := exec.Command("crontab", "-l")
-	output, err := cmd.Output()
+	output, err := s.runner.Run("crontab", "-l")
 	
 	// crontab returns error if no crontab exists
 	if err != nil {
@@ -288,6 +290,9 @@ func (s *CronScheduler) readCrontab() ([]string, error) {
 			// No crontab exists, return empty
 			return []string{}, nil
 		}
+		// Some runners might return error if output is empty or command failed
+		// We need to handle this based on how the runner reports errors
+		// For now, assume standard exec.ExitError behavior
 		return nil, err
 	}
 
@@ -319,9 +324,8 @@ func (s *CronScheduler) writeCrontab(entries []string) error {
 	tmpFile.Close()
 
 	// Install crontab
-	cmd := exec.Command("crontab", tmpFile.Name())
-	if output, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("failed to install crontab: %w: %s", err, output)
+	if _, err := s.runner.Run("crontab", tmpFile.Name()); err != nil {
+		return fmt.Errorf("failed to install crontab: %w", err)
 	}
 
 	return nil

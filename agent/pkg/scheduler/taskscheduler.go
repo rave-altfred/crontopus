@@ -10,12 +10,14 @@ import (
 // TaskScheduler manages jobs using Windows Task Scheduler
 type TaskScheduler struct {
 	folderPath string
+	runner     CommandRunner
 }
 
 // NewTaskScheduler creates a new Task Scheduler adapter
 func NewTaskScheduler() (*TaskScheduler, error) {
 	return &TaskScheduler{
 		folderPath: "\\Crontopus\\",
+		runner:     &RealCommandRunner{},
 	}, nil
 }
 
@@ -45,11 +47,9 @@ func (s *TaskScheduler) Add(job JobEntry) error {
 		namespace = "default"
 	}
 	taskPath := s.folderPath + namespace + "\\" + job.Name
-	cmd := exec.Command("schtasks", "/Create", "/TN", taskPath, "/XML", "-")
-	cmd.Stdin = strings.NewReader(taskXML)
 	
-	if output, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("failed to create task: %w: %s", err, output)
+	if _, err := s.runner.RunWithInput(taskXML, "schtasks", "/Create", "/TN", taskPath, "/XML", "-"); err != nil {
+		return fmt.Errorf("failed to create task: %w", err)
 	}
 
 	return nil
@@ -73,9 +73,8 @@ func (s *TaskScheduler) Remove(name string) error {
 		return fmt.Errorf("task %s not found", name)
 	}
 	
-	cmd := exec.Command("schtasks", "/Delete", "/TN", taskPath, "/F")
-	if output, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("failed to delete task: %w: %s", err, output)
+	if _, err := s.runner.Run("schtasks", "/Delete", "/TN", taskPath, "/F"); err != nil {
+		return fmt.Errorf("failed to delete task: %w", err)
 	}
 
 	return nil
@@ -84,8 +83,7 @@ func (s *TaskScheduler) Remove(name string) error {
 // findTaskPath searches for a task by name across all namespace folders
 func (s *TaskScheduler) findTaskPath(name string) string {
 	// List all tasks in Crontopus folder
-	cmd := exec.Command("schtasks", "/Query", "/FO", "LIST")
-	output, err := cmd.Output()
+	output, err := s.runner.Run("schtasks", "/Query", "/FO", "LIST")
 	if err != nil {
 		return ""
 	}
@@ -105,11 +103,12 @@ func (s *TaskScheduler) findTaskPath(name string) string {
 // List returns all Crontopus-managed scheduled tasks
 func (s *TaskScheduler) List() ([]JobEntry, error) {
 	// List all tasks in Crontopus folder
-	cmd := exec.Command("schtasks", "/Query", "/TN", s.folderPath, "/FO", "LIST", "/V")
-	output, err := cmd.Output()
+	output, err := s.runner.Run("schtasks", "/Query", "/TN", s.folderPath, "/FO", "LIST", "/V")
 	
 	if err != nil {
 		// If folder doesn't exist, return empty list
+		// Note: Error checking here depends on runner implementation
+		// For RealCommandRunner it returns exec.ExitError
 		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
 			return []JobEntry{}, nil
 		}
@@ -143,8 +142,7 @@ func (s *TaskScheduler) List() ([]JobEntry, error) {
 // ListAll returns ALL scheduled tasks (including non-Crontopus tasks)
 func (s *TaskScheduler) ListAll() ([]JobEntry, error) {
 	// List all tasks (not just Crontopus folder)
-	cmd := exec.Command("schtasks", "/Query", "/FO", "LIST", "/V")
-	output, err := cmd.Output()
+	output, err := s.runner.Run("schtasks", "/Query", "/FO", "LIST", "/V")
 	
 	if err != nil {
 		return nil, fmt.Errorf("failed to list all tasks: %w", err)
@@ -171,8 +169,7 @@ func (s *TaskScheduler) ListAll() ([]JobEntry, error) {
 			}
 			
 			// Try to get task details
-			cmd := exec.Command("schtasks", "/Query", "/TN", taskPath, "/XML")
-			taskOutput, err := cmd.Output()
+			taskOutput, err := s.runner.Run("schtasks", "/Query", "/TN", taskPath, "/XML")
 			if err != nil {
 				continue // Skip if we can't read details
 			}
@@ -212,11 +209,12 @@ func (s *TaskScheduler) Verify(name string) (bool, error) {
 	if taskPath == "" {
 		return false, nil
 	}
-	cmd := exec.Command("schtasks", "/Query", "/TN", taskPath)
 	
-	if err := cmd.Run(); err != nil {
+	_, err := s.runner.Run("schtasks", "/Query", "/TN", taskPath)
+	
+	if err != nil {
+		// Check for exit code 1 (not found)
 		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
-			// Task doesn't exist
 			return false, nil
 		}
 		return false, fmt.Errorf("failed to verify task: %w", err)
@@ -228,8 +226,7 @@ func (s *TaskScheduler) Verify(name string) (bool, error) {
 // getTaskDetails retrieves task details (simplified)
 func (s *TaskScheduler) getTaskDetails(name string) (*JobEntry, error) {
 	taskPath := s.folderPath + name
-	cmd := exec.Command("schtasks", "/Query", "/TN", taskPath, "/XML")
-	output, err := cmd.Output()
+	output, err := s.runner.Run("schtasks", "/Query", "/TN", taskPath, "/XML")
 	
 	if err != nil {
 		return nil, fmt.Errorf("failed to get task XML: %w", err)
