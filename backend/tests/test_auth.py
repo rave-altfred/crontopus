@@ -13,8 +13,7 @@ class TestRegister:
         user_data = {
             "username": "newuser",
             "email": "new@example.com",
-            "password": "password123",
-            "tenant_id": test_tenant.id
+            "password": "password123"
         }
         
         response = client.post("/api/auth/register", json=user_data)
@@ -23,7 +22,7 @@ class TestRegister:
         data = response.json()
         assert data["username"] == "newuser"
         assert data["email"] == "new@example.com"
-        assert data["tenant_id"] == test_tenant.id
+        assert data["tenant_id"] == "newuser"  # Tenant ID matches username
         assert data["is_active"] is True
         assert "password" not in data
         assert "hashed_password" not in data
@@ -31,25 +30,23 @@ class TestRegister:
     def test_register_creates_tenant_if_not_exists(self, client):
         """Test that registration creates tenant if it doesn't exist."""
         user_data = {
-            "username": "newuser",
-            "email": "new@example.com",
-            "password": "password123",
-            "tenant_id": "new-tenant"
+            "username": "newuser2",
+            "email": "new2@example.com",
+            "password": "password123"
         }
         
         response = client.post("/api/auth/register", json=user_data)
         
         assert response.status_code == 201
         data = response.json()
-        assert data["tenant_id"] == "new-tenant"
+        assert data["tenant_id"] == "newuser2"
     
     def test_register_duplicate_username(self, client, test_user):
         """Test registration with duplicate username fails."""
         user_data = {
             "username": test_user.username,
             "email": "different@example.com",
-            "password": "password123",
-            "tenant_id": test_user.tenant_id
+            "password": "password123"
         }
         
         response = client.post("/api/auth/register", json=user_data)
@@ -62,8 +59,7 @@ class TestRegister:
         user_data = {
             "username": "differentuser",
             "email": test_user.email,
-            "password": "password123",
-            "tenant_id": test_user.tenant_id
+            "password": "password123"
         }
         
         response = client.post("/api/auth/register", json=user_data)
@@ -76,8 +72,7 @@ class TestRegister:
         user_data = {
             "username": "newuser",
             "email": "new@example.com",
-            "password": "short",
-            "tenant_id": test_tenant.id
+            "password": "short"
         }
         
         response = client.post("/api/auth/register", json=user_data)
@@ -105,7 +100,7 @@ class TestLogin:
             "password": "testpassword"
         }
         
-        response = client.post("/api/auth/login", json=credentials)
+        response = client.post("/api/auth/login", data=credentials)
         
         assert response.status_code == 200
         data = response.json()
@@ -120,7 +115,7 @@ class TestLogin:
             "password": "wrongpassword"
         }
         
-        response = client.post("/api/auth/login", json=credentials)
+        response = client.post("/api/auth/login", data=credentials)
         
         assert response.status_code == 401
         assert "Incorrect" in response.json()["detail"]
@@ -132,7 +127,7 @@ class TestLogin:
             "password": "password"
         }
         
-        response = client.post("/api/auth/login", json=credentials)
+        response = client.post("/api/auth/login", data=credentials)
         
         assert response.status_code == 401
         assert "Incorrect" in response.json()["detail"]
@@ -148,7 +143,7 @@ class TestLogin:
             "password": "testpassword"
         }
         
-        response = client.post("/api/auth/login", json=credentials)
+        response = client.post("/api/auth/login", data=credentials)
         
         assert response.status_code == 403
         assert "inactive" in response.json()["detail"].lower()
@@ -159,7 +154,7 @@ class TestLogin:
             "username": "testuser"
         }
         
-        response = client.post("/api/auth/login", json=credentials)
+        response = client.post("/api/auth/login", data=credentials)
         
         assert response.status_code == 422
 

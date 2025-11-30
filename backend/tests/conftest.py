@@ -2,9 +2,13 @@
 Pytest configuration and shared fixtures.
 """
 import pytest
+import os
+import time
+from fastapi import Request, Response
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
+from testcontainers.postgres import PostgresContainer
 
 from crontopus_api.main import app
 from crontopus_api.config import get_db, Base
@@ -12,35 +16,119 @@ from crontopus_api.models import Tenant, User
 from crontopus_api.security.jwt import create_access_token
 from crontopus_api.security.password import get_password_hash
 
-# Test database setup
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+@pytest.fixture(scope="session")
+def postgres_container():
+    """Start a Postgres container for the entire test session."""
+    with PostgresContainer("postgres:15-alpine") as postgres:
+        yield postgres
 
+@pytest.fixture(scope="session")
+def db_engine(postgres_container):
+    """Create a SQLAlchemy engine connected to the test container."""
+    engine = create_engine(postgres_container.get_connection_url())
+    
+    # Create all tables once
+    Base.metadata.create_all(bind=engine)
+    
+    yield engine
+    
+    # Cleanup is handled by the container shutdown
 
 @pytest.fixture(scope="function")
-def db():
-    """Create a fresh database for each test."""
-    Base.metadata.create_all(bind=engine)
-    db = TestingSessionLocal()
-    yield db
-    db.close()
-    Base.metadata.drop_all(bind=engine)
-
+def db(db_engine):
+    """
+    Create a fresh database session for each test.
+    Uses transaction rollback for speed (no need to recreate tables).
+    """
+    connection = db_engine.connect()
+    transaction = connection.begin()
+    
+    # Create a session bound to this connection
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=connection)
+    session = TestingSessionLocal()
+    
+    yield session
+    
+    session.close()
+    transaction.rollback()
+    connection.close()
 
 @pytest.fixture(scope="function")
 def client(db):
     """Create a test client with database dependency override."""
     def override_get_db():
-        try:
-            yield db
-        finally:
-            pass
+        yield db
     
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+@pytest.fixture(autouse=True)
+def disable_rate_limiting():
+    """Disable rate limiting for all tests."""
+    from fastapi_limiter.depends import RateLimiter
+    
+    # Mock RateLimiter to always allow request
+    async def mock_rate_limit(*args, **kwargs):
+        return True
+        
+    # We need to override the dependency for every usage of RateLimiter
+    # Since RateLimiter is a class, we can't easily override it globally via dependency_overrides 
+    # if instances are passed to Depends(). 
+    # However, we can patch the __call__ method or use a mock.
+    
+    # Easier approach: Mock the init/callback
+    pass
+    
+    # Actually, FastAPI dependency overrides work on the callable. 
+    # RateLimiter instances are callables.
+    # We can iterate over the app routes and remove/replace dependencies, OR
+    # we can patch FastAPILimiter to be no-op.
+    
+    # Let's try patching the FastAPILimiter.init to do nothing, 
+    # and ensure the dependency call returns immediately.
+    
+    # Better approach for per-route dependencies:
+    # Override the specific RateLimiter instances used in routes is hard.
+    # Instead, let's mock the backend (Redis) to flush or allow all?
+    # Or simply override the RateLimiter.__call__ method.
+    
+    original_call = RateLimiter.__call__
+    
+    async def mock_call(self, request: Request, response: Response):
+        return
+        
+    RateLimiter.__call__ = mock_call
+    yield
+    RateLimiter.__call__ = original_call
+
+@pytest.fixture(autouse=True)
+def mock_forgejo(monkeypatch):
+    """Mock ForgejoClient to prevent external API calls during tests."""
+    import crontopus_api.routes.auth as auth_routes
+    
+    class MockForgejoClient:
+        def __init__(self, *args, **kwargs):
+            pass
+            
+        async def create_user(self, username, email, password, full_name=None):
+            return {"id": 1, "username": username, "email": email}
+            
+        async def create_access_token(self, username, token_name):
+            return "mock_git_token_sha1"
+            
+        async def create_or_update_file(self, *args, **kwargs):
+            return {"content": {"name": "file.txt"}}
+
+    # Mock the client class in the auth route
+    monkeypatch.setattr(auth_routes, "ForgejoClient", MockForgejoClient)
+    
+    # Also need to mock create_tenant_repository since it uses httpx directly
+    async def mock_create_repo(*args, **kwargs):
+        return True
+        
+    monkeypatch.setattr(auth_routes, "create_tenant_repository", mock_create_repo)
 
 
 @pytest.fixture

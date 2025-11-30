@@ -28,3 +28,4 @@ redis==7.0.1
 # Development
 pytest==7.4.4
 pytest-asyncio==0.23.3
+testcontainers[postgres]==4.13.3
