@@ -119,6 +119,20 @@ Key:
 - ✅ Rate limit headers (X-RateLimit-*) configured
 - ✅ Deployed to production (version 20251117-140902)
 
+**Phase 18: Frontend API Token Management** ✅ **COMPLETE** (Nov 2025)
+- ✅ `APITokens` page with list, create, and revoke functionality
+- ✅ Secure token display (one-time view)
+- ✅ Copy-to-clipboard and usage examples
+- ✅ Warning banners about token security
+
+**Phase 19: UI/UX Overhaul - DevOps Console Aesthetic** ✅ **COMPLETE** (Nov 2025)
+- ✅ Global "DevOps Console" theme applied (Dracula dark mode default)
+- ✅ Monospace typography for all data-heavy elements
+- ✅ Technical grid background pattern
+- ✅ High-contrast status badges and borders
+- ✅ Refactored all major pages (Dashboard, Jobs, Endpoints, Runs) for density and clarity
+- ✅ Improved "Download Agent" wizard flow
+
 **Previous Phases**:
 
 **Phase 16: UI Branding & Theme** ✅ **COMPLETE** (Nov 2025)
@@ -213,10 +227,9 @@ Key:
 
 **Next Steps**:
 1. Phase 17.4: Complete documentation for API security (check-ins, tokens, rate limiting)
-2. Phase 18: Frontend UI for API token management
-3. Phase 19: Granular scope enforcement per endpoint
-4. Phase 4: Alerting & Monitoring (Planned)
-5. Phase 17.5 (Future): Make check-in token required (remove backward compatibility)
+2. Phase 20: Granular scope enforcement per endpoint (formerly Phase 19)
+3. Phase 4: Alerting & Monitoring (Planned)
+4. Phase 17.5 (Future): Make check-in token required (remove backward compatibility)
 
 See `docs/development-plan.md` for full roadmap.
 

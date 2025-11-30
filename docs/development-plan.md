@@ -2146,58 +2146,56 @@ class Settings(BaseSettings):
 
 **Deliverable**: ✅ Complete documentation suite for API authentication, rate limiting, and migration
 
-**Files Created/Updated**:
-- `docs/api-reference.md` - 448 lines (NEW)
-- `docs/api-authentication-guide.md` - 554 lines (NEW)
-- `agent/README.md` - Updated with authentication and rate limiting sections
+---
 
-**Documentation Coverage**:
-- ✅ All three authentication methods
-- ✅ Rate limiting infrastructure and limits
-- ✅ Security best practices
-- ✅ Migration strategies
-- ✅ Integration examples
-- ✅ Troubleshooting guides
+## Phase 18: Frontend API Token Management
 
-### Benefits
-- ✅ Secure check-in endpoint prevents fake submissions
-- ✅ API tokens enable automation and integrations
-- ✅ Granular scopes allow fine-grained permissions (future)
-- ✅ Token revocation for compromised credentials
-- ✅ Audit trail via last_used_at timestamps
-- ✅ Industry-standard authentication patterns
+**Status**: ✅ **COMPLETE** (Nov 2025)
 
-### Security Considerations
-- Tokens must be hashed in database (SHA256)
-- Plaintext token shown only once during creation
-- Support token expiration (90 days, 1 year, never)
-- Rate limiting on all authenticated endpoints (prevent brute force)
-- Audit log for token creation/revocation
-- Secure token generation (cryptographically random)
-- DDoS protection via rate limiting per IP and per token
-- Exponential backoff for failed authentication attempts
-- Security headers (HSTS, CSP, X-Frame-Options, etc.)
-- Request size limits to prevent payload attacks
-- Input validation and sanitization on all endpoints
+**Goal**: Provide a user-friendly interface for managing API tokens, replacing manual curl commands.
 
-### Implementation Priority
-1. **Critical Priority**: Rate limiting (prevent DDoS attacks) - ✅ **COMPLETE** (Nov 17, 2025)
-   - ✅ fastapi-limiter implementation with async Redis
-   - ✅ 28 endpoints protected with rate limiting (23 original + 5 token endpoints)
-   - ✅ Deployed to production successfully
-   - ✅ Local and production testing validated
-2. **High Priority**: Check-in authentication (closes security gap) - ✅ **COMPLETE** (Nov 17, 2025)
-   - ✅ Token validation implemented with backward compatibility
-   - ✅ Agent scripts already include tokens (no changes needed)
-   - ✅ Deployed to production (version 20251117-173117)
-   - ✅ Comprehensive logging for security monitoring
-3. **High Priority**: User API tokens (enables integrations) - ✅ **COMPLETE** (Nov 17, 2025)
-   - ✅ Full CRUD API for token management (5 endpoints)
-   - ✅ SHA256 token hashing and secure storage
-   - ✅ Token authentication middleware with last_used_at tracking
-   - ✅ Deployed to production (version 20251117-183507)
-   - ✅ Comprehensive test script for validation
-4. **Medium Priority**: Frontend UI for token management - ❌ **NOT STARTED** (Phase 18)
+- [x] Create `APITokens` page
+  - List active tokens with last used/created dates and scopes
+  - Visual indication for expired tokens
+- [x] Implement token creation flow
+  - Form for token name, expiration, and scopes
+  - One-time display of generated token with copy-to-clipboard
+- [x] Implement token revocation
+  - Delete/Revoke button with confirmation
+- [x] Security UX
+  - Warning banners about token secrecy
+  - Usage examples with `curl` shown in UI
+
+**Deliverable**: ✅ Full UI for creating and managing API tokens
+
+---
+
+## Phase 19: UI/UX Overhaul - DevOps Console Aesthetic
+
+**Status**: ✅ **COMPLETE** (Nov 2025)
+
+**Goal**: Shift the application design from a standard admin dashboard to a "developer-first" console aesthetic.
+
+- [x] **Global Theme Update**:
+  - Enforced dark mode by default using Dracula palette
+  - Added "technical grid" background pattern
+  - Customized scrollbars for a sleek look
+- [x] **Typography**:
+  - Applied monospace fonts to all data-heavy elements (IDs, timestamps, logs, status)
+  - Improved readability for technical information
+- [x] **Navigation & Layout**:
+  - Sharper, high-contrast sidebar with left-border active indicators
+  - Simplified header to reduce visual noise
+- [x] **Component Refactoring**:
+  - **Dashboard**: Stats cards with colored borders instead of shadows; log-style recent runs list
+  - **Jobs/Endpoints**: Dense data tables with monospace fonts
+  - **Forms**: Sharper input fields and consistent dark mode styling
+  - **Log Viewer**: Terminal-like appearance for job output
+  - **Agent Download**: Improved wizard-style flow for selecting platforms
+- [x] **Cleanup**:
+  - Removed unused legacy components and pages (`Agents.tsx`)
+
+**Deliverable**: ✅ A cohesive, professional "DevOps Console" look and feel across the entire application
 5. **Medium Priority**: Granular scope enforcement - ❌ **NOT STARTED** (Phase 19)
 6. **Low Priority**: Job-specific tokens (nice-to-have enhancement) - ❌ **NOT STARTED**
 

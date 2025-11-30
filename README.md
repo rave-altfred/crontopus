@@ -81,7 +81,8 @@ crontopus/
 - **Automatic Callback Injection** — Agent wraps all job commands with check-in callbacks using an elegant helper script (`~/.crontopus/bin/checkin`). Jobs automatically report success/failure without manual instrumentation. Crontab entries remain clean and readable.
 - **Multi-Endpoint Management** — Track which jobs are running on which machines (endpoints). View job-to-endpoint and endpoint-to-job relationships in web UI. Database-level protection prevents duplicate job assignments on same endpoint.
 - **Rate Limiting & DDoS Protection** ⚠️ — Infrastructure in place with SlowAPI and Redis/Valkey backend. Per-endpoint rate limits configured (login 5/min, check-ins 100/min, API 60/min). Temporarily disabled due to async compatibility issue - awaiting fastapi-limiter migration.
-- **GitOps Integration** — Sync job manifests and policies from tenant-specific Git repositories in **Forgejo**.  
+- **DevOps Console Theme** — A developer-first UI with high-contrast Dracula dark mode, monospace typography for data, and a clean, technical aesthetic designed for heavy usage.
+- **GitOps Integration** — Sync job manifests and policies from tenant-specific Git repositories in **Forgejo**.
 - **API First Development** — UI and CLI both talk to the same REST endpoints.  
 - **Alerts & Metrics** — Slack/email/PagerDuty notifications and Prometheus metrics.  
 - **Multi-Tenant & Secure** — Complete tenant isolation with private Git repositories; enrollment token-based agent deployment; no inbound ports required.
@@ -202,7 +203,8 @@ Frontend will run at `http://localhost:5173`
 
 **Tech Stack:**
 - React 19 + TypeScript + Vite
-- Tailwind CSS v4 with Dracula theme dark mode
+- Tailwind CSS v4 with Dracula theme (Dark Mode by Default)
+- "DevOps Console" Aesthetic (Monospace fonts, Grid backgrounds, High Contrast)
 - lucide-react for icons
 - react-syntax-highlighter for code display
 - Custom PCB-inspired ASCII art logo
