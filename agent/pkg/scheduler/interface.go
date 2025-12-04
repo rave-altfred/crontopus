@@ -10,6 +10,12 @@ type JobEntry struct {
 	User      string // User to run as (optional)
 }
 
+// ExitError interface for checking exit codes
+type ExitError interface {
+	ExitCode() int
+	Error() string
+}
+
 // Scheduler is the interface for managing scheduled jobs
 type Scheduler interface {
 	// Add creates a new scheduled job

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -23,6 +22,15 @@ func NewCronScheduler() (*CronScheduler, error) {
 		marker: "# CRONTOPUS:",
 		runner: &RealCommandRunner{},
 	}, nil
+}
+
+// NewCronSchedulerWithRunner creates a new cron scheduler with a custom command runner
+// Useful for testing
+func NewCronSchedulerWithRunner(runner CommandRunner) *CronScheduler {
+	return &CronScheduler{
+		marker: "# CRONTOPUS:",
+		runner: runner,
+	}
 }
 
 // Add creates a new cron job
@@ -286,13 +294,19 @@ func (s *CronScheduler) readCrontab() ([]string, error) {
 	
 	// crontab returns error if no crontab exists
 	if err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
+		// Check for exit code 1 (standard for "no crontab")
+		// We check for interface that allows retrieving exit code
+		type exitCoder interface {
+			ExitCode() int
+		}
+		
+		if exitErr, ok := err.(exitCoder); ok && exitErr.ExitCode() == 1 {
 			// No crontab exists, return empty
 			return []string{}, nil
 		}
 		// Some runners might return error if output is empty or command failed
 		// We need to handle this based on how the runner reports errors
-		// For now, assume standard exec.ExitError behavior
+		// For now, assume standard behavior
 		return nil, err
 	}
 
@@ -308,23 +322,12 @@ func (s *CronScheduler) readCrontab() ([]string, error) {
 
 // writeCrontab writes the crontab entries
 func (s *CronScheduler) writeCrontab(entries []string) error {
-	// Create temp file
-	tmpFile, err := os.CreateTemp("", "crontab-*")
-	if err != nil {
-		return fmt.Errorf("failed to create temp file: %w", err)
-	}
-	defer os.Remove(tmpFile.Name())
+	// Join entries with newlines
+	content := strings.Join(entries, "\n") + "\n"
 
-	// Write entries
-	for _, entry := range entries {
-		if _, err := tmpFile.WriteString(entry + "\n"); err != nil {
-			return fmt.Errorf("failed to write to temp file: %w", err)
-		}
-	}
-	tmpFile.Close()
-
-	// Install crontab
-	if _, err := s.runner.Run("crontab", tmpFile.Name()); err != nil {
+	// Write to crontab using stdin
+	// Use "-" to tell crontab to read from stdin (standard on most *nix)
+	if _, err := s.runner.RunWithInput(content, "crontab", "-"); err != nil {
 		return fmt.Errorf("failed to install crontab: %w", err)
 	}
 
