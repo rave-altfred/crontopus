@@ -118,8 +118,8 @@ All tests must run in **CI (GitHub Actions)** to prevent regressions. Local test
 - [x] **Agent**: Refactor `scheduler` package to use interfaces for easier mocking.
 
 ### Phase 2: Integration (Weeks 3-4)
-- [ ] **Agent**: Add Docker-based cron integration tests.
-- [ ] **Backend**: Add Redis rate-limiting tests.
+- [x] **Agent**: Add Docker-based cron integration tests.
+- [x] **Backend**: Add Redis rate-limiting tests.
 - [x] **CI**: Setup GitHub Actions for Frontend/Backend/Agent unit tests.
 
 ### Phase 3: E2E & Performance (Weeks 5-6)
