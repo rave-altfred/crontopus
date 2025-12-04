@@ -133,13 +133,13 @@ class TestRunHistory:
         assert "total" in data
         assert data["total"] == 10
         assert data["page"] == 1
-        assert data["page_size"] == 50
+        assert data["page_size"] == 100  # Default limit is 100
         assert len(data["runs"]) == 10
     
-    def test_list_runs_pagination(self, client, auth_headers, sample_runs):
-        """Test pagination of run list."""
+    def test_list_runs_limit(self, client, auth_headers, sample_runs):
+        """Test limiting run list size."""
         response = client.get(
-            "/api/runs?page=1&page_size=5",
+            "/api/runs?limit=5",
             headers=auth_headers
         )
         
