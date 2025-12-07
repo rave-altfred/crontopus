@@ -80,7 +80,7 @@ crontopus/
 - **Bidirectional Sync** — Agent reconciles between Git (desired state) and scheduler (current state). Discovers existing cron jobs and imports them to Git automatically.
 - **Automatic Callback Injection** — Agent wraps all job commands with check-in callbacks using an elegant helper script (`~/.crontopus/bin/checkin`). Jobs automatically report success/failure without manual instrumentation. Crontab entries remain clean and readable.
 - **Multi-Endpoint Management** — Track which jobs are running on which machines (endpoints). View job-to-endpoint and endpoint-to-job relationships in web UI. Database-level protection prevents duplicate job assignments on same endpoint.
-- **Rate Limiting & DDoS Protection** ⚠️ — Infrastructure in place with SlowAPI and Redis/Valkey backend. Per-endpoint rate limits configured (login 5/min, check-ins 100/min, API 60/min). Temporarily disabled due to async compatibility issue - awaiting fastapi-limiter migration.
+- **Rate Limiting & DDoS Protection** ✅ — Infrastructure in place with `fastapi-limiter` and Redis/Valkey. Per-endpoint rate limits configured (login 5/min, check-ins 100/min, API 60/min) to protect against abuse.
 - **DevOps Console Theme** — A developer-first UI with high-contrast Dracula dark mode, monospace typography for data, and a clean, technical aesthetic designed for heavy usage.
 - **GitOps Integration** — Sync job manifests and policies from tenant-specific Git repositories in **Forgejo**.
 - **API First Development** — UI and CLI both talk to the same REST endpoints.  
@@ -226,6 +226,30 @@ When calling APIs from frontend/CLI, match the exact path including trailing sla
 - `/api/runs` returns `{runs: [], total, page, page_size}` - extract `response.data.runs`
 - `/api/agents` returns `{agents: [], total, page, page_size}` - extract `response.data.agents`
 - `/api/jobs/` returns `{jobs: [], count, source, repository}` - extract `response.data.jobs`
+
+### Running Tests
+
+**Backend Tests** (Integration & Unit):
+```bash
+cd backend
+./run_tests.sh
+```
+Requires Docker running (for Postgres/Redis test containers).
+
+**Frontend Tests** (Unit):
+```bash
+cd frontend
+npm test
+```
+
+**Agent Tests** (Unit & Integration):
+```bash
+cd agent
+# Unit tests
+go test -v ./pkg/...
+# Integration tests (requires Docker)
+go test -v ./tests/integration/...
+```
 
 ### Deployment
 

@@ -133,6 +133,18 @@ Key:
 - ✅ Refactored all major pages (Dashboard, Jobs, Endpoints, Runs) for density and clarity
 - ✅ Improved "Download Agent" wizard flow
 
+**Phase 21: Comprehensive Testing Infrastructure** ✅ **COMPLETE** (Dec 2025)
+- Phase 21.1: Backend Integration Tests (Docker Postgres/Redis) ✅ Complete
+- Phase 21.2: Agent Integration Tests (Docker Cron) ✅ Complete
+- Phase 21.3: CI/CD Integration (GitHub Actions) ✅ Complete
+
+**Key Achievements**:
+- ✅ Moved backend testing from SQLite to Dockerized PostgreSQL (matching prod)
+- ✅ Verified rate limiting with real Redis instances in tests
+- ✅ Agent scheduler tests run against real `cron` in Ubuntu containers
+- ✅ Automated testing pipelines for all components
+- ✅ Deployment script runs pre-flight tests before pushing
+
 **Previous Phases**:
 
 **Phase 16: UI Branding & Theme** ✅ **COMPLETE** (Nov 2025)
@@ -226,10 +238,9 @@ Key:
 - Phase 9: Agent Documentation & Distribution ✅ Complete
 
 **Next Steps**:
-1. Phase 17.4: Complete documentation for API security (check-ins, tokens, rate limiting)
-2. Phase 20: Granular scope enforcement per endpoint (formerly Phase 19)
-3. Phase 4: Alerting & Monitoring (Planned)
-4. Phase 17.5 (Future): Make check-in token required (remove backward compatibility)
+1. Phase 20: Granular scope enforcement per endpoint (formerly Phase 19)
+2. Phase 4: Alerting & Monitoring (Planned)
+3. Phase 17.5 (Future): Make check-in token required (remove backward compatibility)
 
 See `docs/development-plan.md` for full roadmap.
 
