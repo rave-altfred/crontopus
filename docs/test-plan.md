@@ -123,7 +123,7 @@ All tests must run in **CI (GitHub Actions)** to prevent regressions. Local test
 - [x] **CI**: Setup GitHub Actions for Frontend/Backend/Agent unit tests.
 
 ### Phase 3: E2E & Performance (Weeks 5-6)
-- [ ] **E2E**: Setup Playwright. Implement "Critical User Flows".
+- [x] **E2E**: Setup Playwright. Implement "Critical User Flows".
 - [ ] **Load**: Write k6 script for check-in storm.
 
 ---
