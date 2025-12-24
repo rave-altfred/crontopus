@@ -79,7 +79,8 @@ get_latest_version() {
 download_binary() {
     local binary_name="crontopus-agent-${PLATFORM}"
     # Try v-prefixed tag first (new format), fallback to agent-v prefix (old format)
-    local download_url="https://github.com/$REPO/releases/download/v${VERSION}/${binary_name}"
+    local base_url="https://github.com/$REPO/releases/download"
+    local download_url="${base_url}/v${VERSION}/${binary_name}"
     local checksum_url="${download_url}.sha256"
     
     log_info "Downloading from: $download_url"
@@ -90,8 +91,16 @@ download_binary() {
     
     # Download binary
     if ! curl -fsSL "$download_url" -o "$tmp_dir/$binary_name"; then
-        log_error "Failed to download binary"
-        exit 1
+        log_warn "Download failed with v-prefix. Trying agent-v prefix..."
+        # Fallback to agent-v prefix
+        download_url="${base_url}/agent-v${VERSION}/${binary_name}"
+        checksum_url="${download_url}.sha256"
+        log_info "Downloading from: $download_url"
+        
+        if ! curl -fsSL "$download_url" -o "$tmp_dir/$binary_name"; then
+            log_error "Failed to download binary"
+            exit 1
+        fi
     fi
     
     # Download checksum
