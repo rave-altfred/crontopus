@@ -45,7 +45,7 @@ func InstallCheckinScript() error {
 
 // WriteJobConfig writes job configuration to ~/.crontopus/jobs/<uuid>.yaml
 // This config is read by the run-job script
-func WriteJobConfig(jobID, jobName, namespace, command string) error {
+func WriteJobConfig(jobID, jobName, namespace, command, tenantID string) error {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return fmt.Errorf("failed to get home directory: %w", err)
@@ -60,10 +60,12 @@ func WriteJobConfig(jobID, jobName, namespace, command string) error {
 	configContent := fmt.Sprintf(`job_name: "%s"
 namespace: "%s"
 command: "%s"
+tenant_id: "%s"
 `,
 		strings.ReplaceAll(jobName, "\"", "\\\""),
 		strings.ReplaceAll(namespace, "\"", "\\\""),
 		strings.ReplaceAll(command, "\"", "\\\""),
+		strings.ReplaceAll(tenantID, "\"", "\\\""),
 	)
 
 	if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {

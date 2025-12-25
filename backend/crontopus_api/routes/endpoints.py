@@ -879,30 +879,81 @@ echo ""
 echo "[4/4] Cleaning crontab for fresh discovery..."
 echo ""
 
-# Strip CRONTOPUS markers from crontab to allow fresh discovery/reconciliation
-# This handles both scenarios:
-# - Same user reinstall: Jobs will be reconciled from Git (markers re-added)
-# - Different user: Jobs will be discovered and imported to new user's Git
+# Unwrap existing Crontopus managed jobs
+# This restores 'managed' jobs to their raw state so they can be discovered 
+# and adopted by the new agent instance.
 if crontab -l >/dev/null 2>&1; then
-    # Count jobs with CRONTOPUS markers
-    MARKED_COUNT=$(crontab -l | grep -c '# CRONTOPUS:' || echo 0)
+    echo "Checking for existing managed jobs to adopt..."
     
-    if [ "$MARKED_COUNT" -gt 0 ]; then
-        echo "Found $MARKED_COUNT Crontopus-managed jobs"
-        echo "Stripping markers and removing duplicates..."
+    CRONTAB_CURRENT=$(mktemp)
+    CRONTAB_NEW=$(mktemp)
+    crontab -l > "$CRONTAB_CURRENT"
+    
+    # Check if we have any managed jobs
+    if grep -q "CRONTOPUS:[a-f0-9-]*" "$CRONTAB_CURRENT"; then
+        echo "Found managed jobs. Attempting to unwrap..."
         
-        # Strip CRONTOPUS markers and remove duplicate lines (keep first occurrence)
-        crontab -l | sed 's/ *# CRONTOPUS:.*$//' | awk '!seen[$0]++' > /tmp/crontab.clean
+        while IFS= read -r line; do
+            # Check for managed job marker (UUID)
+            if echo "$line" | grep -q "CRONTOPUS:[a-f0-9-]*"; then
+                # Extract UUID
+                UUID=$(echo "$line" | grep -o "CRONTOPUS:[a-f0-9-]*" | cut -d: -f2)
+                JOB_FILE="$HOME/.crontopus/jobs/${{UUID}}.yaml"
+                
+                if [ -f "$JOB_FILE" ]; then
+                    # Check Tenant ID
+                    # If local job tenant ID matches the installer's tenant ID, we skip unwrapping.
+                    # This prevents unnecessary unwrapping during re-installation for the same user.
+                    LOCAL_TENANT_ID=$(grep '^tenant_id:' "$JOB_FILE" | sed 's/^tenant_id: "//;s/"$//' | sed 's/\\\\"/"/g')
+                    
+                    if [ "$LOCAL_TENANT_ID" = "$TENANT_ID" ]; then
+                        echo "  ✓ Job $UUID belongs to current tenant ($TENANT_ID). Keeping managed."
+                        echo "$line" >> "$CRONTAB_NEW"
+                        continue
+                    fi
+                    
+                    # If tenant IDs don't match (or local is empty), we proceed to unwrap
+                    if [ -z "$LOCAL_TENANT_ID" ]; then
+                        echo "  ! Job $UUID has no tenant owner (legacy). Unwrapping for potential adoption."
+                    else
+                        echo "  ! Job $UUID belongs to previous tenant ($LOCAL_TENANT_ID). Unwrapping for adoption."
+                    fi
+                    
+                    # Extract command (assuming format: command: "...")
+                    # We strip the leading 'command: "' and trailing '"'
+                    CMD=$(grep '^command:' "$JOB_FILE" | sed 's/^command: "//;s/"$//')
+                    
+                    # Unescape quotes: \" -> "
+                    CMD=$(echo "$CMD" | sed 's/\\\\"/"/g')
+                    
+                    # Extract schedule (everything before the wrapper command)
+                    # We assume the wrapper is something like /path/to/run-job
+                    SCHEDULE=$(echo "$line" | sed "s| [^ ]*run-job.*||")
+                    
+                    if [ -n "$CMD" ] && [ -n "$SCHEDULE" ]; then
+                        echo "  ✓ Unwrapping job $UUID"
+                        echo "$SCHEDULE $CMD" >> "$CRONTAB_NEW"
+                        continue
+                    fi
+                fi
+                
+                # Fallback: If we can't unwrap, comment it out
+                echo "  ⚠ Cannot unwrap job $UUID (config missing). Disabling."
+                echo "# DISABLED (Orphaned Crontopus Job): $line" >> "$CRONTAB_NEW"
+            else
+                # Keep line as is
+                echo "$line" >> "$CRONTAB_NEW"
+            fi
+        done < "$CRONTAB_CURRENT"
         
-        # Install cleaned crontab
-        crontab /tmp/crontab.clean
-        rm -f /tmp/crontab.clean
-        
-        echo "✓ Stripped $MARKED_COUNT Crontopus markers and removed duplicates"
-        echo "  → Jobs preserved and will be discovered by agent"
+        # Install new crontab
+        crontab "$CRONTAB_NEW"
+        echo "✓ Managed jobs unwrapped for discovery"
     else
-        echo "No Crontopus-managed jobs found"
+        echo "No managed jobs found. Keeping crontab as is."
     fi
+    
+    rm -f "$CRONTAB_CURRENT" "$CRONTAB_NEW"
 else
     echo "No existing crontab"
 fi

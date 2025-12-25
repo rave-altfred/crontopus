@@ -49,14 +49,14 @@ if [ "$SKIP_TESTS" = false ]; then
     
     # Backend Tests
     echo -e "  ${BLUE}> Running Backend tests...${NC}"
-    if [ -f "../../backend/run_tests.sh" ]; then
+    if [ -f "backend/run_tests.sh" ]; then
         # Run in a subshell to preserve current directory
         (
-            cd ../../backend
+            cd backend
             chmod +x run_tests.sh
-            # Suppress output unless there's an error
-            OUTPUT=$(./run_tests.sh 2>&1)
-            EXIT_CODE=$?
+            # Use || true to prevent set -e from exiting immediately so we can capture output
+            EXIT_CODE=0
+            OUTPUT=$(./run_tests.sh 2>&1) || EXIT_CODE=$?
             if [ $EXIT_CODE -ne 0 ]; then
                 echo -e "${RED}❌ Backend tests failed!${NC}"
                 echo "$OUTPUT"
@@ -74,16 +74,16 @@ if [ "$SKIP_TESTS" = false ]; then
 
     # Frontend Tests
     echo -e "  ${BLUE}> Running Frontend tests...${NC}"
-    if [ -d "../../frontend" ]; then
+    if [ -d "frontend" ]; then
         # Run in a subshell to preserve current directory
         (
-            cd ../../frontend
+            cd frontend
             if [ -f "package.json" ]; then
                 # Ensure dependencies are installed (quietly)
                 npm install > /dev/null 2>&1
-                # Run tests
-                OUTPUT=$(npm test -- --run 2>&1)
-                EXIT_CODE=$?
+                # Use || true to prevent set -e from exiting immediately so we can capture output
+                EXIT_CODE=0
+                OUTPUT=$(npm test -- --run 2>&1) || EXIT_CODE=$?
                 if [ $EXIT_CODE -ne 0 ]; then
                     echo -e "${RED}❌ Frontend tests failed!${NC}"
                     echo "$OUTPUT"

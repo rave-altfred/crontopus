@@ -31,16 +31,6 @@ export const RunsByEndpoint = () => {
     loadData();
   }, [days, nameFilter, hostnameFilter, platformFilter, machineIdFilter]);
 
-  const getHealthBadge = (health: string) => {
-    if (health === 'healthy') {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Healthy</span>;
-    } else if (health === 'degraded') {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">Degraded</span>;
-    } else {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">Warning</span>;
-    }
-  };
-
   if (loading) {
     return <div className="text-gray-600 dark:text-[#6272a4]">Loading...</div>;
   }

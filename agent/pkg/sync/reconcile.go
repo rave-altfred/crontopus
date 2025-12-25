@@ -94,7 +94,7 @@ func (r *Reconciler) Reconcile() (int, error) {
 			}
 			
 			// Write job config file for elegant wrapper
-			if err := wrapper.WriteJobConfig(jobID, manifest.Metadata.Name, namespace, command); err != nil {
+			if err := wrapper.WriteJobConfig(jobID, manifest.Metadata.Name, namespace, command, manifest.Metadata.Tenant); err != nil {
 				log.Printf("Warning: Failed to write job config for '%s': %v (using inline wrapper)", manifest.Metadata.Name, err)
 				// Fallback to inline wrapper
 				command = wrapper.WrapCommand(command, r.backendURL, r.endpointToken, r.endpointID, manifest.Metadata.Name, namespace)

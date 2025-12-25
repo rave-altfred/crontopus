@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle2, AlertTriangle, Key, Trash2, Plus, Copy, Clock, Shield, Code } from 'lucide-react';
+import { CheckCircle2, Key, Trash2, Plus, Copy, Code } from 'lucide-react';
 import { apiTokensApi, AVAILABLE_SCOPES, type APIToken, type APITokenCreateResponse } from '../api/apiTokens';
 
 export function APITokens() {

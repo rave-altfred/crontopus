@@ -2,6 +2,8 @@ package scheduler
 
 import (
 	"bufio"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -184,7 +186,7 @@ func (s *CronScheduler) ListAll() ([]JobEntry, error) {
 	}
 
 	jobs := []JobEntry{}
-	for i, entry := range entries {
+	for _, entry := range entries {
 		// Skip empty lines and comments
 		entry = strings.TrimSpace(entry)
 		if entry == "" || strings.HasPrefix(entry, "#") {
@@ -210,8 +212,10 @@ func (s *CronScheduler) ListAll() ([]JobEntry, error) {
 		// Checkin format: /path/to/checkin job-name namespace ...
 		name := extractJobNameFromCheckin(command)
 		if name == "" {
-			// Fallback: generate unique name if we can't extract it
-			name = fmt.Sprintf("discovered-job-%d", i)
+			// Fallback: generate stable name based on schedule and command content
+			// Use first 8 chars of SHA256 hash of the schedule + command
+			hash := sha256.Sum256([]byte(schedule + command))
+			name = fmt.Sprintf("discovered-job-%s", hex.EncodeToString(hash[:])[:8])
 		}
 		
 		// Try to extract namespace from checkin command

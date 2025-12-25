@@ -9,6 +9,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from testcontainers.postgres import PostgresContainer
+from testcontainers.redis import RedisContainer
+import redis.asyncio as aioredis
+from fastapi_limiter import FastAPILimiter
 
 from crontopus_api.main import app
 from crontopus_api.config import get_db, Base
@@ -21,6 +24,28 @@ def postgres_container():
     """Start a Postgres container for the entire test session."""
     with PostgresContainer("postgres:15-alpine") as postgres:
         yield postgres
+
+@pytest.fixture(scope="session")
+def redis_container():
+    """Start a Redis container for rate limiting tests."""
+    with RedisContainer("redis:7-alpine") as redis:
+        yield redis
+
+@pytest.fixture(scope="function")
+async def redis_client(redis_container):
+    """Create an async Redis client connected to the container."""
+    host = redis_container.get_container_host_ip()
+    port = redis_container.get_exposed_port(6379)
+    url = f"redis://{host}:{port}"
+    
+    client = aioredis.from_url(url, encoding="utf-8", decode_responses=True)
+    
+    # Initialize limiter
+    await FastAPILimiter.init(client)
+    
+    yield client
+    
+    await client.close()
 
 @pytest.fixture(scope="session")
 def db_engine(postgres_container):
@@ -65,34 +90,14 @@ def client(db):
     app.dependency_overrides.clear()
 
 @pytest.fixture(autouse=True)
-def disable_rate_limiting():
-    """Disable rate limiting for all tests."""
+def disable_rate_limiting(request):
+    """Disable rate limiting for all tests except those explicitly testing it."""
+    # Check for marker 'enable_rate_limiting'
+    if request.node.get_closest_marker("enable_rate_limiting"):
+        yield
+        return
+
     from fastapi_limiter.depends import RateLimiter
-    
-    # Mock RateLimiter to always allow request
-    async def mock_rate_limit(*args, **kwargs):
-        return True
-        
-    # We need to override the dependency for every usage of RateLimiter
-    # Since RateLimiter is a class, we can't easily override it globally via dependency_overrides 
-    # if instances are passed to Depends(). 
-    # However, we can patch the __call__ method or use a mock.
-    
-    # Easier approach: Mock the init/callback
-    pass
-    
-    # Actually, FastAPI dependency overrides work on the callable. 
-    # RateLimiter instances are callables.
-    # We can iterate over the app routes and remove/replace dependencies, OR
-    # we can patch FastAPILimiter to be no-op.
-    
-    # Let's try patching the FastAPILimiter.init to do nothing, 
-    # and ensure the dependency call returns immediately.
-    
-    # Better approach for per-route dependencies:
-    # Override the specific RateLimiter instances used in routes is hard.
-    # Instead, let's mock the backend (Redis) to flush or allow all?
-    # Or simply override the RateLimiter.__call__ method.
     
     original_call = RateLimiter.__call__
     

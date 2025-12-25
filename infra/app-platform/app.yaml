@@ -1,0 +1,137 @@
+name: crontopus
+region: fra1
+
+# Custom Domains
+domains:
+  - domain: crontopus.com
+    type: PRIMARY
+  - domain: www.crontopus.com
+    type: ALIAS
+
+# VPC Configuration - dedicated VPC with peering to database VPC
+vpc:
+  id: 803fc5f1-6165-4f81-8b92-a055a62f6292
+
+# Database (using existing managed database)
+# Note: DATABASE_URL set via environment variable below
+
+# Backend API Service
+services:
+  - name: backend
+    # Use pre-built image from Container Registry (faster deployments)
+    image:
+      registry_type: DOCR
+      registry: crontopus-registry
+      repository: backend
+      tag: latest
+    
+    # HTTP Configuration
+    http_port: 8000
+    
+    # Instance Configuration
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb  # $5/month - 512MB RAM, 50GB bandwidth
+    
+    # Routing - API endpoints
+    routes:
+      - path: /api
+        preserve_path_prefix: true
+      - path: /health
+        preserve_path_prefix: true
+    
+    # Health Check
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 20
+      period_seconds: 10
+      timeout_seconds: 10
+      success_threshold: 1
+      failure_threshold: 3
+    
+    # Environment Variables
+    envs:
+      # Database (existing managed database)
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        type: SECRET
+        value: "${DATABASE_URL}"
+      
+      # Security (set these in DO dashboard)
+      - key: SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+      
+      - key: ALGORITHM
+        scope: RUN_TIME
+        value: "HS256"
+      
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        scope: RUN_TIME
+        value: "43200"
+      
+      # CORS
+      - key: CORS_ORIGINS
+        scope: RUN_TIME
+        value: "https://crontopus.com,https://www.crontopus.com"
+      
+      # Application
+      - key: DEBUG
+        scope: RUN_TIME
+        value: "false"
+      
+      - key: LOG_LEVEL
+        scope: RUN_TIME
+        value: "info"
+
+      - key: API_URL
+        scope: RUN_TIME
+        value: "https://crontopus.com"
+      
+      # Forgejo Integration
+      - key: FORGEJO_URL
+        scope: RUN_TIME
+        value: "https://git.crontopus.com"
+      
+      - key: FORGEJO_USERNAME
+        scope: RUN_TIME
+        type: SECRET
+        value: "rave"
+      
+      - key: FORGEJO_TOKEN
+        scope: RUN_TIME
+        type: SECRET
+        value: "${FORGEJO_TOKEN}"
+      
+      # Redis/Valkey for Rate Limiting (Phase 17)
+      - key: REDIS_URL
+        scope: RUN_TIME
+        type: SECRET
+        value: "${REDIS_URL}"
+      
+      - key: REDIS_DATABASE
+        scope: RUN_TIME
+        value: "3"
+    
+  - name: frontend
+    image:
+      registry_type: DOCR
+      registry: crontopus-registry
+      repository: frontend
+      tag: latest
+
+    http_port: 80
+
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+
+    # Routing - Frontend (catch-all)
+    routes:
+      - path: /
+
+    health_check:
+      http_path: /
+      initial_delay_seconds: 10
+      period_seconds: 10
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3

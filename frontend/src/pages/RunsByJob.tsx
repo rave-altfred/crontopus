@@ -7,7 +7,7 @@ export const RunsByJob = () => {
   
   // Filters
   const [days, setDays] = useState(7);
-  const [jobNameFilter, setJobNameFilter] = useState('');
+  const [nameFilter, setNameFilter] = useState('');
   const [namespaceFilter, setNamespaceFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
@@ -16,7 +16,7 @@ export const RunsByJob = () => {
     runsApi
       .aggregatedByJob({
         days,
-        job_name: jobNameFilter || undefined,
+        job_name: nameFilter || undefined,
         namespace: namespaceFilter || undefined,
         status: statusFilter || undefined,
       })
@@ -27,17 +27,7 @@ export const RunsByJob = () => {
 
   useEffect(() => {
     loadData();
-  }, [days, jobNameFilter, namespaceFilter, statusFilter]);
-
-  const getHealthBadge = (health: string) => {
-    if (health === 'healthy') {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Healthy</span>;
-    } else if (health === 'degraded') {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">Degraded</span>;
-    } else {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">Warning</span>;
-    }
-  };
+  }, [days, nameFilter, namespaceFilter, statusFilter]);
 
   if (loading) {
     return <div className="text-gray-600 dark:text-[#6272a4]">Loading...</div>;
@@ -74,8 +64,8 @@ export const RunsByJob = () => {
             </label>
             <input
               type="text"
-              value={jobNameFilter}
-              onChange={(e) => setJobNameFilter(e.target.value)}
+              value={nameFilter}
+              onChange={(e) => setNameFilter(e.target.value)}
               placeholder="Filter by name..."
               className="w-full px-3 py-2 border border-gray-300 dark:border-[#44475a] bg-white dark:bg-[#21222c] text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:border-blue-500"
             />
