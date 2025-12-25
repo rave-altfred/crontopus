@@ -117,17 +117,21 @@ download_binary() {
     tar -xzf "$tmp_dir/$asset_name" -C "$tmp_dir"
     
     # Find the binary (it might be in a subdirectory or named differently)
-    # Usually it's just 'crontopus-agent' in the root of the archive
-    local binary_path="$tmp_dir/crontopus-agent"
+    # The binary inside the archive usually includes the platform suffix (e.g. crontopus-agent-darwin-arm64)
+    local binary_path=""
     
-    if [ ! -f "$binary_path" ]; then
-        # Try finding it
-        binary_path=$(find "$tmp_dir" -type f -name "crontopus-agent" | head -n 1)
-        if [ -z "$binary_path" ]; then
-            log_error "Could not find 'crontopus-agent' binary in the downloaded archive."
-            exit 1
-        fi
+    # Try finding any file starting with crontopus-agent that is NOT the archive or checksum
+    binary_path=$(find "$tmp_dir" -type f -name "crontopus-agent*" ! -name "*.sha256" ! -name "*.tar.gz" | head -n 1)
+    
+    if [ -z "$binary_path" ]; then
+        log_error "Could not find 'crontopus-agent' binary in the downloaded archive."
+        # Debug info
+        log_warn "Contents of archive:"
+        ls -R "$tmp_dir"
+        exit 1
     fi
+    
+    log_info "Found binary: $(basename "$binary_path")"
     
     # Make executable
     chmod +x "$binary_path"
