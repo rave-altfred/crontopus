@@ -66,21 +66,39 @@ detect_platform() {
 get_latest_version() {
     if [ "$VERSION" = "latest" ]; then
         log_info "Fetching latest version..."
-        # Fetch latest release tag (handles both "v" and "agent-v" prefixes)
-        VERSION=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"(agent-)?v([^"]+)".*/\2/')
-        if [ -z "$VERSION" ]; then
+        # Fetch latest release tag
+        # The grep/sed logic extracts the tag name (e.g., "v0.1.14") and removes the 'v' prefix for the VERSION variable if present,
+        # but we actually want the clean version number for the asset name construction.
+        
+        # Get the full tag name first
+        TAG_NAME=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/')
+        
+        if [ -z "$TAG_NAME" ]; then
             log_error "Failed to fetch latest version"
             exit 1
         fi
-        log_info "Latest version: $VERSION"
+        
+        # Clean version (remove v prefix if present)
+        VERSION=${TAG_NAME#v}
+        # But keep the tag for the URL
+        RELEASE_TAG=$TAG_NAME
+        
+        log_info "Latest version: $VERSION (Tag: $RELEASE_TAG)"
+    else
+        # If version is manually specified, assume v-prefix for tag if not present
+        if [[ "$VERSION" != v* ]]; then
+            RELEASE_TAG="v$VERSION"
+        else
+            RELEASE_TAG="$VERSION"
+            VERSION=${VERSION#v}
+        fi
     fi
 }
 
 download_binary() {
-    local binary_name="crontopus-agent-${PLATFORM}"
-    # Try v-prefixed tag first (new format), fallback to agent-v prefix (old format)
-    local base_url="https://github.com/$REPO/releases/download"
-    local download_url="${base_url}/v${VERSION}/${binary_name}"
+    # Asset naming convention: crontopus-agent-v0.1.14-darwin-arm64.tar.gz
+    local asset_name="crontopus-agent-v${VERSION}-${PLATFORM}.tar.gz"
+    local download_url="https://github.com/$REPO/releases/download/${RELEASE_TAG}/${asset_name}"
     local checksum_url="${download_url}.sha256"
     
     log_info "Downloading from: $download_url"
@@ -89,45 +107,39 @@ download_binary() {
     local tmp_dir=$(mktemp -d)
     trap "rm -rf $tmp_dir" EXIT
     
-    # Download binary
-    if ! curl -fsSL "$download_url" -o "$tmp_dir/$binary_name"; then
-        log_warn "Download failed with v-prefix. Trying agent-v prefix..."
-        # Fallback to agent-v prefix
-        download_url="${base_url}/agent-v${VERSION}/${binary_name}"
-        checksum_url="${download_url}.sha256"
-        log_info "Downloading from: $download_url"
-        
-        if ! curl -fsSL "$download_url" -o "$tmp_dir/$binary_name"; then
-            log_error "Failed to download binary"
+    # Download archive
+    if ! curl -fsSL "$download_url" -o "$tmp_dir/$asset_name"; then
+        log_error "Failed to download archive. Please check if the version and platform are correct."
+        exit 1
+    fi
+    
+    log_info "Extracting archive..."
+    tar -xzf "$tmp_dir/$asset_name" -C "$tmp_dir"
+    
+    # Find the binary (it might be in a subdirectory or named differently)
+    # Usually it's just 'crontopus-agent' in the root of the archive
+    local binary_path="$tmp_dir/crontopus-agent"
+    
+    if [ ! -f "$binary_path" ]; then
+        # Try finding it
+        binary_path=$(find "$tmp_dir" -type f -name "crontopus-agent" | head -n 1)
+        if [ -z "$binary_path" ]; then
+            log_error "Could not find 'crontopus-agent' binary in the downloaded archive."
             exit 1
         fi
     fi
     
-    # Download checksum
-    if ! curl -fsSL "$checksum_url" -o "$tmp_dir/${binary_name}.sha256"; then
-        log_warn "Failed to download checksum, skipping verification"
-    else
-        log_info "Verifying checksum..."
-        if command -v sha256sum >/dev/null 2>&1; then
-            (cd "$tmp_dir" && sha256sum -c "${binary_name}.sha256")
-        elif command -v shasum >/dev/null 2>&1; then
-            (cd "$tmp_dir" && shasum -a 256 -c "${binary_name}.sha256")
-        else
-            log_warn "No checksum tool found, skipping verification"
-        fi
-    fi
-    
     # Make executable
-    chmod +x "$tmp_dir/$binary_name"
+    chmod +x "$binary_path"
     
     # Move to install directory
     log_info "Installing to: $INSTALL_DIR/$BINARY_NAME"
     
     if [ -w "$INSTALL_DIR" ]; then
-        mv "$tmp_dir/$binary_name" "$INSTALL_DIR/$BINARY_NAME"
+        mv "$binary_path" "$INSTALL_DIR/$BINARY_NAME"
     else
         log_info "Requesting sudo for installation..."
-        sudo mv "$tmp_dir/$binary_name" "$INSTALL_DIR/$BINARY_NAME"
+        sudo mv "$binary_path" "$INSTALL_DIR/$BINARY_NAME"
     fi
 }
 
